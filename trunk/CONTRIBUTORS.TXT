@@ -1,0 +1,9 @@
+Currently the following projects have contributed to IdealistViewer
+* Jpeg Group (Irrlicht license requirement)
+* OpenSimulator
+* OpenViewer
+* LibOpenMetaverse
+
+Primary Developers (alpha order)
+* Dahlia Trimble
+* Teravus Ousley
