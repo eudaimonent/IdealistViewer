@@ -1,0 +1,7 @@
+[Startup]
+login_uri="http://127.0.0.1:9000"
+;login_uri="http://osgrid.org:8002"
+;login_uri="https://login.agni.lindenlab.com/cgi-bin/login.cgi"
+first_name="test"
+last_name="user"
+pass_word="346324636"
