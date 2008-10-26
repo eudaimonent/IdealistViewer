@@ -1,7 +1,0 @@
-obj\Release\ResolveAssemblyReference.cache
-..\..\bin\IdealistViewer.exe
-obj\Release\IdealistViewer.exe
-obj\Debug\ResolveAssemblyReference.cache
-obj\Debug\IdealistViewer.exe
-obj\Debug\IdealistViewer.pdb
-..\..\bin\IdealistViewer.pdb
