@@ -45,7 +45,11 @@ namespace IdealistViewer
             else if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.EqualTriangle)
                 sides = 3;
             else if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.HalfCircle)
+            { // half circle, prim is a sphere
                 sides = 24;
+                profileBegin = 0.5f * profileBegin + 0.5f;
+                profileEnd = 0.5f * profileEnd + 0.5f;
+            }
 
             if ((HoleType)primData.ProfileHole == HoleType.Same)
                 hollowsides = sides;
