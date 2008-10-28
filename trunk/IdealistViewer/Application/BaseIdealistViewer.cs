@@ -380,7 +380,8 @@ wide character strings when displaying text.
                     }
                     else
                     {
-                        m_log.Warn("[NEWPRIM]: Duplicate prim, bleh, piping to the graphics layer anyway...   ");
+                        // Full object update
+                        //m_log.Warn("[NEWPRIM]   ");
                     }
                 }
                 objectModQueue.Enqueue(newObject);
@@ -444,10 +445,19 @@ wide character strings when displaying text.
 
                     }
                     //}
-
-                
-                    SceneNode node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
-                    vObj.node = node;
+                    bool creatednode = false;
+                    SceneNode node = null;
+                    if (vObj.node == null)
+                    {
+                        node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
+                        creatednode = true;
+                        vObj.node = node;
+                    }
+                    else
+                    {
+                        node = vObj.node;
+                    }
+                    
                     node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z , vObj.prim.Scale.Y);
                    // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
                     if (vObj.prim.ParentID == 0)
@@ -458,8 +468,7 @@ wide character strings when displaying text.
                     {
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
                     }
-
-                    node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                    
 
                     //m_log.Warn(vObj.prim.Rotation.ToString());
                     IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
@@ -480,17 +489,21 @@ wide character strings when displaying text.
                     
 
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
-                    node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                    node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
-                    node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                    node.UpdateAbsolutePosition();
-                    TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
-                    node.TriangleSelector = trisel;
-                    lock (mts)
+                    if (creatednode)
                     {
-                        mts.AddTriangleSelector(trisel);
+                        node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                        node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                        node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
+                        node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                        TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
+                        node.TriangleSelector = trisel;
+                        lock (mts)
+                        {
+                            mts.AddTriangleSelector(trisel);
+                        }
                     }
 
+                    node.UpdateAbsolutePosition();
                 }
             }
         }
@@ -529,15 +542,27 @@ wide character strings when displaying text.
                                 WorldoffsetPos = gposr - gposc;
                             }
                         }
-                        SceneNode node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
-                        vObj.node = node;
+                        bool creatednode = false;
+
+                        SceneNode node = null;
+                        if (vObj.node == null)
+                        {
+                            node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
+                            creatednode = true;
+                            vObj.node = node;
+                        }
+                        else
+                        {
+                            node = vObj.node;
+                        }
+
                         //parentObj.node.AddChild(node);
                         node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
 
                         //m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, parentObj.node.Scale.X, parentObj.node.Scale.Y, parentObj.node.Scale.Z);
 
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
-                        node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                        
                         //m_log.Warn(vObj.prim.Rotation.ToString());
                         IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
                         iqu.makeInverse();
@@ -554,17 +579,22 @@ wide character strings when displaying text.
 
                         node.Rotation = finalpos.Matrix.RotationDegrees;
 
-                        node.UpdateAbsolutePosition();
-                        node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                        node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
-                        node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                        TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
-                        node.TriangleSelector = trisel;
-                        lock (mts)
+                        if (creatednode)
                         {
-                            mts.AddTriangleSelector(trisel);
+                            
+                            node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                            node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                            node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
+                            node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                            TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
+                            node.TriangleSelector = trisel;
+                            lock (mts)
+                            {
+                                mts.AddTriangleSelector(trisel);
+                            }
                         }
 
+                        node.UpdateAbsolutePosition();
                     }
                     else
                     {
@@ -795,6 +825,8 @@ wide character strings when displaying text.
             avatarConnection.OnGridConnected += connectedCallback;
             avatarConnection.OnNewPrim += newPrimCallback;
             avatarConnection.OnSimConnected += SimConnectedCallback;
+            avatarConnection.OnObjectUpdated += objectUpdatedCallback;
+            avatarConnection.OnObjectKilled += objectKilledCallback;
 
 
             IrrlichtNETCP.Matrix4 m4 = new IrrlichtNETCP.Matrix4();
@@ -948,12 +980,6 @@ wide character strings when displaying text.
 
                 }
             }
-
-            
-                
-                
-            
-
         }
 
         #region LibOMV Callbacks
@@ -963,10 +989,31 @@ wide character strings when displaying text.
         {
             //System.Console.WriteLine(prim.ToString());
             //return;
-            VObject newObject = new VObject();
+            VObject newObject = null;
+
+            //bool foundEntity = false;
+
+            lock (Entities)
+            {
+                if (Entities.ContainsKey(regionHandle.ToString() + prim.LocalID.ToString()))
+                {
+                    //foundEntity = true;
+                    newObject = Entities[regionHandle.ToString() + prim.LocalID.ToString()];
+                }
+            }
+            if (newObject != null)
+            {
+                if (newObject.node != null)
+                {
+                    smgr.AddToDeletionQueue(newObject.node);
+                    newObject.node = null;
+                }
+
+            }
+
             lock (mesh_synclock)
             {
-                newObject = VUtil.NewVObject(prim);
+                newObject = VUtil.NewVObject(prim,newObject);
             }
 
             if (prim.ParentID != 0)
@@ -1173,6 +1220,50 @@ wide character strings when displaying text.
             }
         }
 
+        private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle, 
+            ushort timeDilation)
+        {
+            VObject obj = null;
+            if (!update.Avatar)
+            {
+                lock (Entities)
+                {
+                    if (Entities.ContainsKey(regionHandle.ToString() + update.LocalID.ToString()))
+                    {
+                        obj = Entities[regionHandle.ToString() + update.LocalID.ToString()];
+                        obj.prim.Acceleration = update.Acceleration;
+                        obj.prim.AngularVelocity = update.AngularVelocity;
+                        obj.prim.CollisionPlane = update.CollisionPlane;
+                        obj.prim.Position = update.Position;
+                        obj.prim.Rotation = update.Rotation;
+                        obj.prim.PrimData.State = update.State;
+                        obj.prim.Textures = update.Textures;
+                        obj.prim.Velocity = update.Velocity;
+                        Entities[regionHandle.ToString() + update.LocalID.ToString()] = obj;
+                    }
+                }
+                if (obj != null)
+                    enqueueVObject(obj);
+            }
+        }
+        private void objectKilledCallback(Simulator psim, uint pLocalID)
+        {
+            ulong regionHandle = psim.Handle;
+            m_log.Debug("[DELETE]: obj " + regionHandle.ToString() + ":" + pLocalID.ToString());
+            lock (Entities)
+            {
+                if (Entities.ContainsKey(regionHandle.ToString() + pLocalID.ToString()))
+                {
+                    VObject obj = Entities[regionHandle.ToString() + pLocalID.ToString()];
+                    if (obj.node != null)
+                    {
+                        smgr.AddToDeletionQueue(obj.node);
+                        obj.node = null;
+                    }
+                    Entities.Remove(regionHandle.ToString() + pLocalID.ToString());
+                }
+            }
+        }
         #endregion
 
         #region KeyActions

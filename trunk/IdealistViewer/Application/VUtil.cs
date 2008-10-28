@@ -8,12 +8,23 @@ namespace IdealistViewer
 {
     public static class VUtil
     {
-        public static VObject NewVObject(Primitive pPrim)
-        {
-            VObject returnVObject = new VObject();
+        public static VObject NewVObject(Primitive pPrim, VObject pOldObj)
+        {   
+            VObject returnVObject = null;
+
+            if (pOldObj == null)
+            {
+                returnVObject = new VObject();
+                returnVObject.node = null;
+            }
+            else
+            {
+                returnVObject = pOldObj;
+            }
+
             returnVObject.prim = pPrim;
             returnVObject.mesh = PrimMesherG.PrimitiveToIrrMesh(pPrim);
-            returnVObject.node = null;
+            
             return returnVObject;
         }
 

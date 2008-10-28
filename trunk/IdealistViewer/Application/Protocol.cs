@@ -20,6 +20,7 @@ namespace IdealistViewer
         public delegate void ObjectKilled(Simulator sim, uint objectID);
         public delegate void ObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation);
         public delegate void SimConnected(Simulator sim);
+        public delegate void ImageReceived(AssetTexture tex);
 
         public event NewAvatar OnNewAvatar;
         public event Chat OnChat;
@@ -39,6 +40,7 @@ namespace IdealistViewer
             m_user.Settings.MULTIPLE_SIMS = true;
             m_user.Settings.OBJECT_TRACKING = true;
             m_user.Settings.AVATAR_TRACKING = true;
+            //m_user.Settings.
             //m_user.Settings.ALWAYS_DECODE_OBJECTS = true;
             //m_user.Settings.SEND_AGENT_THROTTLE = true;
             //m_user.Settings.SEND_PINGS = true;
@@ -52,10 +54,15 @@ namespace IdealistViewer
             m_user.Objects.OnObjectKilled += objectKilledCallback;
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
-
+            //m_user.Assets.OnImageReceived += imageReceivedCallback;
+            //m_user.Assets.RequestImage(
+            //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
 
         }
-
+        //private void imageReceivedCallback(ImageDownload image, AssetTexture asset)
+        //{
+        //    image.
+        //}
         private void objectKilledCallback(Simulator simulator, uint objectID)
         {
             if (OnObjectKilled != null)
