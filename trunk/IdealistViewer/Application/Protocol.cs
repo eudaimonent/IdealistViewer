@@ -31,6 +31,7 @@ namespace IdealistViewer
         public event NewPrim OnNewPrim;
         public event ObjectKilled OnObjectKilled;
         public event ObjectUpdated OnObjectUpdated;
+        public event ImageReceived OnImageReceived;
 
         GridClient m_user;
         public SLProtocol()
@@ -40,8 +41,10 @@ namespace IdealistViewer
             m_user.Settings.MULTIPLE_SIMS = true;
             m_user.Settings.OBJECT_TRACKING = true;
             m_user.Settings.AVATAR_TRACKING = true;
+            m_user.Settings.USE_TEXTURE_CACHE = false;
             //m_user.Settings.
-            //m_user.Settings.ALWAYS_DECODE_OBJECTS = true;
+            m_user.Settings.ALWAYS_DECODE_OBJECTS = true;
+           
             //m_user.Settings.SEND_AGENT_THROTTLE = true;
             //m_user.Settings.SEND_PINGS = true;
 
@@ -54,15 +57,18 @@ namespace IdealistViewer
             m_user.Objects.OnObjectKilled += objectKilledCallback;
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
-            //m_user.Assets.OnImageReceived += imageReceivedCallback;
+            m_user.Assets.OnImageReceived += imageReceivedCallback;
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
 
         }
-        //private void imageReceivedCallback(ImageDownload image, AssetTexture asset)
-        //{
-        //    image.
-        //}
+        private void imageReceivedCallback(ImageDownload image, AssetTexture asset)
+        {
+            if (OnImageReceived != null)
+            {
+                OnImageReceived(asset);
+            }
+        }
         private void objectKilledCallback(Simulator simulator, uint objectID)
         {
             if (OnObjectKilled != null)
@@ -94,7 +100,7 @@ namespace IdealistViewer
             m_user.Throttle.Total = 500000;
             m_user.Throttle.Land = 80000;
             m_user.Throttle.Task = 200000;
-            m_user.Throttle.Texture = 10000;
+            m_user.Throttle.Texture = 150000;
             m_user.Throttle.Wind = 10000;
             m_user.Throttle.Resend = 100000;
             m_user.Throttle.Asset = 100000;
@@ -206,7 +212,9 @@ namespace IdealistViewer
             }
         }
 
-       
-
+        public void RequestTexture(UUID assetID)
+        {
+            m_user.Assets.RequestImage(assetID, ImageType.Normal);
+        }
     }
 }

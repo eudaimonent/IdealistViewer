@@ -50,6 +50,7 @@ namespace IdealistViewer
         private static bool LMheld = false;
         private static bool RMheld = false;
         private static bool MMheld = false;
+        private static bool loadTextures = true;
 
         private int OldMouseX = 0;
         private int OldMouseY = 0;
@@ -79,6 +80,7 @@ namespace IdealistViewer
         private static Object mesh_synclock = new Object();
         public static IrrlichtNETCP.Quaternion Cordinate_XYZ_XZY = new IrrlichtNETCP.Quaternion();
 
+        private TextureManager textureMan = null;
         // experimental mesh code - only here temporarily - up top so it's visible
 
         public Vector2D convVect2d(UVCoord uv)
@@ -236,7 +238,11 @@ wide character strings when displaying text.
             driver = device.VideoDriver;
             smgr = device.SceneManager;
             guienv = device.GUIEnvironment;
-            device.OnEvent += new OnEventDelegate(device_OnEvent); 
+            device.OnEvent += new OnEventDelegate(device_OnEvent);
+
+            if (loadTextures)
+            textureMan = new TextureManager(device, driver, "IdealistCache", avatarConnection);
+
             //guienv.AddStaticText("Hello World! This is the Irrlicht Software engine!",
             //    new Rect(new Position2D(10, 10), new Dimension2D(200, 22)), true, false, guienv.RootElement, -1, false);
             //Image img = 
@@ -501,6 +507,25 @@ wide character strings when displaying text.
                         {
                             mts.AddTriangleSelector(trisel);
                         }
+                        if (vObj.prim.Textures != null)
+                        {
+                            if (vObj.prim.Textures.FaceTextures != null)
+                            {
+                                Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
+                                for (int i2 = 0; i2 < objfaces.Length; i2++)
+                                {
+                                    if (objfaces[i2] == null)
+                                        break;
+                                    UUID textureID = objfaces[i2].TextureID;
+
+                                    if (textureID != UUID.Zero)
+                                    {
+                                        if (textureMan != null)
+                                            textureMan.RequestImage(textureID, node);
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     node.UpdateAbsolutePosition();
@@ -590,6 +615,25 @@ wide character strings when displaying text.
                             lock (mts)
                             {
                                 mts.AddTriangleSelector(trisel);
+                            }
+                            if (vObj.prim.Textures != null)
+                            {
+                                if (vObj.prim.Textures.FaceTextures != null)
+                                {
+                                    Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
+                                    for (int i2 = 0; i2 < objfaces.Length; i2++)
+                                    {
+                                        if (objfaces[i2] == null)
+                                            break;
+                                        UUID textureID = objfaces[i2].TextureID;
+
+                                        if (textureID != UUID.Zero)
+                                        {
+                                            if (textureMan != null)
+                                                textureMan.RequestImage(textureID, node);
+                                        }
+                                    }
+                                }
                             }
                         }
 
@@ -808,16 +852,18 @@ wide character strings when displaying text.
             string lastName = string.Empty;
             string password = string.Empty;
 
+            bool loadtextures = true;
+
             if (cnf != null)
             {
                 loginURI = cnf.GetString("login_uri", "");
                 firstName = cnf.GetString("first_name", "test");
                 lastName = cnf.GetString("last_name", "user");
                 password = cnf.GetString("pass_word", "nopassword");
+                loadtextures = cnf.GetBoolean("load_textures", true);
             }
+            loadTextures = loadtextures;
             MainConsole.Instance = m_console;
-            guithread = new Thread(new ParameterizedThreadStart(startupGUI));
-            guithread.Start();
 
             avatarConnection = new SLProtocol();
             avatarConnection.OnLandPatch += landPatchCallback;
@@ -826,6 +872,11 @@ wide character strings when displaying text.
             avatarConnection.OnSimConnected += SimConnectedCallback;
             avatarConnection.OnObjectUpdated += objectUpdatedCallback;
             avatarConnection.OnObjectKilled += objectKilledCallback;
+
+            guithread = new Thread(new ParameterizedThreadStart(startupGUI));
+            guithread.Start();
+
+            
 
 
             IrrlichtNETCP.Matrix4 m4 = new IrrlichtNETCP.Matrix4();

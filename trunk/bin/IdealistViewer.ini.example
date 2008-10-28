@@ -5,3 +5,4 @@ login_uri="http://127.0.0.1:9000"
 first_name="test"
 last_name="user"
 pass_word="346324636"
+load_textures=true
