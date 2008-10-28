@@ -39,7 +39,7 @@ namespace IdealistViewer
             m_user = new GridClient();
             //m_user.Settings.STORE_LAND_PATCHES = true;
             m_user.Settings.MULTIPLE_SIMS = true;
-            //m_user.Settings.OBJECT_TRACKING = true;
+            m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
             m_user.Settings.USE_TEXTURE_CACHE = false;
             //m_user.Settings.

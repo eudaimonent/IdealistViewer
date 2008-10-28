@@ -81,6 +81,7 @@ namespace IdealistViewer
                 if (ouststandingRequests.ContainsKey(assetID))
                 {
                     ouststandingRequests[assetID].Add(requestor);
+                    m_log.Debug("[TEXTURE]: Added to OutstandingRequest receivers");
                     return;
                 }
                 else 
@@ -88,6 +89,7 @@ namespace IdealistViewer
                     List<SceneNode> requestors = new List<SceneNode>();
                     requestors.Add(requestor);
                     ouststandingRequests.Add(assetID,requestors);
+                    m_log.Debug("[TEXTURE]: created new OutstandingRequest receivers");
                 }
             }
             m_log.DebugFormat("[TEXTURE]: Requesting TextureID: {0} from simulator", assetID);
@@ -105,7 +107,13 @@ namespace IdealistViewer
         public void imageReceivedCallback(AssetTexture asset)
         {
             if (asset == null)
+            {
+                m_log.Debug("[TEXTURE]: GotLIBOMV callback but asset was null");
+                lock (ouststandingRequests)
+                {
+                }
                 return;
+            }
             m_log.Debug("[TEXTURE]: GotLIBOMV callback for asset" + asset.AssetID);
             bool result = false;
 
@@ -115,7 +123,7 @@ namespace IdealistViewer
             }
             catch (Exception)
             {
-
+                m_log.Debug("[TEXTURE]: Failed to decode asset " + asset.AssetID);
             }
             if (result)
             { 
@@ -124,12 +132,16 @@ namespace IdealistViewer
 
                 string texturepath = System.IO.Path.Combine(texturefolderpath,asset.AssetID.ToString() + ".tga");
                 byte[] imgdata = asset.Image.ExportTGA();
-                BinaryWriter bw = new BinaryWriter(File.Open(texturepath, FileMode.Create));
+                FileStream fi = (File.Open(texturepath, FileMode.Create));
+                BinaryWriter bw = new BinaryWriter(fi);
                 bw.Write(imgdata);
                 bw.Flush();
                 bw.Close();
+                //fi.Flush();
+                //fi.Close();
+                //fi.Dispose();
                 
-                Texture tex = driver.GetTexture(texturepath);
+                Texture tex = driver.GetTexture(asset.AssetID.ToString() + ".tga");
 
                 lock (memoryTextures)
                 {
@@ -137,13 +149,14 @@ namespace IdealistViewer
                         memoryTextures.Add(asset.AssetID, tex);
 
                 }
+                
                 List<SceneNode> nodesToUpdate = new List<SceneNode>();
                 lock (ouststandingRequests)
                 {
                     if (ouststandingRequests.ContainsKey(asset.AssetID))
                     {
                         nodesToUpdate = ouststandingRequests[asset.AssetID];
-
+                        ouststandingRequests.Remove(asset.AssetID);
                     }
                 }
                 lock (nodesToUpdate)

@@ -43,6 +43,7 @@ namespace IdealistViewer
 
         private static Dictionary<ulong, Simulator> Simulators = new Dictionary<ulong, Simulator>();
         private static Dictionary<string, VObject> Entities = new Dictionary<string, VObject>();
+        private static Dictionary<UUID, VObject> Avatars = new Dictionary<UUID, VObject>();
         
         private static bool ctrlHeld = false;
         private static bool shiftHeld = false;
@@ -509,13 +510,26 @@ wide character strings when displaying text.
                         }
                         if (vObj.prim.Textures != null)
                         {
+                            if (vObj.prim.Textures.DefaultTexture != null)
+                            {
+                                if (vObj.prim.Textures.DefaultTexture.TextureID != UUID.Zero)
+                                {
+                                    UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
+                                    if (textureMan != null)
+                                        textureMan.RequestImage(textureID, node);
+
+                                }
+                            }
+                            
                             if (vObj.prim.Textures.FaceTextures != null)
                             {
+                                
                                 Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
                                 for (int i2 = 0; i2 < objfaces.Length; i2++)
                                 {
                                     if (objfaces[i2] == null)
-                                        break;
+                                        continue;
+
                                     UUID textureID = objfaces[i2].TextureID;
 
                                     if (textureID != UUID.Zero)
@@ -618,13 +632,23 @@ wide character strings when displaying text.
                             }
                             if (vObj.prim.Textures != null)
                             {
+                                if (vObj.prim.Textures.DefaultTexture != null)
+                                {
+                                    if (vObj.prim.Textures.DefaultTexture.TextureID != UUID.Zero)
+                                    {
+                                        UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
+                                        if (textureMan != null)
+                                            textureMan.RequestImage(textureID, node);
+
+                                    }
+                                }
                                 if (vObj.prim.Textures.FaceTextures != null)
                                 {
                                     Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
                                     for (int i2 = 0; i2 < objfaces.Length; i2++)
                                     {
                                         if (objfaces[i2] == null)
-                                            break;
+                                            continue;
                                         UUID textureID = objfaces[i2].TextureID;
 
                                         if (textureID != UUID.Zero)
@@ -1326,6 +1350,13 @@ wide character strings when displaying text.
                 }
             }
         }
+
+        private void newAvatarCallback(Simulator sim, Avatar avatar, ulong regionHandle,
+                                       ushort timeDilation)
+        {
+            
+        }
+
         #endregion
 
         #region KeyActions
