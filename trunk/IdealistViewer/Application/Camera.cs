@@ -41,6 +41,10 @@ namespace IdealistViewer
             UpdateCameraPosition();
         
         }
+        public Vector3 Position
+        {
+            get { return new Vector3(SNCamera.Position.X,SNCamera.Position.Y,SNCamera.Position.Z); }
+        }
 
         public void UpdateCameraPosition()
         {

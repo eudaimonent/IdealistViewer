@@ -103,9 +103,20 @@ namespace IdealistViewer
 
         public void applyTexture(Texture tex, SceneNode requestor)
         {
+            try
+            {
+                requestor.SetMaterialTexture(0, tex);
+                //requestor.SetMaterialType(MaterialType.DetailMap);
+                requestor.SetMaterialFlag(MaterialFlag.Lighting, true);
+                requestor.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                requestor.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
+                requestor.SetMaterialFlag(MaterialFlag.GouraudShading, true);
 
-            requestor.SetMaterialTexture(0, tex);
-            requestor.SetMaterialType(MaterialType.DetailMap);
+            }
+            catch (AccessViolationException)
+            {
+                m_log.Error("[TEXTURE]: Failed to load texture.");
+            }
         }
         
         public void imageReceivedCallback(AssetTexture asset)

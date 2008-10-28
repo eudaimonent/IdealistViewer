@@ -39,12 +39,12 @@ namespace IdealistViewer
             m_user = new GridClient();
             //m_user.Settings.STORE_LAND_PATCHES = true;
             m_user.Settings.MULTIPLE_SIMS = true;
-            m_user.Settings.OBJECT_TRACKING = true;
+            //m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
             m_user.Settings.USE_TEXTURE_CACHE = false;
             //m_user.Settings.
             m_user.Settings.ALWAYS_DECODE_OBJECTS = true;
-           
+            
             //m_user.Settings.SEND_AGENT_THROTTLE = true;
             //m_user.Settings.SEND_PINGS = true;
 
@@ -105,7 +105,8 @@ namespace IdealistViewer
             m_user.Throttle.Resend = 100000;
             m_user.Throttle.Asset = 100000;
             m_user.Throttle.Cloud = 10000;
-           
+            m_user.Self.Movement.Camera.Far = 56f;
+            m_user.Self.Movement.Camera.Position = m_user.Self.RelativePosition;
             
             if (OnSimConnected != null)
             {
@@ -215,6 +216,10 @@ namespace IdealistViewer
         public void RequestTexture(UUID assetID)
         {
             m_user.Assets.RequestImage(assetID, ImageType.Normal);
+        }
+        public void SetCameraPosition(Vector3 Position)
+        {
+            m_user.Self.Movement.Camera.Position = Position;
         }
     }
 }

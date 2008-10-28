@@ -366,6 +366,7 @@ wide character strings when displaying text.
                     doObjectMods(5);
                     CheckAndApplyParent(5);
                     doTextureMods();
+                    doSetCameraPosition();
                 }
                 //Thread.Sleep(50);
                 int frameTime = System.Environment.TickCount - tickcount;
@@ -392,6 +393,10 @@ wide character strings when displaying text.
                     }
                 }
             }
+        }
+        private void doSetCameraPosition()
+        {
+            avatarConnection.SetCameraPosition(cam.Position);
         }
 
 
@@ -519,11 +524,12 @@ wide character strings when displaying text.
 
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
                     if (creatednode)
-                    {
-                        node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
-                        node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                    {   node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                         node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
                         node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                        node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                        node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+
                         TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                         node.TriangleSelector = trisel;
                         lock (mts)
@@ -565,6 +571,7 @@ wide character strings when displaying text.
                     }
 
                     node.UpdateAbsolutePosition();
+                    
                 }
             }
         }
@@ -641,11 +648,13 @@ wide character strings when displaying text.
 
                         if (creatednode)
                         {
-                            
-                            node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
                             node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                             node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
                             node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                            node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                            node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+
+
                             TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                             node.TriangleSelector = trisel;
                             lock (mts)
