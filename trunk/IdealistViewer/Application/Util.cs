@@ -96,7 +96,7 @@ namespace IdealistViewer
             //EncoderParameters parms = new EncoderParameters(1);
             //parms.Param[0] = new EncoderParameter(Encoder.ColorDepth, 32L);
 
-            Bitmap resize = new Bitmap(bitmap, new Size(257, 257));
+            Bitmap resize = new Bitmap(bitmap);
             //resize.RotateFlip(RotateFlipType.RotateNoneFlipY);
             resize.RotateFlip(RotateFlipType.RotateNoneFlipX);
             resize.Save( filename, System.Drawing.Imaging.ImageFormat.Bmp);

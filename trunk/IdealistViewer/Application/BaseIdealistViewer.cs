@@ -510,7 +510,6 @@ wide character strings when displaying text.
 
         private void CheckAndApplyParent(int pObjects)
         {
-
             if (UnAssignedChildObjectModQueue.Count < pObjects)
                 pObjects = UnAssignedChildObjectModQueue.Count;
 
@@ -932,13 +931,15 @@ wide character strings when displaying text.
                         }
                         terrain = smgr.AddTerrainSceneNode(
                         filename, smgr.RootSceneNode, -1,
-                        new Vector3D(relTerrainPos.X, relTerrainPos.Z, relTerrainPos.Y), new Vector3D(0, 270, 0), new Vector3D(1, 1, 1), new Color(255, 255, 255, 255), 3, TerrainPatchSize.TPS17);
+                        new Vector3D(relTerrainPos.X - 4f, relTerrainPos.Z, relTerrainPos.Y + 16f), new Vector3D(0, 270, 0), new Vector3D(1, 1, 1), new Color(255, 255, 255, 255), 3, TerrainPatchSize.TPS17);
                         //device.FileSystem.WorkingDirectory = "./media/";
                         terrain.SetMaterialFlag(MaterialFlag.Lighting, true);
                         terrain.SetMaterialType(MaterialType.DetailMap);
+                        terrain.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                         terrain.SetMaterialTexture(0, driver.GetTexture("Green_Grass_Detailed.tga"));
                         //terrain.SetMaterialTexture(1, driver.GetTexture("detailmap3.jpg"));
                         terrain.ScaleTexture(16, 16);
+                        terrain.Scale = new Vector3D(1.0275f, 1, 1.0275f);
                     }
 
                     lock (terrains)
@@ -1154,10 +1155,18 @@ wide character strings when displaying text.
                         int bitmapy = cy + y * 16;
 
                         //int col = (int)(Util.Clamp(currentPatch[cy * 16 + cx] / 255, 0.0f, 1.0f) * 255);
-                        float col = Util.Clamp<float>(currentPatch[cy * 16 + cx] * 0.00388f,0,255.0f);
+
+                        float col = 0;
+
+                        col = currentPatch[cy * 16 + cx];
+                        if (col > 1000f || col < 0)
+                            col = 0f;
+                        col *= 0.00388f;
+                        
+                        
                         //m_log.Debug("[COLOR]: " + currentPatch[cy * 16 + cx].ToString());
                         //terrainbitmap.SetPixel(bitmapy, bitmapx, System.Drawing.Color.FromArgb(col, col, col));
-                        terrainbitmap.SetPixel(bitmapy, bitmapx, Util.FromArgbf(0,col,col,col));
+                        terrainbitmap.SetPixel(bitmapy, bitmapx, Util.FromArgbf(1,col,col,col));
                     }
                 }
             }
@@ -1217,6 +1226,8 @@ wide character strings when displaying text.
             if (isCurrentSim)
             {
                 SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight-0.5f, 0);
+                //SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight - 50.5f, 0);
+                // TODO REFIX!
             }
         }
 
