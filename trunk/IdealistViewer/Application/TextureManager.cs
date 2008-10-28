@@ -9,8 +9,12 @@ using IrrlichtNETCP;
 
 namespace IdealistViewer
 {
+    
+    public delegate void TextureCallback(string texname, SceneNode node);
     public class TextureManager
     {
+        public event TextureCallback OnTextureLoaded;
+
         private VideoDriver driver = null;
         private string imagefolder = string.Empty;
         private Dictionary<UUID, Texture> memoryTextures = new Dictionary<UUID, Texture>();
@@ -97,7 +101,7 @@ namespace IdealistViewer
 
         }
 
-        private void applyTexture(Texture tex, SceneNode requestor)
+        public void applyTexture(Texture tex, SceneNode requestor)
         {
 
             requestor.SetMaterialTexture(0, tex);
@@ -140,15 +144,8 @@ namespace IdealistViewer
                 //fi.Flush();
                 //fi.Close();
                 //fi.Dispose();
+
                 
-                Texture tex = driver.GetTexture(asset.AssetID.ToString() + ".tga");
-
-                lock (memoryTextures)
-                {
-                    if (!memoryTextures.ContainsKey(asset.AssetID))
-                        memoryTextures.Add(asset.AssetID, tex);
-
-                }
                 
                 List<SceneNode> nodesToUpdate = new List<SceneNode>();
                 lock (ouststandingRequests)
@@ -167,7 +164,10 @@ namespace IdealistViewer
 
                         if (node != null)
                         {
-                            applyTexture(tex, node);
+                            if (OnTextureLoaded != null)
+                            {
+                                OnTextureLoaded(asset.AssetID.ToString() + ".tga", node);
+                            }
                             
                         }
                         

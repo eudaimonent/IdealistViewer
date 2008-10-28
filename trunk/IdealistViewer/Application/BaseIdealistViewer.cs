@@ -38,6 +38,8 @@ namespace IdealistViewer
 
         private static Queue<VObject> objectModQueue = new Queue<VObject>();
         private static Queue<VObject> UnAssignedChildObjectModQueue = new Queue<VObject>();
+        private static Queue<TextureComplete> assignTextureQueue = new Queue<TextureComplete>();
+
 
         private static Simulator currentSim;
 
@@ -242,7 +244,10 @@ wide character strings when displaying text.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
             if (loadTextures)
-            textureMan = new TextureManager(device, driver, "IdealistCache", avatarConnection);
+            {
+                textureMan = new TextureManager(device, driver, "IdealistCache", avatarConnection);
+                textureMan.OnTextureLoaded += textureCompleteCallback;
+            }
 
             //guienv.AddStaticText("Hello World! This is the Irrlicht Software engine!",
             //    new Rect(new Position2D(10, 10), new Dimension2D(200, 22)), true, false, guienv.RootElement, -1, false);
@@ -360,6 +365,7 @@ wide character strings when displaying text.
                 {
                     doObjectMods(5);
                     CheckAndApplyParent(5);
+                    doTextureMods();
                 }
                 //Thread.Sleep(50);
                 int frameTime = System.Environment.TickCount - tickcount;
@@ -370,6 +376,22 @@ wide character strings when displaying text.
             //In the end, delete the Irrlicht device.
             Shutdown();
 
+        }
+
+        private void doTextureMods()
+        {
+            lock (assignTextureQueue)
+            {
+                while (assignTextureQueue.Count > 0)
+                {
+                    TextureComplete tx = assignTextureQueue.Dequeue();
+                    Texture tex = driver.GetTexture(tx.texture);
+                    if (tx.node != null)
+                    {
+                        textureMan.applyTexture(tex, tx.node);
+                    }
+                }
+            }
         }
 
 
@@ -1642,5 +1664,19 @@ wide character strings when displaying text.
 
         #endregion
 
+        public void textureCompleteCallback(string tex, SceneNode node)
+        {
+            TextureComplete tx = new TextureComplete();
+            tx.texture = tex;
+            tx.node = node;
+            assignTextureQueue.Enqueue(tx);
+        }
+    }
+    
+    public struct TextureComplete 
+    {
+        public SceneNode node;
+        public string texture;
+        
     }
 }
