@@ -258,8 +258,8 @@ wide character strings when displaying text.
             smgr.SetAmbientLight(new Colorf(0, 0.5f, 0.5f, 0.5f));
 
             //AnimatedMesh mesh = smgr.GetMesh("sydney.md2");
-            //AnimatedMeshSceneNode node = smgr.AddAnimatedMeshSceneNode(mesh);
-            
+            //AnimatedMeshSceneNode node99 = smgr.AddAnimatedMeshSceneNode(mesh);
+            ///node99.
             
             //if (node != null)
             //{
@@ -418,7 +418,11 @@ wide character strings when displaying text.
                         //m_log.Warn("[NEWPRIM]   ");
                     }
                 }
-                objectModQueue.Enqueue(newObject);
+
+                lock (objectModQueue)
+                {
+                    objectModQueue.Enqueue(newObject);
+                }
             }
         }
 
@@ -426,10 +430,13 @@ wide character strings when displaying text.
         {
             for (int i = 0; i < pObjects; i++)
             {
-                if (objectModQueue.Count == 0)
-                    break;
-                VObject vObj = objectModQueue.Dequeue();
-
+                VObject vObj = null;
+                lock (objectModQueue)
+                {
+                    if (objectModQueue.Count == 0)
+                        break;
+                    vObj = objectModQueue.Dequeue();
+                }
                 if (vObj.prim != null)
                 {
                     ulong simhandle = vObj.prim.RegionHandle;
@@ -449,6 +456,7 @@ wide character strings when displaying text.
                             WorldoffsetPos =  gposr - gposc;
                         }
                     }
+                    
                     VObject parentObj = null;
                     SceneNode parentNode = smgr.RootSceneNode;
                     //VObject vObj = UnAssignedChildObjectModQueue.Dequeue();
@@ -483,23 +491,68 @@ wide character strings when displaying text.
                     SceneNode node = null;
                     if (vObj.node == null)
                     {
-                        node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
-                        creatednode = true;
-                        vObj.node = node;
+                        if (vObj.prim is Avatar)
+                        {
+                            AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
+
+                            AnimatedMeshSceneNode node2 = smgr.AddAnimatedMeshSceneNode(avmesh);
+                            node = node2;
+                            vObj.node = node2;
+                            node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
+                            node.SetMaterialTexture(0, driver.GetTexture("sydney.BMP"));
+                            node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                        }
+                        else
+                        {
+                            node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
+                            creatednode = true;
+                            vObj.node = node;
+                        }
                     }
                     else
                     {
                         node = vObj.node;
                     }
-                    
-                    node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z , vObj.prim.Scale.Y);
-                   // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
-                    if (vObj.prim.ParentID == 0)
+
+                    if (vObj.prim is Avatar)
                     {
-                        node.Position = new Vector3D(WorldoffsetPos.X + vObj.prim.Position.X, WorldoffsetPos.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + vObj.prim.Position.Y);
+                        
+                        vObj.prim.Position.Z -= 0.2f;
                     }
                     else
                     {
+                        node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
+                    }
+                    
+                   // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
+                    if (vObj.prim.ParentID == 0)
+                    {
+                        if (vObj.prim is Avatar)
+                        {
+                            m_log.WarnFormat("[AVATAR]: W:<{0},{1},{2}> R:<{3},{4},{5}>",WorldoffsetPos.X,WorldoffsetPos.Y,WorldoffsetPos.Z,vObj.prim.Position.X,vObj.prim.Position.Y,vObj.prim.Position.Z);
+                            WorldoffsetPos = Vector3.Zero;
+                        }
+
+                        try
+                        {
+                            if (node.Raw == IntPtr.Zero)
+                                continue;
+                            node.Position = new Vector3D(WorldoffsetPos.X + vObj.prim.Position.X, WorldoffsetPos.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + vObj.prim.Position.Y);
+                        }
+                        catch (System.Runtime.InteropServices.SEHException)
+                        {
+                            continue;
+                        }
+                        catch (AccessViolationException)
+                        {
+                            continue;
+                        }
+                        
+                    }
+                    else
+                    {
+                        if (node.Raw == IntPtr.Zero)
+                            continue;
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
                     }
                     
@@ -520,8 +573,9 @@ wide character strings when displaying text.
                     }
                     finalpos = Cordinate_XYZ_XZY * finalpos;
 
-                    
 
+                    if (node.Raw == IntPtr.Zero)
+                        continue;
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
                     if (creatednode)
                     {   node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
@@ -569,7 +623,8 @@ wide character strings when displaying text.
                             }
                         }
                     }
-
+                    if (node.Raw == IntPtr.Zero)
+                        continue;
                     node.UpdateAbsolutePosition();
                     
                 }
@@ -583,12 +638,17 @@ wide character strings when displaying text.
 
             for (int i = 0; i < pObjects; i++)
             {
-                if (objectModQueue.Count == 0)
-                    break;
-                
+                VObject vObj = null;
                 Vector3 WorldoffsetPos = Vector3.Zero;
-
-                VObject vObj = UnAssignedChildObjectModQueue.Dequeue();
+                lock (UnAssignedChildObjectModQueue)
+                {
+                    if (UnAssignedChildObjectModQueue.Count == 0)
+                        break;
+                    
+                    
+                
+                    vObj = UnAssignedChildObjectModQueue.Dequeue();
+                }
                 ulong simhandle = vObj.prim.RegionHandle;
                 
                 if (simhandle == 0)
@@ -614,9 +674,20 @@ wide character strings when displaying text.
                         SceneNode node = null;
                         if (vObj.node == null)
                         {
-                            node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
-                            creatednode = true;
-                            vObj.node = node;
+                            if (vObj.prim is Avatar)
+                            {
+                                AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
+
+                                AnimatedMeshSceneNode node2 = smgr.AddAnimatedMeshSceneNode(avmesh);
+                                node = node2;
+                                vObj.node = node2;
+                            }
+                            else
+                            {
+                                node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
+                                creatednode = true;
+                                vObj.node = node;
+                            }
                         }
                         else
                         {
@@ -927,6 +998,7 @@ wide character strings when displaying text.
             avatarConnection.OnSimConnected += SimConnectedCallback;
             avatarConnection.OnObjectUpdated += objectUpdatedCallback;
             avatarConnection.OnObjectKilled += objectKilledCallback;
+            avatarConnection.OnNewAvatar += newAvatarCallback;
 
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
             guithread.Start();
@@ -1150,6 +1222,7 @@ wide character strings when displaying text.
             }
 
         }
+
         private void landPatchCallback(Simulator sim, int x, int y, int width, float[] data)
         {
             ulong simhandle = sim.Handle;
@@ -1341,8 +1414,8 @@ wide character strings when displaying text.
             ushort timeDilation)
         {
             VObject obj = null;
-            if (!update.Avatar)
-            {
+            //if (!update.Avatar)
+            //{
                 lock (Entities)
                 {
                     if (Entities.ContainsKey(regionHandle.ToString() + update.LocalID.ToString()))
@@ -1360,18 +1433,32 @@ wide character strings when displaying text.
                     }
                 }
                 if (obj != null)
-                    enqueueVObject(obj);
-            }
+                {
+                    if (obj.prim is Avatar)
+                    {
+                        lock (objectModQueue)
+                        {
+                            objectModQueue.Enqueue(obj);
+                        }
+                    }
+                    else
+                    {
+                        enqueueVObject(obj);
+                    }
+                }
+            //}
         }
         private void objectKilledCallback(Simulator psim, uint pLocalID)
         {
             ulong regionHandle = psim.Handle;
             m_log.Debug("[DELETE]: obj " + regionHandle.ToString() + ":" + pLocalID.ToString());
+            VObject obj = null;
+
             lock (Entities)
             {
                 if (Entities.ContainsKey(regionHandle.ToString() + pLocalID.ToString()))
                 {
-                    VObject obj = Entities[regionHandle.ToString() + pLocalID.ToString()];
+                    obj = Entities[regionHandle.ToString() + pLocalID.ToString()];
                     if (obj.node != null)
                     {
                         smgr.AddToDeletionQueue(obj.node);
@@ -1380,12 +1467,59 @@ wide character strings when displaying text.
                     Entities.Remove(regionHandle.ToString() + pLocalID.ToString());
                 }
             }
+            if (obj != null)
+            {
+                if (obj.prim is Avatar)
+                {
+                    lock (Avatars)
+                    {
+                        if (Avatars.ContainsKey(obj.prim.ID))
+                        {
+                            Avatars.Remove(obj.prim.ID);
+                        }
+                    }
+                }
+            }
         }
 
         private void newAvatarCallback(Simulator sim, Avatar avatar, ulong regionHandle,
                                        ushort timeDilation)
         {
-            
+            VObject avob = new VObject();
+            avob.prim = avatar;
+            avob.mesh = null;
+            avob.node = null;
+            lock (Avatars)
+            {
+                if (Avatars.ContainsKey(avatar.ID))
+                {
+                    Avatars[avatar.ID] = avob;
+                }
+                else
+                {
+                    Avatars.Add(avatar.ID, avob);
+                }
+            }
+            lock (Entities)
+            {
+                if (Entities.ContainsKey(regionHandle.ToString() + avatar.LocalID.ToString()))
+                {
+                    VObject existingob = Entities[regionHandle.ToString() + avatar.LocalID.ToString()];
+                    if (existingob.node != null)
+                    {
+                        smgr.AddToDeletionQueue(existingob.node);
+                    }
+                    Entities[regionHandle.ToString() + avatar.LocalID.ToString()] = avob;
+                }
+                else
+                {
+                    Entities.Add(regionHandle.ToString() + avatar.LocalID.ToString(), avob);
+                }
+            }
+            lock (objectModQueue)
+            {
+                objectModQueue.Enqueue(avob);
+            }
         }
 
         #endregion

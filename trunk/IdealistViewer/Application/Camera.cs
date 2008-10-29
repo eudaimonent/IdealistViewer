@@ -9,7 +9,7 @@ namespace IdealistViewer
     public class Camera
     {
         public CameraSceneNode SNCamera;
-        
+        public SceneNode SNtarget;
         private float CAMERASPEED = 0.05f;
         private float CAMERAZOOMSPEED = 5f;
         private static float STARTANGLE = 0f;
@@ -29,6 +29,7 @@ namespace IdealistViewer
         public Camera(SceneManager psmgr)
         {
             //
+            SNtarget = null;
             smgr = psmgr;
             SNCamera = smgr.AddCameraSceneNode(null);
             SNCamera.Position = new Vector3D(0f, 235f, -44.70f);
