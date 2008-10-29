@@ -322,14 +322,14 @@ wide character strings when displaying text.
             SNGlobalwater.Position = new Vector3D(0, 0, 0);
 
             mts = smgr.CreateMetaTriangleSelector();
-            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
-            gcontext.Text = "Some Text";
-            gcontext.AddItem("SomeCooItem", 93, true, true);
+            //GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
+            //gcontext.Text = "Some Text";
+            //gcontext.AddItem("SomeCooItem", 93, true, true);
             
 
-            GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
-            gtb.Text = "Hi";
-            gtb.AddButton(92, "Button", "Click", null, null, true, false);
+            //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
+            //gtb.Text = "Hi";
+            //gtb.AddButton(92, "Button", "Click", null, null, true, false);
 
 
             int minFrameTime = (int)(1.0f / maxFPS);
@@ -1918,6 +1918,7 @@ wide character strings when displaying text.
                                 //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
                                 //}
                                 cam.SetTarget(collisionpoint);
+                                cam.SNtarget = null;
                             }
                         }
                         else
