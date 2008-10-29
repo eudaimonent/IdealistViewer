@@ -40,6 +40,8 @@ namespace IdealistViewer
         private static Queue<VObject> UnAssignedChildObjectModQueue = new Queue<VObject>();
         private static Queue<TextureComplete> assignTextureQueue = new Queue<TextureComplete>();
 
+        private static Dictionary<string, VObject> interpolationTargets = new Dictionary<string, VObject>();
+
 
         private static Simulator currentSim;
 
@@ -320,6 +322,14 @@ wide character strings when displaying text.
             SNGlobalwater.Position = new Vector3D(0, 0, 0);
 
             mts = smgr.CreateMetaTriangleSelector();
+            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
+            gcontext.Text = "Some Text";
+            gcontext.AddItem("SomeCooItem", 93, true, true);
+            
+
+            GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
+            gtb.Text = "Hi";
+            gtb.AddButton(92, "Button", "Click", null, null, true, false);
 
 
             int minFrameTime = (int)(1.0f / maxFPS);
@@ -357,7 +367,10 @@ wide character strings when displaying text.
                 if (mscounter > msreset)
                 {
                     processHeldKeys();
-                    
+
+                    updateInterpolationTargets();
+                    cam.CheckTarget();
+
                     mscounter = 0;
                     framecounter++;
 
@@ -382,6 +395,81 @@ wide character strings when displaying text.
 
         }
 
+        private void updateInterpolationTargets()
+        {
+            List<string> removestr = null;
+            lock (interpolationTargets)
+            {
+                foreach (string str in interpolationTargets.Keys)
+                {
+                    VObject obj = interpolationTargets[str];
+                    if (obj == null)
+                    {
+                        if (removestr == null)
+                            removestr = new List<string>();
+
+                        removestr.Add(str);
+                        continue;
+                    }
+                    if (obj.node == null)
+                    {
+                        if (removestr == null)
+                            removestr = new List<string>();
+
+                        removestr.Add(str);
+                        continue;
+                    }
+                    if (obj.node.Raw == IntPtr.Zero)
+                    {
+                        if (removestr == null)
+                            removestr = new List<string>();
+
+                        removestr.Add(str);
+                        continue;
+                    }
+                    try
+                    {
+                        Vector3D pos = new Vector3D(obj.node.Position.X, obj.node.Position.Y, obj.node.Position.Z);
+                        if (obj.prim is Avatar)
+                        {
+                            Avatar av = (Avatar)obj.prim;
+                            if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
+                                obj.prim.Velocity.Z = 0;
+                        }
+                        obj.node.Position = pos + new Vector3D(obj.prim.Velocity.X * 0.055f, obj.prim.Velocity.Z * 0.055f, obj.prim.Velocity.Y * 0.055f);
+                    }
+                    catch (AccessViolationException)
+                    {
+                        if (removestr == null)
+                            removestr = new List<string>();
+
+                        removestr.Add(str);
+                        continue;
+                    }
+                    catch (System.Runtime.InteropServices.SEHException)
+                    {
+                        if (removestr == null)
+                            removestr = new List<string>();
+
+                        removestr.Add(str);
+                        continue;
+                    }
+
+                }
+                if (removestr != null)
+                {
+                    foreach (string str2 in removestr)
+                    {
+                        if (interpolationTargets.ContainsKey(str2))
+                        {
+                            interpolationTargets.Remove(str2);
+                        }
+                    }
+                }
+            }
+
+        }
+
         private void doTextureMods()
         {
             lock (assignTextureQueue)
@@ -399,6 +487,7 @@ wide character strings when displaying text.
         }
         private void doSetCameraPosition()
         {
+            
             avatarConnection.SetCameraPosition(cam.Position);
         }
 
@@ -504,6 +593,17 @@ wide character strings when displaying text.
                             node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
                             node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                            lock (interpolationTargets)
+                            {
+                                if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                {
+                                    interpolationTargets[simhandle.ToString() + vObj.prim.LocalID.ToString()] = vObj;
+                                }
+                                else
+                                {
+                                    interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
+                                }
+                            }
                         }
                         else
                         {
@@ -532,7 +632,7 @@ wide character strings when displaying text.
                     {
                         if (vObj.prim is Avatar)
                         {
-                            m_log.WarnFormat("[AVATAR]: W:<{0},{1},{2}> R:<{3},{4},{5}>",WorldoffsetPos.X,WorldoffsetPos.Y,WorldoffsetPos.Z,vObj.prim.Position.X,vObj.prim.Position.Y,vObj.prim.Position.Z);
+                            //m_log.WarnFormat("[AVATAR]: W:<{0},{1},{2}> R:<{3},{4},{5}>",WorldoffsetPos.X,WorldoffsetPos.Y,WorldoffsetPos.Z,vObj.prim.Position.X,vObj.prim.Position.Y,vObj.prim.Position.Z);
                             WorldoffsetPos = Vector3.Zero;
                         }
 
@@ -558,7 +658,27 @@ wide character strings when displaying text.
                             continue;
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
                     }
-                    
+
+                    if (vObj.updateFullYN)
+                    {
+                        if ((vObj.prim.Flags & PrimFlags.Physics) == PrimFlags.Physics)
+                        {
+                            lock (interpolationTargets)
+                            {
+                                if (!interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                    interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
+                            }
+                        }
+                        else
+                        {
+                            lock (interpolationTargets)
+                            {
+                                if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                    interpolationTargets.Remove(simhandle.ToString() + vObj.prim.LocalID.ToString());
+                            }
+                        }
+
+                    }
 
                     //m_log.Warn(vObj.prim.Rotation.ToString());
                     IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
@@ -684,6 +804,18 @@ wide character strings when displaying text.
                                 AnimatedMeshSceneNode node2 = smgr.AddAnimatedMeshSceneNode(avmesh);
                                 node = node2;
                                 vObj.node = node2;
+
+                                lock (interpolationTargets)
+                                {
+                                    if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                    {
+                                        interpolationTargets[simhandle.ToString() + vObj.prim.LocalID.ToString()] = vObj;
+                                    }
+                                    else
+                                    {
+                                        interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
+                                    }
+                                }
                             }
                             else
                             {
@@ -1219,11 +1351,13 @@ wide character strings when displaying text.
 
                 if (foundEntity)
                 {
+                    newObject.updateFullYN = true;
                     enqueueVObject(newObject);
                 }
             }
             else
             {
+                newObject.updateFullYN = true;
                 enqueueVObject(newObject);
             }
 
@@ -1427,6 +1561,7 @@ wide character strings when displaying text.
                     if (Entities.ContainsKey(regionHandle.ToString() + update.LocalID.ToString()))
                     {
                         obj = Entities[regionHandle.ToString() + update.LocalID.ToString()];
+                        obj.updateFullYN = false;
                         obj.prim.Acceleration = update.Acceleration;
                         obj.prim.AngularVelocity = update.AngularVelocity;
                         obj.prim.CollisionPlane = update.CollisionPlane;
@@ -1460,13 +1595,28 @@ wide character strings when displaying text.
             m_log.Debug("[DELETE]: obj " + regionHandle.ToString() + ":" + pLocalID.ToString());
             VObject obj = null;
 
+            
             lock (Entities)
             {
+
                 if (Entities.ContainsKey(regionHandle.ToString() + pLocalID.ToString()))
                 {
                     obj = Entities[regionHandle.ToString() + pLocalID.ToString()];
+
+                    
+
                     if (obj.node != null)
                     {
+                        lock (interpolationTargets)
+                        {
+                            if (interpolationTargets.ContainsKey(regionHandle.ToString() + obj.prim.LocalID.ToString()))
+                            {
+                                interpolationTargets.Remove(regionHandle.ToString() + obj.prim.LocalID.ToString());
+                            }
+
+                        }
+                        if (cam.SNtarget == obj.node)
+                            cam.SNtarget = null;
                         smgr.AddToDeletionQueue(obj.node);
                         obj.node = null;
                     }
@@ -1751,16 +1901,34 @@ wide character strings when displaying text.
 
                     Vector3D collisionpoint = new Vector3D(0, 0, 0);
                     Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-
-                    if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
+                    SceneNode node = smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
+                    if (node == null)
                     {
-                        //if (collisionpoint != null)
-                        //{
-                        //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
-                        //}
-                        cam.SetTarget(collisionpoint);
+                        m_log.Warn("[PICKER]: Picked null");
                     }
+                    else
+                    {
+                        m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>",node.Position.X,node.Position.Y,node.Position.Z);
+                        if (node.Position.X == 0 && node.Position.Z == 0)
+                        {
+                            if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
+                            {
+                                //if (collisionpoint != null)
+                                //{
+                                //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
+                                //}
+                                cam.SetTarget(collisionpoint);
+                            }
+                        }
+                        else
+                        {
+                            
+                            cam.SetTarget(node.Position);
+                            cam.SNtarget = node;
+                        }
+                    }
+                    
+                    
                     //else
                     //{
                         //if (smgr.CollisionManager.GetCollisionPoint(projectedray, terrainsel, out collisionpoint, out tri))

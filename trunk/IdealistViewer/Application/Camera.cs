@@ -156,6 +156,35 @@ namespace IdealistViewer
             UpdateCameraPosition();
         }
 
+        public void SetTarget(SceneNode pTarget)
+        {
+            SetTarget(pTarget.Position);
+            SNtarget = pTarget;
+        }
+
+        public void CheckTarget()
+        {
+            if (SNtarget != null)
+            {
+                if (SNtarget.Raw != IntPtr.Zero)
+                {
+                    try
+                    {
+                        if (SNtarget.Position != SNCamera.Target)
+                        {
+                            SNCamera.Target = SNtarget.Position;
+                            UpdateCameraPosition();
+                        }
+                    }
+                    catch (AccessViolationException)
+                    {
+                        System.Console.WriteLine("Picked camera target is dead");
+                        SNtarget = null;
+                    }
+                }
+            }
+        }
+
         public void SetDeltaFromMouse(float deltaX, float deltaY)
         {
             CamRotationAnglePHI = CamRotationAnglePHI + ((deltaY * CAMERASPEED) * 0.2f);
