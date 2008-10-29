@@ -6,3 +6,6 @@ first_name="test"
 last_name="user"
 pass_word="346324636"
 load_textures=true
+backface_culling=true
+avatar_mesh="sydney.md2"
+avatar_material="sydney.BMP"

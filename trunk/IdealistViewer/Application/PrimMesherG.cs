@@ -102,13 +102,14 @@ namespace IdealistViewer
                 for (uint i = 0; i < numViewerFaces; i++)
                 {
                     ViewerFace vf = newPrim.viewerFaces[(int)i];
+
                     if (isSphere)
                     {
                         vf.uv1.U = (vf.uv1.U - 0.5f) * 2.0f;
                         vf.uv2.U = (vf.uv2.U - 0.5f) * 2.0f;
                         vf.uv3.U = (vf.uv3.U - 0.5f) * 2.0f;
-                   
                     }
+
                     mb.SetVertex(index, new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
                     mb.SetVertex(index + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
                     mb.SetVertex(index + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));

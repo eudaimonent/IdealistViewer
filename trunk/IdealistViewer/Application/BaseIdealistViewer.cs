@@ -54,6 +54,9 @@ namespace IdealistViewer
         private static bool RMheld = false;
         private static bool MMheld = false;
         private static bool loadTextures = true;
+        public static bool backFaceCulling = true;
+        private static string avatarMesh = "sydney.md2";
+        private static string avatarMaterial = "sydney.BMP";
 
         private int OldMouseX = 0;
         private int OldMouseY = 0;
@@ -288,7 +291,7 @@ wide character strings when displaying text.
             light.AddAnimator(anim);
             anim.Dispose();
 
-            SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(0, 0.9f, 0.9f, 0.9f), 250, -1);
+            SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(0, 0.75f, 0.75f, 0.75f), 250, -1);
 
             
             // dahlia's sample prim
@@ -493,13 +496,13 @@ wide character strings when displaying text.
                     {
                         if (vObj.prim is Avatar)
                         {
-                            AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
+                            AnimatedMesh avmesh = smgr.GetMesh(avatarMesh);
 
                             AnimatedMeshSceneNode node2 = smgr.AddAnimatedMeshSceneNode(avmesh);
                             node = node2;
                             vObj.node = node2;
                             node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
-                            node.SetMaterialTexture(0, driver.GetTexture("sydney.BMP"));
+                            node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
                         }
                         else
@@ -579,7 +582,7 @@ wide character strings when displaying text.
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
                     if (creatednode)
                     {   node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                        node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
+                        node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
                         node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
                         node.SetMaterialFlag(MaterialFlag.Lighting, true);
                         node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
@@ -720,7 +723,7 @@ wide character strings when displaying text.
                         if (creatednode)
                         {
                             node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                            node.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
+                            node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
                             node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
                             node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
@@ -987,6 +990,9 @@ wide character strings when displaying text.
                 lastName = cnf.GetString("last_name", "user");
                 password = cnf.GetString("pass_word", "nopassword");
                 loadtextures = cnf.GetBoolean("load_textures", true);
+                backFaceCulling = cnf.GetBoolean("backface_culling", backFaceCulling);
+                avatarMesh = cnf.GetString("avatar_mesh", avatarMesh);
+                avatarMaterial = cnf.GetString("avatar_material", avatarMaterial);
             }
             loadTextures = loadtextures;
             MainConsole.Instance = m_console;

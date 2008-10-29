@@ -109,7 +109,7 @@ namespace IdealistViewer
                 //requestor.SetMaterialType(MaterialType.DetailMap);
                 requestor.SetMaterialFlag(MaterialFlag.Lighting, true);
                 requestor.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                requestor.SetMaterialFlag(MaterialFlag.BackFaceCulling, false);
+                requestor.SetMaterialFlag(MaterialFlag.BackFaceCulling, BaseIdealistViewer.backFaceCulling);
                 requestor.SetMaterialFlag(MaterialFlag.GouraudShading, true);
 
             }
