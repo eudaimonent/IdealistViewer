@@ -198,34 +198,39 @@ namespace IdealistViewer
             {
                 
 
-                if (!loginURI.EndsWith("/"))
-                    loginURI += "/";
+                //if (!loginURI.EndsWith("/"))
+                //    loginURI += "/";
 
-                string[] locationparse = loginURI.Split('/');
-                try
-                {
-                    string end = locationparse[locationparse.Length - 2];
-                    if (end != locationparse[2])
-                    {
-                        loginURI = "";
-                        for (int i = 0; i < 3; i++)
-                        {
-                            if (locationparse[i].Length != 0 || i==1)
-                                loginURI += locationparse[i] + "/";
-                        }
-                    }
+               // string[] locationparse = loginURI.Split('/');
+               // try
+               // {
+               //     string end = locationparse[locationparse.Length - 2];
+               //     if (end != locationparse[2])
+               //     {
+               //         loginURI = "";
+               //         for (int i = 0; i < 3; i++)
+               //         {
+               //             if (locationparse[i].Length != 0 || i==1)
+               //                 loginURI += locationparse[i] + "/";
+               //         }
+               //     }
 
-                }
-                catch (Exception)
-                {
+                //}
+               // catch (Exception)
+                //{
                     //startlocation = "last";
-                    m_log.Warn("[URLPARSING]: Unable to parse URL provided!");
-                }
+                //    m_log.Warn("[URLPARSING]: Unable to parse URL provided!");
+                //}
 
 
             }
 
             loginParams.URI = loginURI;
+           
+
+            if (startlocation != "last" && startlocation != "home")
+                startlocation = NetworkManager.StartLocation(startlocation,128,128,0);
+
             loginParams.Start = startlocation;
 
             return loginParams;
