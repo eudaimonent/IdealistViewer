@@ -106,12 +106,10 @@ namespace IdealistViewer
             try
             {
                 // works
-                requestor.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
-
-
-
+ 
                 //requestor.SetMaterialType(MaterialType.NormalMapTransparentVertexAlpha);
                 requestor.SetMaterialTexture(0, tex);
+                
                 //requestor.SetMaterialType(MaterialType.TransparentVertexAlpha);
                 //requestor.SetMaterialType(MaterialType.TransparentAlphaChannel);
                 
@@ -120,6 +118,7 @@ namespace IdealistViewer
                 requestor.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                 requestor.SetMaterialFlag(MaterialFlag.BackFaceCulling, BaseIdealistViewer.backFaceCulling);
                 requestor.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                //requestor.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
 
             }
             catch (AccessViolationException)
