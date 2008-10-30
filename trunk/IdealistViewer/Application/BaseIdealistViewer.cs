@@ -672,6 +672,10 @@ wide character strings when displaying text.
                     {
                         if (node.Raw == IntPtr.Zero)
                             continue;
+                        // ROTATION
+                        vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
+                        vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
+
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
                     }
 
@@ -705,10 +709,10 @@ wide character strings when displaying text.
                     if (vObj.prim.ParentID != 0)
                     {
                         //IrrlichtNETCP.Quaternion parentrot = new IrrlichtNETCP.Quaternion(parentObj.node.Rotation.X, parentObj.node.Rotation.Y, parentObj.node.Rotation.Z);
-                       // parentrot.makeInverse();
+                        //parentrot.makeInverse();
                         //parentrot = Cordinate_XYZ_XZY * parentrot;
 
-                       //finalpos = parentrot * iqu;
+                        //finalpos = parentrot * iqu;
                     }
                     finalpos = Cordinate_XYZ_XZY * finalpos;
 
@@ -849,6 +853,9 @@ wide character strings when displaying text.
                         node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
 
                         //m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, parentObj.node.Scale.X, parentObj.node.Scale.Y, parentObj.node.Scale.Z);
+                        
+                        vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
+                        vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
 
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
                         
