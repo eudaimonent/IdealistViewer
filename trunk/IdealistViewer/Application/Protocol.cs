@@ -110,7 +110,7 @@ namespace IdealistViewer
             m_user.Throttle.Resend = 100000;
             m_user.Throttle.Asset = 100000;
             m_user.Throttle.Cloud = 10000;
-            m_user.Self.Movement.Camera.Far = 56f;
+            m_user.Self.Movement.Camera.Far = 64f;
             m_user.Self.Movement.Camera.Position = m_user.Self.RelativePosition;
             
             if (OnSimConnected != null)
@@ -292,9 +292,10 @@ namespace IdealistViewer
         {
             m_user.Assets.RequestImage(assetID, ImageType.Normal);
         }
-        public void SetCameraPosition(Vector3 Position)
+        public void SetCameraPosition(Vector3 pPosition,Vector3 pTarget)
         {
-            m_user.Self.Movement.Camera.Position = Position;
+            m_user.Self.Movement.Camera.Position = pPosition;
+            m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
         }
     }
 }

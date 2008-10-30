@@ -37,6 +37,8 @@ namespace IdealistViewer
         private static MetaTriangleSelector mts;
 
         private static Queue<VObject> objectModQueue = new Queue<VObject>();
+        private static Queue<VObject> objectMeshQueue = new Queue<VObject>();
+
         private static Queue<VObject> UnAssignedChildObjectModQueue = new Queue<VObject>();
         private static Queue<TextureComplete> assignTextureQueue = new Queue<TextureComplete>();
 
@@ -351,16 +353,18 @@ wide character strings when displaying text.
                 UpdateTerrain();
                 //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
                 //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
-                driver.BeginScene(true, true, new Color(255, 100, 101, 140));
-                smgr.DrawAll();
-                guienv.DrawAll();
-                driver.Draw3DTriangle(new Triangle3D(
-                    new Vector3D(0, 0, 0),
-                    new Vector3D(10, 0, 0),
-                    new Vector3D(0, 10, 0)),
-                    Color.Red);
-                //m_log.Debug(driver.FPS);
-                driver.EndScene();
+                
+                    driver.BeginScene(true, true, new Color(255, 100, 101, 140));
+                    smgr.DrawAll();
+                    guienv.DrawAll();
+                    driver.Draw3DTriangle(new Triangle3D(
+                        new Vector3D(0, 0, 0),
+                        new Vector3D(10, 0, 0),
+                        new Vector3D(0, 10, 0)),
+                        Color.Red);
+                    //m_log.Debug(driver.FPS);
+                    driver.EndScene();
+                
                 mscounter += System.Environment.TickCount - tickcount;
                 msreset = 55;
                 //
@@ -379,6 +383,7 @@ wide character strings when displaying text.
                 }
                 if ((framecounter % objectmods) == 0)
                 {
+                    doProcessMesh(5);
                     doObjectMods(5);
                     CheckAndApplyParent(5);
                     doTextureMods();
@@ -487,8 +492,9 @@ wide character strings when displaying text.
         }
         private void doSetCameraPosition()
         {
-            
-            avatarConnection.SetCameraPosition(cam.Position);
+            Vector3[] camdata = cam.GetCameraLookAt();
+
+            avatarConnection.SetCameraPosition(camdata[0],camdata[1]);
         }
 
 
@@ -623,7 +629,11 @@ wide character strings when displaying text.
                     }
                     else
                     {
+                        if (vObj.mesh == null)
+                            continue;
                         node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
+                        if (node == null)
+                            continue;
                         creatednode = true;
                         vObj.node = node;
                     }
@@ -673,6 +683,10 @@ wide character strings when displaying text.
                         if (node.Raw == IntPtr.Zero)
                             continue;
                         // ROTATION
+                        if (vObj == null || parentObj == null)
+                            continue;
+                        if (vObj.prim == null || parentObj.prim == null)
+                            continue;
                         vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
                         vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
 
@@ -934,6 +948,75 @@ wide character strings when displaying text.
                     UnAssignedChildObjectModQueue.Enqueue(vObj);
                 }
             }
+        }
+
+        public void doProcessMesh(int pObjects)
+        {
+            for (int i = 0; i < pObjects; i++)
+            {
+                VObject vobj = null;
+                lock (objectMeshQueue)
+                {
+                    if (objectMeshQueue.Count == 0)
+                        break;
+                    vobj = objectMeshQueue.Dequeue();
+                }
+
+
+                vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
+                if (vobj.prim.Textures != null)
+                {
+                    if (vobj.prim.Textures.DefaultTexture != null)
+                    {
+
+                        Color4 coldata = vobj.prim.Textures.DefaultTexture.RGBA;
+                        if (coldata != Color4.White)
+                        {
+                            Mesh coolmesh = smgr.MeshManipulator.CreateMeshWithTangents(vobj.mesh);
+                            vobj.mesh = coolmesh;
+                            if (coldata.R != 1f || coldata.B != 1f || coldata.G != 1f)
+                            {
+                                smgr.MeshManipulator.SetVertexColors(vobj.mesh, new Color((int)(coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.G * 255), (int)(coldata.B * 255)));
+                            }
+                            if (coldata.A != 1f)
+                            {
+                                smgr.MeshManipulator.SetVertexColorAlpha(vobj.mesh,(int)(coldata.A * 256f));
+                            }
+                        }
+                        
+                    }
+                }
+                ulong regionHandle = vobj.prim.RegionHandle;
+
+                if (vobj.prim.ParentID != 0)
+                {
+                    bool foundEntity = false;
+
+                    lock (Entities)
+                    {
+                        if (!Entities.ContainsKey(regionHandle.ToString() + vobj.prim.ParentID.ToString()))
+                        {
+                            UnAssignedChildObjectModQueue.Enqueue(vobj);
+                        }
+                        else
+                        {
+                            foundEntity = true;
+                        }
+                    }
+
+                    if (foundEntity)
+                    {
+                        vobj.updateFullYN = true;
+                        enqueueVObject(vobj);
+                    }
+                }
+                else
+                {
+                    vobj.updateFullYN = true;
+                    enqueueVObject(vobj);
+                }
+            }
+
         }
         #endregion
 
@@ -1325,6 +1408,9 @@ wide character strings when displaying text.
 
         #region LibOMV Callbacks
 
+        
+
+
         public void newPrimCallback(Simulator sim, Primitive prim, ulong regionHandle,
                                       ushort timeDilation)
         {
@@ -1352,37 +1438,15 @@ wide character strings when displaying text.
 
             }
 
-            lock (mesh_synclock)
-            {
-                newObject = VUtil.NewVObject(prim,newObject);
-            }
+            
+            newObject = VUtil.NewVObject(prim,newObject);
+            
 
-            if (prim.ParentID != 0)
+                
+            
+            lock (objectMeshQueue)
             {
-                bool foundEntity = false;
-
-                lock (Entities)
-                {
-                    if (!Entities.ContainsKey(regionHandle.ToString() + prim.ParentID.ToString()))
-                    {
-                        UnAssignedChildObjectModQueue.Enqueue(newObject);
-                    }
-                    else
-                    {
-                        foundEntity = true;
-                    }
-                }
-
-                if (foundEntity)
-                {
-                    newObject.updateFullYN = true;
-                    enqueueVObject(newObject);
-                }
-            }
-            else
-            {
-                newObject.updateFullYN = true;
-                enqueueVObject(newObject);
+                objectMeshQueue.Enqueue(newObject);
             }
 
         }

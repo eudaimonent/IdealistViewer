@@ -23,7 +23,7 @@ namespace IdealistViewer
             }
 
             returnVObject.prim = pPrim;
-            returnVObject.mesh = PrimMesherG.PrimitiveToIrrMesh(pPrim);
+            returnVObject.mesh = null;
             
             return returnVObject;
         }

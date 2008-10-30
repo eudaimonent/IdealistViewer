@@ -105,7 +105,16 @@ namespace IdealistViewer
         {
             try
             {
+                // works
+                requestor.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
+
+
+
+                //requestor.SetMaterialType(MaterialType.NormalMapTransparentVertexAlpha);
                 requestor.SetMaterialTexture(0, tex);
+                //requestor.SetMaterialType(MaterialType.TransparentVertexAlpha);
+                //requestor.SetMaterialType(MaterialType.TransparentAlphaChannel);
+                
                 //requestor.SetMaterialType(MaterialType.DetailMap);
                 requestor.SetMaterialFlag(MaterialFlag.Lighting, true);
                 requestor.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);

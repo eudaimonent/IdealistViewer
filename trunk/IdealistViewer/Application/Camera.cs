@@ -24,6 +24,7 @@ namespace IdealistViewer
         public float CamRotationAngleTHETA = 0f;
         private SceneManager smgr = null;
         private static Vector3 m_lastTargetPos = Vector3.Zero;
+        private Vector3[] LookAtCam = new Vector3[2];
 
 
         public Camera(SceneManager psmgr)
@@ -38,6 +39,9 @@ namespace IdealistViewer
             CamRotationAnglePHI = STARTANGLE;
             CamRotationAngleTHETA = STARTANGLE;
             CAMDISTANCE = STARTDISTANCE;
+
+            LookAtCam[0] = Vector3.Zero;
+            LookAtCam[1] = Vector3.Zero;
 
             UpdateCameraPosition();
         
@@ -183,6 +187,16 @@ namespace IdealistViewer
                     }
                 }
             }
+        }
+        public Vector3[] GetCameraLookAt()
+        {
+            LookAtCam[0].X = SNCamera.Position.X;
+            LookAtCam[0].Y = SNCamera.Position.Z;
+            LookAtCam[0].Z = SNCamera.Position.Y;
+            LookAtCam[1].X = SNCamera.Target.X;
+            LookAtCam[1].Y = SNCamera.Target.Z;
+            LookAtCam[1].Z = SNCamera.Target.Y;
+            return LookAtCam;
         }
 
         public void SetDeltaFromMouse(float deltaX, float deltaY)
