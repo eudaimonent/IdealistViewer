@@ -1128,7 +1128,7 @@ wide character strings when displaying text.
             string firstName = string.Empty;
             string lastName = string.Empty;
             string password = string.Empty;
-
+            string startlocation = "";
             bool loadtextures = true;
 
             if (cnf != null)
@@ -1141,6 +1141,7 @@ wide character strings when displaying text.
                 backFaceCulling = cnf.GetBoolean("backface_culling", backFaceCulling);
                 avatarMesh = cnf.GetString("avatar_mesh", avatarMesh);
                 avatarMaterial = cnf.GetString("avatar_material", avatarMaterial);
+                startlocation = cnf.GetString("start_location", "");
             }
             loadTextures = loadtextures;
             MainConsole.Instance = m_console;
@@ -1184,7 +1185,7 @@ wide character strings when displaying text.
             //Cordinate_XYZ_XZY = (CoordinateConversion.
 
             
-            avatarConnection.BeginLogin(loginURI, firstName + " " + lastName, password);
+            avatarConnection.BeginLogin(loginURI, firstName + " " + lastName, password, startlocation);
             //base.StartupSpecific();
         }
 

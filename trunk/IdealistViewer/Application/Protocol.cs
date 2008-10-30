@@ -1,13 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
+using log4net;
+
 
 namespace IdealistViewer
 {
     public class SLProtocol
     {
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
         public delegate void GridConnected();
         public delegate void Chat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourcetype,
                                   string fromName, UUID id, UUID ownerid, Vector3 position);
@@ -77,9 +82,9 @@ namespace IdealistViewer
             }
         }
 
-        public void BeginLogin(string loginURI, string username, string password)
+        public void BeginLogin(string loginURI, string username, string password, string startlocation)
         {
-            LoginParams loginParams = getLoginParams(loginURI, username, password);
+            LoginParams loginParams = getLoginParams(loginURI, username, password, startlocation);
 
             m_user.Network.BeginLogin(loginParams);
         }
@@ -146,7 +151,7 @@ namespace IdealistViewer
             m_user.Self.Chat(message, 0, ChatType.Shout);
         }
 
-        private LoginParams getLoginParams(string loginURI, string username, string password)
+        private LoginParams getLoginParams(string loginURI, string username, string password, string startlocation)
         {
             string firstname;
             string lastname;
@@ -156,7 +161,72 @@ namespace IdealistViewer
             LoginParams loginParams = m_user.Network.DefaultLoginParams(
                 firstname, lastname, password, "IdealistViewer", "0.0.0.1");//Constants.Version);
 
-            loginParams.URI = Util.getSaneLoginURI(loginURI);
+
+            loginURI = Util.getSaneLoginURI(loginURI);
+            
+            if (startlocation.Length == 0)
+            {
+
+                if (!loginURI.EndsWith("/"))
+                    loginURI += "/";
+
+                string[] locationparse = loginURI.Split('/');
+                try
+                {
+                    startlocation = locationparse[locationparse.Length - 2];
+                    if (startlocation == locationparse[2])
+                    {
+                        startlocation = "last";
+                    }
+                    else
+                    {
+                        loginURI = "";
+                        for (int i = 0; i < locationparse.Length - 2; i++)
+                        {
+                            loginURI += locationparse[i] + "/";
+                        }
+                    }
+
+                }
+                catch (Exception)
+                {
+                    startlocation = "last";
+                }
+
+            }
+            else
+            {
+                
+
+                if (!loginURI.EndsWith("/"))
+                    loginURI += "/";
+
+                string[] locationparse = loginURI.Split('/');
+                try
+                {
+                    string end = locationparse[locationparse.Length - 2];
+                    if (end != locationparse[2])
+                    {
+                        loginURI = "";
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (locationparse[i].Length != 0 || i==1)
+                                loginURI += locationparse[i] + "/";
+                        }
+                    }
+
+                }
+                catch (Exception)
+                {
+                    //startlocation = "last";
+                    m_log.Warn("[URLPARSING]: Unable to parse URL provided!");
+                }
+
+
+            }
+
+            loginParams.URI = loginURI;
+            loginParams.Start = startlocation;
 
             return loginParams;
         }

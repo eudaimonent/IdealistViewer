@@ -5,7 +5,9 @@ login_uri="http://127.0.0.1:9000"
 first_name="test"
 last_name="user"
 pass_word="346324636"
+start_location=""
 load_textures=true
 backface_culling=true
 avatar_mesh="sydney.md2"
 avatar_material="sydney.BMP"
+
