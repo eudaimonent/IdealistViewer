@@ -277,15 +277,15 @@ wide character strings when displaying text.
             //}
             //we add the skybox which we already used in lots of Irrlicht examples.
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, false);
-
+            
             smgr.AddSkyBoxSceneNode(null, new Texture[] {
                 driver.GetTexture("irrlicht2_up.jpg"),
                 driver.GetTexture("irrlicht2_dn.jpg"),
-                driver.GetTexture("irrlicht2_lf.jpg"),
                 driver.GetTexture("irrlicht2_rt.jpg"),
+                driver.GetTexture("irrlicht2_lf.jpg"),
                 driver.GetTexture("irrlicht2_ft.jpg"),
                 driver.GetTexture("irrlicht2_bk.jpg")}, 0);
-
+            
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
 
            
