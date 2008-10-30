@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Text;
+using System.Runtime.InteropServices;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
 using IrrlichtNETCP;
@@ -36,7 +38,7 @@ namespace IdealistViewer
 
         public void RequestImage(UUID assetID, SceneNode requestor)
         {
-            m_log.DebugFormat("[TEXTURE]: Object Requested TextureID: {0}", assetID);
+            
             Texture tex = null;
 
             lock (memoryTextures)
@@ -51,7 +53,7 @@ namespace IdealistViewer
             if (tex != null)
             {
                 applyTexture(tex, requestor);
-                m_log.DebugFormat("[TEXTURE]: InProc texture found for TextureID: {0}", assetID);
+                
 
                 return;
             }
@@ -74,7 +76,7 @@ namespace IdealistViewer
                         }
                     }
                     applyTexture(tex, requestor);
-                    m_log.DebugFormat("[TEXTURE]: Disk texture found for TextureID: {0}", assetID);
+                    
                     return;
                 }
 
@@ -85,7 +87,7 @@ namespace IdealistViewer
                 if (ouststandingRequests.ContainsKey(assetID))
                 {
                     ouststandingRequests[assetID].Add(requestor);
-                    m_log.Debug("[TEXTURE]: Added to OutstandingRequest receivers");
+                    
                     return;
                 }
                 else 
@@ -93,10 +95,10 @@ namespace IdealistViewer
                     List<SceneNode> requestors = new List<SceneNode>();
                     requestors.Add(requestor);
                     ouststandingRequests.Add(assetID,requestors);
-                    m_log.Debug("[TEXTURE]: created new OutstandingRequest receivers");
+                    
                 }
             }
-            m_log.DebugFormat("[TEXTURE]: Requesting TextureID: {0} from simulator", assetID);
+            
             m_user.RequestTexture(assetID);
 
         }
@@ -106,7 +108,38 @@ namespace IdealistViewer
             try
             {
                 // works
- 
+                
+                bool alphaimage = false;
+
+                if (tex.Userdata == null)
+                {
+
+                    Color[,] imgcolors;
+
+                    tex.Lock();
+                    imgcolors = tex.Retrieve();
+                    tex.Unlock();
+                    for (int i = 0; i < imgcolors.GetUpperBound(0); i++)
+                    {
+                        for (int j = 0; j < imgcolors.GetUpperBound(1); j++)
+                        {
+                            if (imgcolors[i, j].A != 255)
+                            {
+                                alphaimage = true;
+                                break;
+                            }
+                        }
+                        if (alphaimage)
+                            break;
+                    }
+                    tex.Userdata = (object)alphaimage;
+                }
+                else
+                {
+                    alphaimage = (bool)tex.Userdata;
+                }
+                
+               
                 //requestor.SetMaterialType(MaterialType.NormalMapTransparentVertexAlpha);
                 requestor.SetMaterialTexture(0, tex);
                 
@@ -118,7 +151,10 @@ namespace IdealistViewer
                 requestor.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                 requestor.SetMaterialFlag(MaterialFlag.BackFaceCulling, BaseIdealistViewer.backFaceCulling);
                 requestor.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                //requestor.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
+                if (alphaimage)
+                {
+                    requestor.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
+                }
 
             }
             catch (AccessViolationException)

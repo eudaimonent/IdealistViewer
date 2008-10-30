@@ -386,7 +386,7 @@ wide character strings when displaying text.
                     doProcessMesh(5);
                     doObjectMods(5);
                     CheckAndApplyParent(5);
-                    doTextureMods();
+                    doTextureMods(1);
                     doSetCameraPosition();
                 }
                 //Thread.Sleep(50);
@@ -475,20 +475,36 @@ wide character strings when displaying text.
 
         }
 
-        private void doTextureMods()
+        private void doTextureMods(int pCount)
         {
             lock (assignTextureQueue)
             {
-                while (assignTextureQueue.Count > 0)
+                if (assignTextureQueue.Count < pCount)
+                    pCount = assignTextureQueue.Count;
+            }
+
+            for (int i=0;i < pCount; i++)
+            {
+
+                TextureComplete tx;
+                Texture tex = null;
+
+                lock (assignTextureQueue)
                 {
-                    TextureComplete tx = assignTextureQueue.Dequeue();
-                    Texture tex = driver.GetTexture(tx.texture);
-                    if (tx.node != null)
-                    {
-                        textureMan.applyTexture(tex, tx.node);
-                    }
+                    if (i >= assignTextureQueue.Count)
+                        break;
+
+                    tx = assignTextureQueue.Dequeue();
+                    tex = driver.GetTexture(tx.texture);
+                }
+
+                if (tx.node != null && tex != null)
+                {
+                    textureMan.applyTexture(tex, tx.node);
                 }
             }
+            
+            
         }
         private void doSetCameraPosition()
         {
