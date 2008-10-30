@@ -229,7 +229,7 @@ namespace IdealistViewer
            
 
             if (startlocation != "last" && startlocation != "home")
-                startlocation = NetworkManager.StartLocation(startlocation,128,128,0);
+                startlocation = "uri:" + startlocation + "&128&128&20";
 
             loginParams.Start = startlocation;
 
