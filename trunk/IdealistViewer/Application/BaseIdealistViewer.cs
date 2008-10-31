@@ -241,7 +241,7 @@ namespace IdealistViewer
             /*Now we set the caption of the window to some nice text. Note that there is a 'L' in front of the string: the Irrlicht Engine uses
 wide character strings when displaying text.
             */
-            device.WindowCaption = "IdealistViewer 0.000000000001f";
+            device.WindowCaption = "IdealistViewer 0.000000000002";
             device.FileSystem.WorkingDirectory = m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
 
             //
