@@ -1,3 +1,0 @@
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\branches\0.8.1-rc2-vista\bin\Release\GUIExample.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\branches\0.8.1-rc2-vista\Irrlicht.NET\GUIExample\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\branches\0.8.1-rc2-vista\Irrlicht.NET\GUIExample\obj\Release\GUIExample.exe
