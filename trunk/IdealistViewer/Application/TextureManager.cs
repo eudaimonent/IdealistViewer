@@ -19,7 +19,7 @@ namespace IdealistViewer
 
         private VideoDriver driver = null;
         private string imagefolder = string.Empty;
-        private Dictionary<UUID, Texture> memoryTextures = new Dictionary<UUID, Texture>();
+        private Dictionary<UUID, TextureExtended> memoryTextures = new Dictionary<UUID, TextureExtended>();
         private Dictionary<UUID, List<SceneNode>> ouststandingRequests = new Dictionary<UUID, List<SceneNode>>();
         private IrrlichtDevice device = null;
         private SLProtocol m_user = null;
@@ -39,7 +39,7 @@ namespace IdealistViewer
         public void RequestImage(UUID assetID, SceneNode requestor)
         {
             
-            Texture tex = null;
+            TextureExtended tex = null;
 
             lock (memoryTextures)
             {
@@ -65,7 +65,7 @@ namespace IdealistViewer
             {
                 string oldfs = device.FileSystem.WorkingDirectory;
                 device.FileSystem.WorkingDirectory = texturefolderpath;
-                tex = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga"));
+                tex = new TextureExtended(driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga")).Raw);
                 if (tex != null)
                 {
                     lock (memoryTextures)
@@ -103,7 +103,7 @@ namespace IdealistViewer
 
         }
 
-        public void applyTexture(Texture tex, SceneNode requestor)
+        public void applyTexture(TextureExtended tex, SceneNode requestor)
         {
             try
             {

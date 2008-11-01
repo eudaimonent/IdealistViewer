@@ -160,7 +160,7 @@ namespace IdealistViewer
         /// <returns></returns>
         public static Vector3 OffsetGobal(ulong regionHandle, Vector3 pos)
         {
-
+            
             uint locationx = 0;
             uint locationy = 0;
             Utils.LongToUInts(regionHandle, out locationx, out locationy);

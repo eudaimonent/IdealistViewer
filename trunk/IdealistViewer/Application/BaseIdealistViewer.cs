@@ -262,7 +262,8 @@ wide character strings when displaying text.
             //
             cam = new Camera(smgr);
 
-            smgr.SetAmbientLight(new Colorf(0, 0.5f, 0.5f, 0.5f));
+            smgr.VideoDriver.AmbientLight = new Color(255, 128, 128, 128);
+                
 
             //AnimatedMesh mesh = smgr.GetMesh("sydney.md2");
             //AnimatedMeshSceneNode node99 = smgr.AddAnimatedMeshSceneNode(mesh);
@@ -314,7 +315,7 @@ wide character strings when displaying text.
                 new Dimension2D(40, 40), 0,
                 new Dimension2Df(0, 0),
                 new Dimension2Df(10, 10));
-
+            
             SNGlobalwater = smgr.AddWaterSurfaceSceneNode(mesh.GetMesh(0),
                                                     0.4f, 300.0f, 12.0f, smgr.RootSceneNode, -1);
             SNGlobalwater.SetMaterialTexture(0, driver.GetTexture("water.jpg"));
@@ -487,7 +488,7 @@ wide character strings when displaying text.
             {
 
                 TextureComplete tx;
-                Texture tex = null;
+                TextureExtended tex = null;
 
                 lock (assignTextureQueue)
                 {
@@ -495,7 +496,7 @@ wide character strings when displaying text.
                         break;
 
                     tx = assignTextureQueue.Dequeue();
-                    tex = driver.GetTexture(tx.texture);
+                    tex = (TextureExtended)driver.GetTexture(tx.texture);
                 }
 
                 if (tx.node != null && tex != null)
@@ -619,8 +620,9 @@ wide character strings when displaying text.
                                 node = vObj.node;
                             }
 
-
+                            Mesh avmeshmesh = avmesh.GetMesh(0);
                             
+
                             node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
                             node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
@@ -1028,12 +1030,32 @@ wide character strings when displaying text.
                 }
                 else
                 {
+                    
                     vobj.updateFullYN = true;
                     enqueueVObject(vobj);
                 }
             }
-
         }
+
+        public void doAnimationFrame()
+        {
+            lock (Avatars)
+            {
+                foreach (UUID avatarID in Avatars.Keys)
+                {
+                    VObject avobj = Avatars[avatarID];
+                    
+                    if (avobj.prim.ID.ToString().Contains("dead"))
+                        continue;
+
+                    if (avobj.mesh != null)
+                    {
+
+                    }
+                }
+            }
+        }
+
         #endregion
 
        
@@ -2025,7 +2047,7 @@ wide character strings when displaying text.
 
                     Vector3D collisionpoint = new Vector3D(0, 0, 0);
                     Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
-                    SceneNode node = smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
+                    SceneNode node = smgr.CollisionManager.GetSceneNodeFromRay(projectedray, 0x0128, true); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
                     if (node == null)
                     {
                         m_log.Warn("[PICKER]: Picked null");
@@ -2037,6 +2059,7 @@ wide character strings when displaying text.
                         {
                             if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
                             {
+                                
                                 //if (collisionpoint != null)
                                 //{
                                 //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
