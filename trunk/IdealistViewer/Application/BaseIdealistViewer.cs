@@ -612,19 +612,34 @@ wide character strings when displaying text.
                         if (vObj.node == null && vObj.updateFullYN)
                         {
                         
-                            
                             AnimatedMesh avmesh = smgr.GetMesh(avatarMesh);
+
+                            bool isTextured = false;
+                            int numTextures = 0;
+                            int mbcount = avmesh.GetMesh(0).MeshBufferCount;
+                            for (int j = 0; j < mbcount; j++)
+                            {
+                                Texture texDriver = driver.GetTexture(j.ToString() + "-" + avatarMaterial);
+                                numTextures += texDriver == null ? 0 : 1;
+                                avmesh.GetMesh(0).GetMeshBuffer(j).Material.Texture1 = texDriver;
+                                avmesh.GetMesh(0).GetMeshBuffer(j).Material.SpecularColor = new Color(255, 128, 128, 128);
+                                avmesh.GetMesh(0).GetMeshBuffer(j).Material.AmbientColor = new Color(255, 128, 128, 128);
+                                avmesh.GetMesh(0).GetMeshBuffer(j).Material.EmissiveColor = new Color(255, 128, 128, 128);
+                                avmesh.GetMesh(0).GetMeshBuffer(j).Material.Shininess = 0;
+                            }
+                            if (numTextures == mbcount)
+                                isTextured = true;
+
                             lock (Entities)
                             {
                                 vObj.node = smgr.AddAnimatedMeshSceneNode(avmesh);
                                 node = vObj.node;
                             }
 
-                            Mesh avmeshmesh = avmesh.GetMesh(0);
-                            
-
-                            node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
-                            node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
+                            //node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
+                            node.Scale = new Vector3D(15f, 15f, 15f);
+                            if (!isTextured)
+                                node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
                             lock (interpolationTargets)
                             {
