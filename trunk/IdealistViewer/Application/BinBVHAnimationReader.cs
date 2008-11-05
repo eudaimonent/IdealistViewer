@@ -247,7 +247,13 @@ namespace IdealistViewer
                 pJoint.Priority = Utils.BytesToInt(data, i); i += 4; // Joint Priority override?
                 rotationkeys = Utils.BytesToInt(data, i); i += 4; // How many rotation keyframes
             }
-            rotations = readKeys(data, ref i, rotationkeys, -1.0f, 1.0f);
+            rotations = readKeys(data, ref i, rotationkeys, -100f, 100f);
+            for (int k = 0; k < rotations.Length; k++)
+            {
+                //binBVHJointKey ky = rotations[k];
+                //ky.key_element *= 57.2957795f;
+               
+            }
 
 
             if (!BitConverter.IsLittleEndian)

@@ -235,7 +235,7 @@ namespace IdealistViewer
        
         public void startupGUI(object o)
         {
-            
+
             device = new IrrlichtDevice(DriverType.OpenGL,
                                                      new Dimension2D(WindowWidth, WindowHeight),
                                                     32, false, true, false, true);
@@ -263,7 +263,7 @@ wide character strings when displaying text.
             //
             smgr.SetAmbientLight(new Colorf(1, 0.6f, 0.6f, 0.6f));
             //smgr.VideoDriver.AmbientLight = new Colorf(1, 1f, 1f, 1f);
-            
+
 
             //driver.
             smgr.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
@@ -281,13 +281,13 @@ wide character strings when displaying text.
 
             cam = new Camera(smgr);
 
-            
-                
+
+
 
             //AnimatedMesh mesh = smgr.GetMesh("sydney.md2");
             //AnimatedMeshSceneNode node99 = smgr.AddAnimatedMeshSceneNode(mesh);
             ///node99.
-            
+
             //if (node != null)
             //{
             //    node.SetMaterialFlag(MaterialFlag.Lighting, false);
@@ -296,10 +296,10 @@ wide character strings when displaying text.
             //    node.Position = new Vector3D(128, 32, 128);
             //}
             //we add the skybox which we already used in lots of Irrlicht examples.
-            
 
-           
-            
+
+
+
             SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 1, 1, 1), 90, -1);
             Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
             light.AddAnimator(anim);
@@ -307,9 +307,9 @@ wide character strings when displaying text.
 
             SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(0, 0.75f, 0.75f, 0.75f), 250, -1);
 
-            
+
             // dahlia's sample prim
-           
+
             //Mesh samplePrim = makeSamplePrim();
             //if (samplePrim != null)
             //{
@@ -324,7 +324,7 @@ wide character strings when displaying text.
                 new Dimension2D(40, 40), 0,
                 new Dimension2Df(0, 0),
                 new Dimension2Df(10, 10));
-            
+
             SNGlobalwater = smgr.AddWaterSurfaceSceneNode(mesh.GetMesh(0),
                                                     0.4f, 300.0f, 12.0f, smgr.RootSceneNode, -1);
             SNGlobalwater.SetMaterialTexture(0, driver.GetTexture("water.jpg"));
@@ -337,15 +337,15 @@ wide character strings when displaying text.
             //GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
             //gcontext.Text = "Some Text";
             //gcontext.AddItem("SomeCooItem", 93, true, true);
-            
+
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
             //gtb.Text = "Hi";
             //gtb.AddButton(92, "Button", "Click", null, null, true, false);
-            /*
-            AnimatedMesh av = smgr.GetMesh("Female.x");
-           
-            //int mbcount = av.GetMesh(0).MeshBufferCount;
+
+            AnimatedMesh av = smgr.GetMesh("Female7.x");
+
+            int mbcount = av.GetMesh(0).MeshBufferCount;
             for (int j = 0; j < mbcount; j++)
             {
                 av.GetMesh(0).GetMeshBuffer(j).Material.Texture1 = driver.GetTexture("Green_Grass_Detailed.tga");
@@ -354,28 +354,56 @@ wide character strings when displaying text.
                 av.GetMesh(0).GetMeshBuffer(j).Material.EmissiveColor = new Color(255, 125, 125, 125);
                 av.GetMesh(0).GetMeshBuffer(j).Material.Shininess = 0.80f;
             }
-            //SkinnedMesh sm = new SkinnedMesh(av.Raw);
-            //sm.
-            //sm.SkinMesh();
-            //sm.AnimateMesh(0, 0);
+            smgr.MeshManipulator.FlipSurfaces(av.GetMesh(0));
+
 
 
             avmeshsntest = smgr.AddAnimatedMeshSceneNode(av);
-            //avmeshsntest.JointMode = JointUpdateOnRenderMode.Read;
-            avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals,true);
-            
-            
+            avmeshsntest.JointMode = JointUpdateOnRenderMode.Control;
+            //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals,true);
 
+            System.IO.BinaryReader br = new BinaryReader(File.Open(m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "") + "\\coolfile.an",FileMode.Open));
+            byte[] arr = new byte[(int)br.BaseStream.Length + 20];
+            {
+                int pos = 0;
+                int length = (int)br.BaseStream.Length;
+                
+                arr = br.ReadBytes(((int)br.BaseStream.Length)-1);
+
+                
+            }
+            br.Close();
+            BinBVHAnimationReader anims = new BinBVHAnimationReader(arr);
+            
             //BoneSceneNode avb = avm.GetXJointNode(1);
             avmeshsntest.Position = new Vector3D(125, 37, 125);
             avmeshsntest.Scale = new Vector3D(15, 15, 15);
-            avmeshsntest.Rotation = new Vector3D(0, 90, 0);
+            avmeshsntest.Rotation = new Vector3D(180, 0, 0);
             //avmeshsntest.UpdateAbsolutePosition();
+            anims = new BinBVHAnimationReader(arr);
+            for (int jointnum = 0; jointnum < anims.joints.Length; jointnum++)
+            {
+                binBVHJoint jointdata = anims.joints[jointnum];
+                BoneSceneNode sn = avmeshsntest.GetJointNode(jointdata.Name);
 
-            
+                //sn.SkinningSpace = SkinningSpace.Local;
+                if (sn != null)
+                {
+                    m_log.DebugFormat("[defaults]: Name:{0}, <{1},{2},{3}>", sn.Name, sn.Rotation.X, sn.Rotation.Y, sn.Rotation.Z);
+                    if (jointdata.rotationkeys[0].key_element != Vector3.Zero)
+                    {
+
+                        m_log.DebugFormat("[ROTA]:<{0},{1},{2}>", jointdata.rotationkeys[0].key_element.Y, jointdata.rotationkeys[0].key_element.Z, jointdata.rotationkeys[0].key_element.X);
+                    }
+                    Vector3D jointeuler = sn.Rotation + new Vector3D(jointdata.rotationkeys[0].key_element.Z, jointdata.rotationkeys[0].key_element.X, jointdata.rotationkeys[0].key_element.Y);
+                    sn.Rotation = jointeuler;// *framecounter;
+                    sn.UpdateAbsolutePositionOfAllChildren();
+                }
+            }
+
             //SkinnedMesh smm = new SkinnedMesh(avm.AnimatedMesh.Raw);
             //smm.SkinMesh();
-            */
+
             int minFrameTime = (int)(1.0f / maxFPS);
             bool running = true;
             while (running)
@@ -408,32 +436,22 @@ wide character strings when displaying text.
                 avmeshsntest.CurrentFrame = 1;
                 //avmeshsntest.DebugDataVisible = DebugSceneType.Full;
                 avmeshsntest.LoopMode = true;
-                
-                BoneSceneNode bcn = avmeshsntest.GetJointNode("chest:2");
-                bcn.AutomaticCulling = CullingType.Off;
-                bcn.DebugDataVisible = DebugSceneType.Full;
-                
-                bcn.AnimationMode = AnimationMode.Unanimated;
-                Vector3D rot = bcn.Rotation;
-                rot.X = 9;
-                bcn.Rotation =  rot;
-                //bcn.RotationHint = 5;
-
-                bcn.UpdateAbsolutePositionOfAllChildren();
-
-                avmeshsntest.AnimateJoints(false);
                 */
-                    driver.BeginScene(true, true, new Color(255, 100, 101, 140));
-                    smgr.DrawAll();
-                    guienv.DrawAll();
-                    driver.Draw3DTriangle(new Triangle3D(
-                        new Vector3D(0, 0, 0),
-                        new Vector3D(10, 0, 0),
-                        new Vector3D(0, 10, 0)),
-                        Color.Red);
-                    //m_log.Debug(driver.FPS);
-                    driver.EndScene();
-                
+
+
+
+
+                driver.BeginScene(true, true, new Color(255, 100, 101, 140));
+                smgr.DrawAll();
+                guienv.DrawAll();
+                driver.Draw3DTriangle(new Triangle3D(
+                    new Vector3D(0, 0, 0),
+                    new Vector3D(10, 0, 0),
+                    new Vector3D(0, 10, 0)),
+                    Color.Red);
+                //m_log.Debug(driver.FPS);
+                driver.EndScene();
+
                 mscounter += System.Environment.TickCount - tickcount;
                 msreset = 55;
                 //
@@ -450,6 +468,9 @@ wide character strings when displaying text.
                     if (framecounter == uint.MaxValue)
                         framecounter = 0;
                 }
+                
+               
+              
                 if ((framecounter % objectmods) == 0)
                 {
                     doProcessMesh(5);
@@ -457,6 +478,14 @@ wide character strings when displaying text.
                     CheckAndApplyParent(5);
                     doTextureMods(1);
                     doSetCameraPosition();
+                    
+
+                    //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
+                    //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
+                    //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
+                    
+                    //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+
                 }
                 //Thread.Sleep(50);
                 int frameTime = System.Environment.TickCount - tickcount;
