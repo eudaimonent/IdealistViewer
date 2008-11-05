@@ -720,7 +720,18 @@ wide character strings when displaying text.
                                     interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
                                 }
                             }
+                            SceneNode trans = smgr.AddEmptySceneNode(node, -1);
+                            node.AddChild(trans);
+                            trans.Position = new Vector3D(0, 50, 0);
+
+                            SceneNode trans2 = smgr.AddEmptySceneNode(node, -1);
+                            node.AddChild(trans2);
+                            trans2.Position = new Vector3D(0.0f, 49.5f, 0.5f);
                             
+                            smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)vObj.prim).Name, new Color(255, 255, 255, 255), trans);
+                            smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)vObj.prim).Name, new Color(255, 0, 0, 0), trans2);
+                            
+                            //node
                         }
                         else
                         {
