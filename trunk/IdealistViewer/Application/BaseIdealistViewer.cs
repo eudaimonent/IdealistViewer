@@ -389,7 +389,8 @@ wide character strings when displaying text.
                 //sn.SkinningSpace = SkinningSpace.Local;
                 if (sn != null)
                 {
-                    m_log.DebugFormat("[defaults]: Name:{0}, <{1},{2},{3}>", sn.Name, sn.Rotation.X, sn.Rotation.Y, sn.Rotation.Z);
+                    string name = jointdata.Name;
+                    m_log.DebugFormat("[defaults]: Name:{0}, <{1},{2},{3}>", jointdata.Name, sn.Rotation.X, sn.Rotation.Y, sn.Rotation.Z);
                     if (jointdata.rotationkeys[0].key_element != Vector3.Zero)
                     {
 
