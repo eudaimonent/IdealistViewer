@@ -51,7 +51,8 @@ extern "C"
     EXPORT void SceneManager_GetShadowColor(IntPtr scenemanager, M_SCOLOR color);
     EXPORT IntPtr SceneManager_GetVideoDriver(IntPtr scenemanager);
     EXPORT void SceneManager_SetActiveCamera(IntPtr scenemanager, IntPtr camerascenenode);
-    EXPORT void SceneManager_SetShadowColor(IntPtr scenemanager, M_SCOLOR color);
+    EXPORT void SceneManager_SetAmbientLight(IntPtr scenemanager, M_SCOLORF ambient);
+	EXPORT void SceneManager_SetShadowColor(IntPtr scenemanager, M_SCOLOR color);
     EXPORT IntPtr SceneManager_GetRootSceneNode(IntPtr scenemanager);
 	EXPORT void SceneManager_SaveScene(IntPtr scenemanager, M_STRING filename);
 	EXPORT void SceneManager_LoadScene(IntPtr scenemanager, M_STRING filename);

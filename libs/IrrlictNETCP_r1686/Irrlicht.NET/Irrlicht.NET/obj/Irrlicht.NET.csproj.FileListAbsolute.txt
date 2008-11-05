@@ -2,3 +2,7 @@ C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\Irrlicht.NE
 C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\Irrlicht.NET.xml
 C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\Irrlicht.NET\obj\Release\ResolveAssemblyReference.cache
 C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\Irrlicht.NET\obj\Release\Irrlicht.NET.dll
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\bin\Release\Irrlicht.NET.dll
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\bin\Release\Irrlicht.NET.xml
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\Irrlicht.NET\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\Irrlicht.NET\obj\Release\Irrlicht.NET.dll

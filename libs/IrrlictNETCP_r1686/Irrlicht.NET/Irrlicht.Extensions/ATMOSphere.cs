@@ -327,7 +327,10 @@ namespace IrrlichtNETCP.Extensions
             uvX = (float)((sun_angle_from * inv + sun_angle_to * time_int_step) + 90.0f) / 180;
             if (time_int_step >= 1.0f || time_int_step <= -1.0f) { time_int_step = 0.0f; }
             sp = dangus.GetPixel((int)Math.Round(128 * uvX), 123);
-            driver.AmbientLight = sp;
+            driver.AmbientLight = Colorf.From((float)sp.A / 255f,
+                                             (float)sp.R / 255f,
+                                             (float)sp.G / 255f,
+                                             (float)sp.B / 255f);
             AmbientLight = Colorf.From((float)sp.A / 255f,
                                              (float)sp.R / 255f,
                                              (float)sp.G / 255f,

@@ -231,6 +231,7 @@ void SceneManager_DrawAll(IntPtr scenemanager)
        GetSceneFromIntPtr(scenemanager)->drawAll();
 }
 
+
 IntPtr SceneManager_GetActiveCamera(IntPtr scenemanager)
 {
     return GetSceneFromIntPtr(scenemanager)->getActiveCamera();

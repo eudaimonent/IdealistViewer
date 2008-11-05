@@ -1,3 +1,6 @@
 C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\Irrlicht.Extensions.dll
 C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\Irrlicht.Extensions\obj\Release\ResolveAssemblyReference.cache
 C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\Irrlicht.Extensions\obj\Release\Irrlicht.Extensions.dll
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\Irrlicht.Extensions\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\bin\Release\Irrlicht.Extensions.dll
+C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\Irrlicht.Extensions\obj\Release\Irrlicht.Extensions.dll

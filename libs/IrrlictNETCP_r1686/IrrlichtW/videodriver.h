@@ -44,7 +44,6 @@ extern "C"
 	EXPORT bool VideoDriver_QueryFeature(IntPtr videodriver, E_VIDEO_DRIVER_FEATURE feat);
 	EXPORT void VideoDriver_RemoveAllTextures(IntPtr videodriver);
 	EXPORT void VideoDriver_RemoveTexture(IntPtr videodriver, IntPtr texture);
-	EXPORT void VideoDriver_SetAmbientLight(IntPtr videodriver, M_SCOLOR ambient);
 	EXPORT void VideoDriver_SetFog(IntPtr videodriver, M_SCOLOR color, bool linear, float start, float end, float density, bool pixel, bool range);
 	EXPORT void VideoDriver_SetMaterial(IntPtr videodriver, IntPtr material);
 	EXPORT void VideoDriver_SetRenderTarget(IntPtr videodriver, IntPtr texture, bool cBB, bool cZB, M_SCOLOR color);

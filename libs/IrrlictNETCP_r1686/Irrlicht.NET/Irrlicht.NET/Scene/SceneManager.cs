@@ -793,6 +793,8 @@ namespace IrrlichtNETCP
 				return SceneManager_GetSceneNodeRenderPass(_raw);
 			}
 		}
+
+       
 		
         /// <summary>
         /// Gets the current video driver.

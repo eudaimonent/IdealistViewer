@@ -595,11 +595,12 @@ namespace IrrlichtNETCP
             return Name;
         }
 
-        public Color AmbientLight
+        [Obsolete("This has been moved to SceneManager")]
+        public Colorf AmbientLight
         {
             set
             {
-                VideoDriver_SetAmbientLight(_raw, value.ToUnmanaged());
+                //VideoDriver_SetAmbientLight(_raw, value.ToUnmanaged());
             }
         }
 
@@ -752,9 +753,10 @@ namespace IrrlichtNETCP
 
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern void VideoDriver_RemoveTexture(IntPtr videodriver, IntPtr texture);
-
+        
+        [Obsolete("This has been moved to SceneManager")]
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
-        static extern void VideoDriver_SetAmbientLight(IntPtr videodriver, int[] ambient);
+        static extern void VideoDriver_SetAmbientLight(IntPtr videodriver, float[] ambient);
 
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern void VideoDriver_SetFog(IntPtr videodriver, int[] color, bool linear, float start, float end, float density, bool pixel, bool range);

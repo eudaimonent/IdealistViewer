@@ -294,10 +294,7 @@ void VideoDriver_SetTransform(IntPtr videodriver, E_TRANSFORMATION_STATE state, 
 {
 	GetVideoFromIntPtr(videodriver)->setTransform(state, MU_MAT4(mat));
 }
-void VideoDriver_SetAmbientLight(IntPtr videodriver, M_SCOLOR ambient)
-{
-	GetVideoFromIntPtr(videodriver)->setAmbientLight(MU_SCOLOR(ambient));
-}
+
 void VideoDriver_SetFog(IntPtr videodriver, M_SCOLOR color, bool linear, float start, float end, float density, bool pixel, bool range)
 {
 	GetVideoFromIntPtr(videodriver)->setFog(MU_SCOLOR(color), linear, start, end, density, pixel, range);
