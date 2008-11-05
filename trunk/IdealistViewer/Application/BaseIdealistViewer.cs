@@ -261,7 +261,9 @@ wide character strings when displaying text.
             //    new Rect(new Position2D(10, 10), new Dimension2D(200, 22)), true, false, guienv.RootElement, -1, false);
             //Image img = 
             //
-            smgr.VideoDriver.AmbientLight = new Color(255, 128, 128, 128);
+            smgr.SetAmbientLight(new Colorf(1, 0.6f, 0.6f, 0.6f));
+            //smgr.VideoDriver.AmbientLight = new Colorf(1, 1f, 1f, 1f);
+            
 
             //driver.
             smgr.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
