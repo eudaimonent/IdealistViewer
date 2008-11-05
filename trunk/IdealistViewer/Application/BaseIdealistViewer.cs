@@ -396,7 +396,7 @@ wide character strings when displaying text.
 
                         m_log.DebugFormat("[ROTA]:<{0},{1},{2}>", jointdata.rotationkeys[0].key_element.Y, jointdata.rotationkeys[0].key_element.Z, jointdata.rotationkeys[0].key_element.X);
                     }
-                    Vector3D jointeuler = sn.Rotation + new Vector3D(jointdata.rotationkeys[0].key_element.Z, jointdata.rotationkeys[0].key_element.X, jointdata.rotationkeys[0].key_element.Y);
+                    Vector3D jointeuler = sn.Rotation + new Vector3D(jointdata.rotationkeys[0].key_element.Z, jointdata.rotationkeys[0].key_element.Y, jointdata.rotationkeys[0].key_element.X);
                     sn.Rotation = jointeuler;// *framecounter;
                     sn.UpdateAbsolutePositionOfAllChildren();
                 }
