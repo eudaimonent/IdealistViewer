@@ -1,0 +1,4 @@
+obj\Release\ResolveAssemblyReference.cache
+..\..\bin\Release\Irrlicht.NET.dll
+..\..\bin\Release\Irrlicht.NET.xml
+obj\Release\Irrlicht.NET.dll

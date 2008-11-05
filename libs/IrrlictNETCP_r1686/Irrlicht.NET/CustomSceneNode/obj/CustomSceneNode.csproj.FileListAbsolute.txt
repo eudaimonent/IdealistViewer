@@ -1,0 +1,3 @@
+C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\CustomSceneNode.exe
+C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\CustomSceneNode\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\CustomSceneNode\obj\Release\CustomSceneNode.exe
