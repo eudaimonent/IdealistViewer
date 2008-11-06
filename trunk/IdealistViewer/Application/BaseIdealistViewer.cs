@@ -343,20 +343,23 @@ wide character strings when displaying text.
             //gtb.Text = "Hi";
             //gtb.AddButton(92, "Button", "Click", null, null, true, false);
 
-            AnimatedMesh av = smgr.GetMesh("Female7.x");
+            AnimatedMesh av = smgr.GetMesh(avatarMesh);
 
             int mbcount = av.GetMesh(0).MeshBufferCount;
             for (int j = 0; j < mbcount; j++)
             {
-                av.GetMesh(0).GetMeshBuffer(j).Material.Texture1 = driver.GetTexture("Green_Grass_Detailed.tga");
+                Texture texDriver = driver.GetTexture(j.ToString() + "-" + avatarMaterial);
+                if (texDriver != null)
+                    av.GetMesh(0).GetMeshBuffer(j).Material.Texture1 = texDriver;
+                else
+                    av.GetMesh(0).GetMeshBuffer(j).Material.Texture1 = driver.GetTexture(avatarMaterial);
+
                 av.GetMesh(0).GetMeshBuffer(j).Material.SpecularColor = new Color(255, 150, 150, 150);
                 av.GetMesh(0).GetMeshBuffer(j).Material.AmbientColor = new Color(255, 110, 110, 110);
                 av.GetMesh(0).GetMeshBuffer(j).Material.EmissiveColor = new Color(255, 125, 125, 125);
                 av.GetMesh(0).GetMeshBuffer(j).Material.Shininess = 0.80f;
             }
             smgr.MeshManipulator.FlipSurfaces(av.GetMesh(0));
-
-
 
             avmeshsntest = smgr.AddAnimatedMeshSceneNode(av);
             avmeshsntest.JointMode = JointUpdateOnRenderMode.Control;
