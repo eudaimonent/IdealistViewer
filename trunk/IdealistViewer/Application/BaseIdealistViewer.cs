@@ -597,9 +597,9 @@ wide character strings when displaying text.
                     tex = new TextureExtended(driver.GetTexture(tx.texture).Raw);
                 }
 
-                if (tx.node != null && tex != null)
+                if (tx.vObj != null && tex != null)
                 {
-                    textureMan.applyTexture(tex, tx.node);
+                    textureMan.applyTexture(tex, tx.vObj);
                 }
             }
             
@@ -773,11 +773,19 @@ wide character strings when displaying text.
                     {
                         if (vObj.mesh == null)
                             continue;
-                        node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
+                        if (vObj.updateFullYN)
+                        {
+                            node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
+
+                            creatednode = true;
+                            vObj.node = node;
+                        }
+                        else
+                        {
+                            node = vObj.node;
+                        }
                         if (node == null)
                             continue;
-                        creatednode = true;
-                        vObj.node = node;
                     }
 
                     if (node == null && vObj.prim is Avatar)
@@ -877,11 +885,12 @@ wide character strings when displaying text.
                         continue;
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
                     if (creatednode)
-                    {   node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                        node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
-                        node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                        node.SetMaterialFlag(MaterialFlag.Lighting, true);
-                        node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                    {   
+                        //node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                        //node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
+                        //node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                        //node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                        //node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
 
                         TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                         node.TriangleSelector = trisel;
@@ -897,7 +906,7 @@ wide character strings when displaying text.
                                 {
                                     UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
                                     if (textureMan != null)
-                                        textureMan.RequestImage(textureID, node);
+                                        textureMan.RequestImage(textureID, vObj);
 
                                 }
                             }
@@ -916,7 +925,7 @@ wide character strings when displaying text.
                                     if (textureID != UUID.Zero)
                                     {
                                         if (textureMan != null)
-                                            textureMan.RequestImage(textureID, node);
+                                            textureMan.RequestImage(textureID, vObj);
                                     }
                                 }
                             }
@@ -1035,11 +1044,11 @@ wide character strings when displaying text.
 
                         if (creatednode)
                         {
-                            node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                            node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
-                            node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                            node.SetMaterialFlag(MaterialFlag.Lighting, true);
-                            node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                            //node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                            //node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
+                            //node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                            //node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                            //node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
 
 
                             TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
@@ -1056,7 +1065,7 @@ wide character strings when displaying text.
                                     {
                                         UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
                                         if (textureMan != null)
-                                            textureMan.RequestImage(textureID, node);
+                                            textureMan.RequestImage(textureID, vObj);
 
                                     }
                                 }
@@ -1072,7 +1081,7 @@ wide character strings when displaying text.
                                         if (textureID != UUID.Zero)
                                         {
                                             if (textureMan != null)
-                                                textureMan.RequestImage(textureID, node);
+                                                textureMan.RequestImage(textureID, vObj);
                                         }
                                     }
                                 }
@@ -2255,18 +2264,18 @@ wide character strings when displaying text.
 
         #endregion
 
-        public void textureCompleteCallback(string tex, SceneNode node)
+        public void textureCompleteCallback(string tex, VObject vObj)
         {
             TextureComplete tx = new TextureComplete();
             tx.texture = tex;
-            tx.node = node;
+            tx.vObj = vObj;
             assignTextureQueue.Enqueue(tx);
         }
     }
     
     public struct TextureComplete 
     {
-        public SceneNode node;
+        public VObject vObj;
         public string texture;
         
     }

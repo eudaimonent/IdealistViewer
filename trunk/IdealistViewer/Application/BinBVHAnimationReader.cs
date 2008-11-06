@@ -388,3 +388,50 @@ namespace IdealistViewer
         Peace_Right = 12
     }
 }
+/*
+switch (jointname)
+                {
+                    case "mPelvis":
+                    case "mTorso":
+                    case "mNeck":
+                    case "mHead":
+                    case "mChest":
+                    case "mHipLeft":
+                    case "mHipRight":
+                    case "mKneeLeft":
+                    case "mKneeRight":
+                        // XYZ->ZXY
+                        t = x;
+                        x = y;
+                        y = t;
+                        break;
+                    case "mCollarLeft":
+                    case "mCollarRight":
+                    case "mElbowLeft":
+                    case "mElbowRight":
+                        // YZX ->ZXY
+                        t = z;
+                        z = x;
+                        x = y;
+                        y = t;
+                        break;
+                    case "mWristLeft":
+                    case "mWristRight":
+                    case "mShoulderLeft":
+                    case "mShoulderRight":    
+                        // ZYX->ZXY
+                        t = y;
+                        y = z;
+                        z = t;
+
+                        break;
+                    case "mAnkleLeft":
+                    case "mAnkleRight":
+                        // XYZ ->ZXY
+                        t = x;
+                        x = z;
+                        z = y;
+                        y = t;
+                        break;
+                }
+*/

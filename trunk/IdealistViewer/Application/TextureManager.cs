@@ -5,14 +5,14 @@ using System.IO;
 using System.Text;
 using System.Runtime.InteropServices;
 using OpenMetaverse;
-using OpenMetaverse.Rendering;
+//using OpenMetaverse.Rendering;
 using IrrlichtNETCP;
 
 
 namespace IdealistViewer
 {
     
-    public delegate void TextureCallback(string texname, SceneNode node);
+    public delegate void TextureCallback(string texname, VObject node);
     public class TextureManager
     {
         public event TextureCallback OnTextureLoaded;
@@ -20,7 +20,7 @@ namespace IdealistViewer
         private VideoDriver driver = null;
         private string imagefolder = string.Empty;
         private Dictionary<UUID, TextureExtended> memoryTextures = new Dictionary<UUID, TextureExtended>();
-        private Dictionary<UUID, List<SceneNode>> ouststandingRequests = new Dictionary<UUID, List<SceneNode>>();
+        private Dictionary<UUID, List<VObject>> ouststandingRequests = new Dictionary<UUID, List<VObject>>();
         private IrrlichtDevice device = null;
         private SLProtocol m_user = null;
         private static readonly log4net.ILog m_log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -36,7 +36,7 @@ namespace IdealistViewer
             m_user.OnImageReceived += imageReceivedCallback;
         }
 
-        public void RequestImage(UUID assetID, SceneNode requestor)
+        public void RequestImage(UUID assetID, VObject requestor)
         {
             
             TextureExtended tex = null;
@@ -92,7 +92,7 @@ namespace IdealistViewer
                 }
                 else 
                 {
-                    List<SceneNode> requestors = new List<SceneNode>();
+                    List<VObject> requestors = new List<VObject>();
                     requestors.Add(requestor);
                     ouststandingRequests.Add(assetID,requestors);
                     
@@ -103,7 +103,7 @@ namespace IdealistViewer
 
         }
 
-        public void applyTexture(TextureExtended tex, SceneNode requestor)
+        public void applyTexture(TextureExtended tex, VObject vObj)
         {
             try
             {
@@ -138,29 +138,90 @@ namespace IdealistViewer
                 {
                     alphaimage = (bool)tex.Userdata;
                 }
-                
-               
-                //requestor.SetMaterialType(MaterialType.NormalMapTransparentVertexAlpha);
-                requestor.SetMaterialTexture(0, tex);
-                
-                //requestor.SetMaterialType(MaterialType.TransparentVertexAlpha);
-                //requestor.SetMaterialType(MaterialType.TransparentAlphaChannel);
-                
-                //requestor.SetMaterialType(MaterialType.DetailMap);
-                requestor.SetMaterialFlag(MaterialFlag.Lighting, true);
-                requestor.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                requestor.SetMaterialFlag(MaterialFlag.BackFaceCulling, BaseIdealistViewer.backFaceCulling);
-                requestor.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                if (alphaimage)
-                {
-                    requestor.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
-                }
 
+                int mbcount = vObj.mesh.MeshBufferCount;
+                for (int j = 0; j < mbcount; j++)
+                {
+                    vObj.mesh.GetMeshBuffer(j).Material.Texture1 = tex;
+                }
+                    
+               
+                
+                //requestor.node.SetMaterialTexture(0, tex);
+                
+
+                //requestor.node.SetMaterialFlag(MaterialFlag.Lighting, true);
+               // requestor.node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                //requestor.node.SetMaterialFlag(MaterialFlag.BackFaceCulling, BaseIdealistViewer.backFaceCulling);
+                //requestor.node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                //if (alphaimage)
+                //{
+               //     requestor.node.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
+               // }
+                ApplyFaceSettings(vObj,alphaimage);
+
+               
             }
             catch (AccessViolationException)
             {
                 m_log.Error("[TEXTURE]: Failed to load texture.");
             }
+        }
+
+        public void ApplyFaceSettings(VObject vObj, bool alpha)
+        {
+            if (vObj.prim.Textures != null)
+            {
+                if (vObj.prim.Textures.DefaultTexture != null)
+                {
+                    float shinyval = 0;
+                    switch (vObj.prim.Textures.DefaultTexture.Shiny)
+                    {
+                        case Shininess.Low:
+                            shinyval = 0.8f;
+                            break;
+                        case Shininess.Medium:
+                            shinyval = 0.7f;
+                            break;
+                        case Shininess.High:
+                            shinyval = 0.6f;
+                            break;
+                    }
+                    Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
+                    int mbcount = vObj.mesh.MeshBufferCount;
+                    for (int j = 0; j < mbcount; j++)
+                    {
+                        if (coldata != Color4.White)
+                        {
+                            vObj.mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) + 20, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) + 20, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) + 20, 0, 255));
+                            vObj.mesh.GetMeshBuffer(j).Material.AmbientColor = new Color((int)( coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
+                            vObj.mesh.GetMeshBuffer(j).Material.EmissiveColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 20, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 20, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 20, 0, 255));
+                            
+                        }
+                        vObj.mesh.GetMeshBuffer(j).Material.Shininess = shinyval;
+                        if (vObj.prim.Textures.DefaultTexture.Fullbright)
+                        {
+                            vObj.mesh.GetMeshBuffer(j).Material.Lighting = !vObj.prim.Textures.DefaultTexture.Fullbright;
+                        }
+                        
+                    }
+                    
+                }
+            }
+            SceneNode sn = device.SceneManager.AddMeshSceneNode(vObj.mesh, null, -1);
+            sn.Position = vObj.node.Position;
+            sn.Rotation = vObj.node.Rotation;
+            sn.Scale = vObj.node.Scale;
+            sn.TriangleSelector = vObj.node.TriangleSelector;
+            if (alpha)
+            {
+                sn.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
+             }
+            SceneNode oldnode = vObj.node;
+            vObj.node = sn;
+            device.SceneManager.AddToDeletionQueue(oldnode);
+            
+
         }
         
         public void imageReceivedCallback(AssetTexture asset)
@@ -202,7 +263,7 @@ namespace IdealistViewer
 
                 
                 
-                List<SceneNode> nodesToUpdate = new List<SceneNode>();
+                List<VObject> nodesToUpdate = new List<VObject>();
                 lock (ouststandingRequests)
                 {
                     if (ouststandingRequests.ContainsKey(asset.AssetID))
@@ -215,13 +276,13 @@ namespace IdealistViewer
                 {
                     for (int i = 0; i < nodesToUpdate.Count; i++)
                     {
-                        SceneNode node = nodesToUpdate[i];
+                        VObject vObj = nodesToUpdate[i];
 
-                        if (node != null)
+                        if (vObj != null)
                         {
                             if (OnTextureLoaded != null)
                             {
-                                OnTextureLoaded(asset.AssetID.ToString() + ".tga", node);
+                                OnTextureLoaded(asset.AssetID.ToString() + ".tga", vObj);
                             }
                             
                         }
