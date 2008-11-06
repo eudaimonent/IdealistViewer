@@ -175,27 +175,38 @@ namespace IdealistViewer
                 if (vObj.prim.Textures.DefaultTexture != null)
                 {
                     float shinyval = 0;
+                    Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
                     switch (vObj.prim.Textures.DefaultTexture.Shiny)
                     {
                         case Shininess.Low:
                             shinyval = 0.8f;
+                            coldata.R += 0.1f;
+                            coldata.B += 0.1f;
+                            coldata.G += 0.1f;
                             break;
                         case Shininess.Medium:
                             shinyval = 0.7f;
+                            coldata.R += 0.2f;
+                            coldata.B += 0.2f;
+                            coldata.G += 0.2f;
                             break;
                         case Shininess.High:
                             shinyval = 0.6f;
+                            coldata.R += 0.3f;
+                            coldata.B += 0.3f;
+                            coldata.G += 0.3f;
                             break;
                     }
-                    Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
+                    
+                    
                     int mbcount = vObj.mesh.MeshBufferCount;
                     for (int j = 0; j < mbcount; j++)
                     {
                         if (coldata != Color4.White)
                         {
-                            vObj.mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) + 20, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) + 20, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) + 20, 0, 255));
+                            vObj.mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) + 5, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) + 5, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) + 5, 0, 255));
                             vObj.mesh.GetMeshBuffer(j).Material.AmbientColor = new Color((int)( coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
-                            vObj.mesh.GetMeshBuffer(j).Material.EmissiveColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 20, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 20, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 20, 0, 255));
+                            vObj.mesh.GetMeshBuffer(j).Material.EmissiveColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 5, 0, 255));
                             
                         }
                         vObj.mesh.GetMeshBuffer(j).Material.Shininess = shinyval;

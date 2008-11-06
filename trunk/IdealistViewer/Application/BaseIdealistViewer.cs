@@ -300,7 +300,7 @@ wide character strings when displaying text.
 
 
 
-            SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 1, 1, 1), 90, -1);
+            SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 0.5f, 0.5f, 0.5f), 90, -1);
             Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
             light.AddAnimator(anim);
             anim.Dispose();
