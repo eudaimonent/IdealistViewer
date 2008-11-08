@@ -602,7 +602,7 @@ wide character strings when displaying text.
 
                 if (tx.vObj != null && tex != null)
                 {
-                    textureMan.applyTexture(tex, tx.vObj);
+                    textureMan.applyTexture(tex, tx.vObj, tx.textureID);
                 }
             }
             
@@ -2267,11 +2267,12 @@ wide character strings when displaying text.
 
         #endregion
 
-        public void textureCompleteCallback(string tex, VObject vObj)
+        public void textureCompleteCallback(string tex, VObject vObj, UUID AssetID)
         {
             TextureComplete tx = new TextureComplete();
             tx.texture = tex;
             tx.vObj = vObj;
+            tx.textureID = AssetID;
             assignTextureQueue.Enqueue(tx);
         }
     }
@@ -2280,6 +2281,7 @@ wide character strings when displaying text.
     {
         public VObject vObj;
         public string texture;
+        public UUID textureID;
         
     }
 }

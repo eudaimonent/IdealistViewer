@@ -12,7 +12,7 @@ using IrrlichtNETCP;
 namespace IdealistViewer
 {
     
-    public delegate void TextureCallback(string texname, VObject node);
+    public delegate void TextureCallback(string texname, VObject node, UUID AssetID);
     public class TextureManager
     {
         public event TextureCallback OnTextureLoaded;
@@ -52,7 +52,7 @@ namespace IdealistViewer
 
             if (tex != null)
             {
-                applyTexture(tex, requestor);
+                applyTexture(tex, requestor, assetID);
                 
 
                 return;
@@ -76,7 +76,7 @@ namespace IdealistViewer
                             memoryTextures.Add(assetID, tex);
                         }
                     }
-                    applyTexture(tex, requestor);
+                    applyTexture(tex, requestor, assetID);
                     
                     return;
                 }
@@ -104,7 +104,7 @@ namespace IdealistViewer
 
         }
 
-        public void applyTexture(TextureExtended tex, VObject vObj)
+        public void applyTexture(TextureExtended tex, VObject vObj, UUID AssetID)
         {
             try
             {
@@ -147,17 +147,132 @@ namespace IdealistViewer
                     alphaimage = (bool)tex.Userdata;
                 }
 
-                int mbcount = vObj.mesh.MeshBufferCount;
-                for (int j = 0; j < mbcount; j++)
+                if (vObj.prim.Textures != null)
                 {
-                    vObj.mesh.GetMeshBuffer(j).Material.Texture1 = tex;
-                }
-                    
-               
-                
-                //requestor.node.SetMaterialTexture(0, tex);
-                
+                    if (vObj.prim.Textures.DefaultTexture != null)
+                    {
+                        Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
+                        float shinyval = 0;
+                        switch (vObj.prim.Textures.DefaultTexture.Shiny)
+                        {
+                            case Shininess.Low:
+                                shinyval = 0.8f;
+                                coldata.R += 0.1f;
+                                coldata.B += 0.1f;
+                                coldata.G += 0.1f;
+                                break;
+                            case Shininess.Medium:
+                                shinyval = 0.7f;
+                                coldata.R += 0.2f;
+                                coldata.B += 0.2f;
+                                coldata.G += 0.2f;
+                                break;
+                            case Shininess.High:
+                                shinyval = 0.6f;
+                                coldata.R += 0.3f;
+                                coldata.B += 0.3f;
+                                coldata.G += 0.3f;
+                                break;
+                        }
+                        int mbcount = vObj.mesh.MeshBufferCount;
+                        for (int j = 0; j < mbcount; j++)
+                        {
+                            // Only apply default texture if there isn't one already!
+                            if (vObj.prim.Textures.DefaultTexture.TextureID == AssetID)
+                            {
+                                ApplyFaceSettings(vObj, alphaimage, vObj.prim.Textures.DefaultTexture, tex, j, shinyval, coldata);
+                            }
+                            else
+                            {
+                                // Apply color settings
+                                ApplyFaceSettings(vObj, alphaimage, vObj.prim.Textures.DefaultTexture, null, j, shinyval, coldata);
+                            }
+                            
+                            vObj.mesh.GetMeshBuffer(j).Material.NormalizeNormals = true;
+                            vObj.mesh.GetMeshBuffer(j).Material.GouraudShading = true;
+                            vObj.mesh.GetMeshBuffer(j).Material.BackfaceCulling = BaseIdealistViewer.backFaceCulling;
+                            
+                        }
 
+                    }
+
+                    // default taken care of..   now on to the individual face settings.
+                    for (int i = 0; i < vObj.prim.Textures.FaceTextures.Length; i++)
+                    {
+                        if (vObj.prim.Textures.FaceTextures[i] != null)
+                        {
+                            Primitive.TextureEntryFace teface = vObj.prim.Textures.FaceTextures[i];
+                            
+
+                            if (vObj.mesh.MeshBufferCount - 1 > i)
+                            {
+                                //if (tex.
+                                Color4 coldata = teface.RGBA;
+                                float shinyval = 0;
+                                switch (teface.Shiny)
+                                {
+                                    case Shininess.Low:
+                                        shinyval = 0.8f;
+                                        coldata.R += 0.1f;
+                                        coldata.B += 0.1f;
+                                        coldata.G += 0.1f;
+                                        break;
+                                    case Shininess.Medium:
+                                        shinyval = 0.7f;
+                                        coldata.R += 0.2f;
+                                        coldata.B += 0.2f;
+                                        coldata.G += 0.2f;
+                                        break;
+                                    case Shininess.High:
+                                        shinyval = 0.6f;
+                                        coldata.R += 0.3f;
+                                        coldata.B += 0.3f;
+                                        coldata.G += 0.3f;
+                                        break;
+                                }
+
+                                if (teface.TextureID == AssetID)
+                                {
+                                    ApplyFaceSettings(vObj, alphaimage, teface, tex, i, shinyval, coldata);
+                                }
+                                else
+                                {
+                                    ApplyFaceSettings(vObj, alphaimage, teface, null, i, shinyval, coldata);
+                                }
+                                vObj.mesh.GetMeshBuffer(i).Material.NormalizeNormals = true;
+                                vObj.mesh.GetMeshBuffer(i).Material.GouraudShading = true;
+                                vObj.mesh.GetMeshBuffer(i).Material.BackfaceCulling = BaseIdealistViewer.backFaceCulling;
+                            }
+                            else
+                            {
+                                m_log.Warn("[TEXTUREDEF]: Unable to apply Texture to face because mesh buffer doesn't have definition for face");
+
+                            }
+                        }// end check if textureentry face is null
+                    } // end loop over textureentry faces array
+
+                    SceneNode sn = device.SceneManager.AddMeshSceneNode(vObj.mesh, null, -1);
+                    sn.Position = vObj.node.Position;
+                    sn.Rotation = vObj.node.Rotation;
+                    sn.Scale = vObj.node.Scale;
+                    sn.TriangleSelector = vObj.node.TriangleSelector;
+
+
+                    SceneNode oldnode = vObj.node;
+                    vObj.node = sn;
+                    device.SceneManager.AddToDeletionQueue(oldnode);
+                } // prim texture is not null
+
+
+                
+            }
+            catch (AccessViolationException)
+            {
+                m_log.Error("[TEXTURE]: Failed to load texture.");
+            }
+        }
+
+                 //requestor.node.SetMaterialTexture(0, tex);
                 //requestor.node.SetMaterialFlag(MaterialFlag.Lighting, true);
                // requestor.node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                 //requestor.node.SetMaterialFlag(MaterialFlag.BackFaceCulling, BaseIdealistViewer.backFaceCulling);
@@ -166,130 +281,63 @@ namespace IdealistViewer
                 //{
                //     requestor.node.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
                // }
-                ApplyFaceSettings(vObj,alphaimage);
-
-               
-            }
-            catch (AccessViolationException)
-            {
-                m_log.Error("[TEXTURE]: Failed to load texture.");
-            }
-        }
-
-        public void ApplyFaceSettings(VObject vObj, bool alpha)
+        public void ApplyFaceSettings(VObject vObj, bool alpha, Primitive.TextureEntryFace teface, Texture tex, int face, 
+            float shinyval, Color4 coldata)
         {
-            if (vObj.prim.Textures != null)
+            if (tex != null)
             {
-                if (vObj.prim.Textures.DefaultTexture != null)
-                {
-                    float shinyval = 0;
-                    Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
-                    switch (vObj.prim.Textures.DefaultTexture.Shiny)
-                    {
-                        case Shininess.Low:
-                            shinyval = 0.8f;
-                            coldata.R += 0.1f;
-                            coldata.B += 0.1f;
-                            coldata.G += 0.1f;
-                            break;
-                        case Shininess.Medium:
-                            shinyval = 0.7f;
-                            coldata.R += 0.2f;
-                            coldata.B += 0.2f;
-                            coldata.G += 0.2f;
-                            break;
-                        case Shininess.High:
-                            shinyval = 0.6f;
-                            coldata.R += 0.3f;
-                            coldata.B += 0.3f;
-                            coldata.G += 0.3f;
-                            break;
-                    }
-                    
-                    
-                    int mbcount = vObj.mesh.MeshBufferCount;
-                    for (int j = 0; j < mbcount; j++)
-                    {
-                        if (coldata != Color4.White)
-                        {
-                            vObj.mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 50, 0, 255));
-                            vObj.mesh.GetMeshBuffer(j).Material.AmbientColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 50, 0, 255));
-                            vObj.mesh.GetMeshBuffer(j).Material.EmissiveColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 5, 0, 255));
-                            //vObj.mesh.GetMeshBuffer(j).Material.DiffuseColor = new Color((int)(coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
-                        }
-
-                        vObj.mesh.GetMeshBuffer(j).Material.Shininess = shinyval;
-
-                        if (vObj.prim.Textures.DefaultTexture.Fullbright)
-                        {
-                            vObj.mesh.GetMeshBuffer(j).Material.Lighting = !vObj.prim.Textures.DefaultTexture.Fullbright;
-                        }
-
-                        if (alpha)
-                        {
-                            vObj.mesh.GetMeshBuffer(j).Material.MaterialType = MaterialType.TransparentAlphaChannelRef;
-                        }
-
-                        if (coldata.A != 1)
-                        {
-                            vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable = true;
-                            //vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
-                            vObj.mesh.GetMeshBuffer(j).Material.BackfaceCulling = true;
-                            uint vcount = (uint)vObj.mesh.GetMeshBuffer(j).VertexCount;
-                            for (uint j2 = 0; j2 < vcount; j2++)
-                            {
-                                 
-                                vObj.mesh.GetMeshBuffer(j).GetVertex(j2).Color = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255));
-
-                            }
-                            vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentVertexAlpha;
-                        }
-                 /*
-                         
-                        else
-                        {
-                            if (vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable)
-                            {
-                                vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable = false;
-                                vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
-                                uint vcount = (uint)vObj.mesh.GetMeshBuffer(j).VertexCount;
-
-                                if (alpha)
-                                {
-                                    vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentAlphaChannelRef;
-                                    vObj.mesh.GetMeshBuffer(j).Material.BackfaceCulling = true;
-                                
-                                }
-                                else
-                                {
-                                    vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = 0;
-                                }
-                            }
-                        }
-                 */
-
-                        vObj.mesh.GetMeshBuffer(j).Material.NormalizeNormals = true;
-                        vObj.mesh.GetMeshBuffer(j).Material.GouraudShading = true;
-                        
-                        
-                    }
-                    
-                }
+                vObj.mesh.GetMeshBuffer(face).Material.Texture1 = tex;
             }
-            SceneNode sn = device.SceneManager.AddMeshSceneNode(vObj.mesh, null, -1);
-            sn.Position = vObj.node.Position;
-            sn.Rotation = vObj.node.Rotation;
-            sn.Scale = vObj.node.Scale;
-            sn.TriangleSelector = vObj.node.TriangleSelector;
-           
-             
-            SceneNode oldnode = vObj.node;
-            vObj.node = sn;
-            device.SceneManager.AddToDeletionQueue(oldnode);
-            
 
+            if (teface != null)
+            {
+                ApplyFace(vObj, alpha, face, teface, shinyval, coldata);
+            }
         }
-        
+
+        public void ApplyFace(VObject vObj, bool alpha, int face, Primitive.TextureEntryFace teface, float shinyval, Color4 coldata)
+        {
+            ModifyMeshBuffer(coldata, shinyval, face, vObj.mesh, teface, alpha);
+        }
+
+        public void ModifyMeshBuffer(Color4 coldata, float shinyval, int j, Mesh mesh, Primitive.TextureEntryFace teface, bool alpha)
+        {
+            if (coldata != Color4.White)
+            {
+                mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 50, 0, 255));
+                mesh.GetMeshBuffer(j).Material.AmbientColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 50, 0, 255));
+                mesh.GetMeshBuffer(j).Material.EmissiveColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 5, 0, 255));
+                //vObj.mesh.GetMeshBuffer(j).Material.DiffuseColor = new Color((int)(coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
+            }
+
+            mesh.GetMeshBuffer(j).Material.Shininess = shinyval;
+
+            if (teface.Fullbright)
+            {
+                mesh.GetMeshBuffer(j).Material.Lighting = !teface.Fullbright;
+            }
+
+            if (alpha)
+            {
+                mesh.GetMeshBuffer(j).Material.MaterialType = MaterialType.TransparentAlphaChannelRef;
+            }
+
+            if (coldata.A != 1)
+            {
+                mesh.GetMeshBuffer(j).Material.ZWriteEnable = true;
+                //vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
+                mesh.GetMeshBuffer(j).Material.BackfaceCulling = true;
+                uint vcount = (uint)mesh.GetMeshBuffer(j).VertexCount;
+                for (uint j2 = 0; j2 < vcount; j2++)
+                {
+
+                    mesh.GetMeshBuffer(j).GetVertex(j2).Color = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255));
+
+                }
+                mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentVertexAlpha;
+            }
+        }
+
         public void imageReceivedCallback(AssetTexture asset)
         {
             if (asset == null)
@@ -348,7 +396,7 @@ namespace IdealistViewer
                         {
                             if (OnTextureLoaded != null)
                             {
-                                OnTextureLoaded(asset.AssetID.ToString() + ".tga", vObj);
+                                OnTextureLoaded(asset.AssetID.ToString() + ".tga", vObj, asset.AssetID);
                             }
                             
                         }
