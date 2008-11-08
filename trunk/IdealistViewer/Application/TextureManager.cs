@@ -65,7 +65,8 @@ namespace IdealistViewer
             {
                 string oldfs = device.FileSystem.WorkingDirectory;
                 device.FileSystem.WorkingDirectory = texturefolderpath;
-                tex = new TextureExtended(driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga")).Raw);
+                Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga"));
+                tex = new TextureExtended(texTnorm.Raw);
                 if (tex != null)
                 {
                     lock (memoryTextures)
@@ -117,20 +118,27 @@ namespace IdealistViewer
                     Color[,] imgcolors;
 
                     tex.Lock();
-                    imgcolors = tex.Retrieve();
-                    tex.Unlock();
-                    for (int i = 0; i < imgcolors.GetUpperBound(0); i++)
+                    try
                     {
-                        for (int j = 0; j < imgcolors.GetUpperBound(1); j++)
+                        imgcolors = tex.Retrieve();
+                        tex.Unlock();
+                        for (int i = 0; i < imgcolors.GetUpperBound(0); i++)
                         {
-                            if (imgcolors[i, j].A != 255)
+                            for (int j = 0; j < imgcolors.GetUpperBound(1); j++)
                             {
-                                alphaimage = true;
-                                break;
+                                if (imgcolors[i, j].A != 255)
+                                {
+                                    alphaimage = true;
+                                    break;
+                                }
                             }
+                            if (alphaimage)
+                                break;
                         }
-                        if (alphaimage)
-                            break;
+                    }
+                    catch (OutOfMemoryException)
+                    {
+                        alphaimage = false;
                     }
                     tex.Userdata = (object)alphaimage;
                 }
@@ -204,16 +212,64 @@ namespace IdealistViewer
                     {
                         if (coldata != Color4.White)
                         {
-                            vObj.mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) + 5, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) + 5, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) + 5, 0, 255));
-                            vObj.mesh.GetMeshBuffer(j).Material.AmbientColor = new Color((int)( coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
+                            vObj.mesh.GetMeshBuffer(j).Material.SpecularColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 50, 0, 255));
+                            vObj.mesh.GetMeshBuffer(j).Material.AmbientColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 50, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 50, 0, 255));
                             vObj.mesh.GetMeshBuffer(j).Material.EmissiveColor = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.G * 255) - 5, 0, 255), Util.Clamp<int>((int)(coldata.B * 255) - 5, 0, 255));
-                            
+                            //vObj.mesh.GetMeshBuffer(j).Material.DiffuseColor = new Color((int)(coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
                         }
+
                         vObj.mesh.GetMeshBuffer(j).Material.Shininess = shinyval;
+
                         if (vObj.prim.Textures.DefaultTexture.Fullbright)
                         {
                             vObj.mesh.GetMeshBuffer(j).Material.Lighting = !vObj.prim.Textures.DefaultTexture.Fullbright;
                         }
+
+                        if (alpha)
+                        {
+                            vObj.mesh.GetMeshBuffer(j).Material.MaterialType = MaterialType.TransparentAlphaChannelRef;
+                        }
+
+                        if (coldata.A != 1)
+                        {
+                            vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable = true;
+                            vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
+                            vObj.mesh.GetMeshBuffer(j).Material.BackfaceCulling = true;
+                            uint vcount = (uint)vObj.mesh.GetMeshBuffer(j).VertexCount;
+                            for (uint j2 = 0; j2 < vcount; j2++)
+                            {
+                                vObj.mesh.GetMeshBuffer(j).GetVertex(j2).Color = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255));
+
+                            }
+                            vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentAddColor;
+                        }
+                 /*
+                         
+                        else
+                        {
+                            if (vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable)
+                            {
+                                vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable = false;
+                                vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
+                                uint vcount = (uint)vObj.mesh.GetMeshBuffer(j).VertexCount;
+
+                                if (alpha)
+                                {
+                                    vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentAlphaChannelRef;
+                                    vObj.mesh.GetMeshBuffer(j).Material.BackfaceCulling = true;
+                                
+                                }
+                                else
+                                {
+                                    vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = 0;
+                                }
+                            }
+                        }
+                 */
+
+                        vObj.mesh.GetMeshBuffer(j).Material.NormalizeNormals = true;
+                        vObj.mesh.GetMeshBuffer(j).Material.GouraudShading = true;
+                        
                         
                     }
                     
@@ -224,10 +280,8 @@ namespace IdealistViewer
             sn.Rotation = vObj.node.Rotation;
             sn.Scale = vObj.node.Scale;
             sn.TriangleSelector = vObj.node.TriangleSelector;
-            if (alpha)
-            {
-                sn.SetMaterialType(MaterialType.TransparentAlphaChannelRef);
-             }
+           
+             
             SceneNode oldnode = vObj.node;
             vObj.node = sn;
             device.SceneManager.AddToDeletionQueue(oldnode);

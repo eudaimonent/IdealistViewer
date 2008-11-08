@@ -343,7 +343,7 @@ wide character strings when displaying text.
             //gtb.Text = "Hi";
             //gtb.AddButton(92, "Button", "Click", null, null, true, false);
 
-            AnimatedMesh av = smgr.GetMesh(avatarMesh);
+            AnimatedMesh av = smgr.GetMesh("Female7.x");
 
             int mbcount = av.GetMesh(0).MeshBufferCount;
             for (int j = 0; j < mbcount; j++)

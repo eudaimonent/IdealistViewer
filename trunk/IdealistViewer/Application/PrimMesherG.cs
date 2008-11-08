@@ -109,10 +109,17 @@ namespace IdealistViewer
                         vf.uv2.U = (vf.uv2.U - 0.5f) * 2.0f;
                         vf.uv3.U = (vf.uv3.U - 0.5f) * 2.0f;
                     }
+                    try
+                    {
+                        mb.SetVertex(index, new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
+                        mb.SetVertex(index + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
+                        mb.SetVertex(index + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
 
-                    mb.SetVertex(index, new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
-                    mb.SetVertex(index + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
-                    mb.SetVertex(index + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
+                    }
+                    catch (OutOfMemoryException)
+                    {
+                        return null;
+                    }
 
                     mb.SetIndex(index, (ushort)index);
                     mb.SetIndex(index + 1, (ushort)(index + 2));
