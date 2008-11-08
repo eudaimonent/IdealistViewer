@@ -233,15 +233,16 @@ namespace IdealistViewer
                         if (coldata.A != 1)
                         {
                             vObj.mesh.GetMeshBuffer(j).Material.ZWriteEnable = true;
-                            vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
+                            //vObj.mesh.GetMeshBuffer(j).Material.ZBuffer = 0;
                             vObj.mesh.GetMeshBuffer(j).Material.BackfaceCulling = true;
                             uint vcount = (uint)vObj.mesh.GetMeshBuffer(j).VertexCount;
                             for (uint j2 = 0; j2 < vcount; j2++)
                             {
+                                 
                                 vObj.mesh.GetMeshBuffer(j).GetVertex(j2).Color = new Color((int)(coldata.A * 255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255));
 
                             }
-                            vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentAddColor;
+                            vObj.mesh.GetMeshBuffer(j).Material.MaterialTypeParam = (float)MaterialType.TransparentVertexAlpha;
                         }
                  /*
                          
