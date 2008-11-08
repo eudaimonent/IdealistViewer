@@ -110,10 +110,16 @@
     <Compile Include="Core\Interfaces\ITarget.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\Nodes\AuthorNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Core\Nodes\ConfigurationNode.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Nodes\DataNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\Nodes\DescriptionNode.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Nodes\ExcludeNode.cs">
@@ -158,6 +164,9 @@
     <Compile Include="Core\Targets\DebugTarget.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Core\Targets\MakefileTarget.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Core\Targets\MonoDevelopTarget.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -177,6 +186,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Targets\VS2005Target.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\Targets\VS2008Target.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Core\Targets\XcodeTarget.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Core\Utilities\CommandLineCollection.cs">

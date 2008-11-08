@@ -3,11 +3,15 @@
     <target name="build">
         <echo message="Build Directory is ${project::get-base-directory()}/${build.dir}" />
         <mkdir dir="${project::get-base-directory()}/${build.dir}" />
-        <copy todir="${project::get-base-directory()}/${build.dir}">
+        <copy todir="${project::get-base-directory()}/${build.dir}" flatten="true">
             <fileset basedir="${project::get-base-directory()}">
             </fileset>
         </copy>
-        <csc target="exe" debug="${build.debug}" keyfile="Prebuild.snk" unsafe="False" define="DEBUG;TRACE" output="${project::get-base-directory()}/${build.dir}/${project::get-name()}.exe" win32icon="App.ico">
+        <copy todir="${project::get-base-directory()}/${build.dir}">
+            <fileset basedir=".">
+            </fileset>
+        </copy>
+        <csc target="exe" debug="${build.debug}" keyfile="Prebuild.snk" unsafe="False" warnaserror="False" define="DEBUG;TRACE" main="Prebuild.Prebuild" output="${project::get-base-directory()}/${build.dir}/${project::get-name()}.exe" win32icon="App.ico">
             <resources prefix="Prebuild" dynamicprefix="true" >
                 <include name="App.ico" />
                 <include name="data/prebuild-1.7.xsd" />
@@ -23,8 +27,10 @@
                 <include name="Core/Attributes/TargetAttribute.cs" />
                 <include name="Core/Interfaces/IDataNode.cs" />
                 <include name="Core/Interfaces/ITarget.cs" />
+                <include name="Core/Nodes/AuthorNode.cs" />
                 <include name="Core/Nodes/ConfigurationNode.cs" />
                 <include name="Core/Nodes/DataNode.cs" />
+                <include name="Core/Nodes/DescriptionNode.cs" />
                 <include name="Core/Nodes/ExcludeNode.cs" />
                 <include name="Core/Nodes/FileNode.cs" />
                 <include name="Core/Nodes/FilesNode.cs" />
@@ -39,6 +45,7 @@
                 <include name="Core/Parse/Preprocessor.cs" />
                 <include name="Core/Targets/AutotoolsTarget.cs" />
                 <include name="Core/Targets/DebugTarget.cs" />
+                <include name="Core/Targets/MakefileTarget.cs" />
                 <include name="Core/Targets/MonoDevelopTarget.cs" />
                 <include name="Core/Targets/NAntTarget.cs" />
                 <include name="Core/Targets/SharpDevelop2Target.cs" />
@@ -46,6 +53,8 @@
                 <include name="Core/Targets/VS2002Target.cs" />
                 <include name="Core/Targets/VS2003Target.cs" />
                 <include name="Core/Targets/VS2005Target.cs" />
+                <include name="Core/Targets/VS2008Target.cs" />
+                <include name="Core/Targets/XcodeTarget.cs" />
                 <include name="Core/Utilities/CommandLineCollection.cs" />
                 <include name="Core/Utilities/CurrentDirectory.cs" />
                 <include name="Core/Utilities/Helper.cs" />
@@ -68,6 +77,9 @@
             <fileset basedir="${project::get-base-directory()}/${build.dir}/" >
                 <include name="*.dll"/>
                 <include name="*.exe"/>
+                <if test="${build.debug=='true'}">
+                  <include name="*.mdb"/>
+                </if>
             </fileset>
         </copy>
     </target>

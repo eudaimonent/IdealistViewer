@@ -27,8 +27,8 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 /*
  * $Source$
  * $Author: jendave $
- * $Date: 2006-09-01 19:55:06 +0200 (fr, 01 sep 2006) $
- * $Revision: 147 $
+ * $Date: 2007-04-26 17:10:27 +0900 (Thu, 26 Apr 2007) $
+ * $Revision: 236 $
  */
 #endregion
 
@@ -137,6 +137,11 @@ namespace Prebuild.Core.Parse
 			{
 				return "Win32";
 			}
+
+            if (File.Exists("/System/Library/Frameworks/Cocoa.framework/Cocoa"))
+            {
+                return "MACOSX";
+            }
 
 			/*
 			 * .NET 1.x, under Mono, the UNIX code is 128. Under

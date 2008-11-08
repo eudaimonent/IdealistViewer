@@ -37,7 +37,9 @@
 
     <target name="init" description="">
         <call target="${project.config}" />
-        <sysinfo />
+        <property name="sys.os.platform"
+                  value="${platform::get-name()}"
+                  />
         <echo message="Platform ${sys.os.platform}" />
         <property name="build.dir" value="${bin.dir}/${project.config}" />
     </target>
@@ -51,6 +53,8 @@
             <include name="OpenSim*.exe"/>
             <include name="ScriptEngines/*"/>
             <include name="Physics/*"/>
+            <exclude name="OpenSim.32BitLaunch.exe"/>
+            <exclude name="ScriptEngines/Default.lsl"/>
         </fileset>
         </delete>
         <delete dir="${obj.dir}" failonerror="false" />

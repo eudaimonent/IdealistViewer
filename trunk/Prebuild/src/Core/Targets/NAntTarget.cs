@@ -1,34 +1,46 @@
 #region BSD License
 /*
-  Copyright (c) 2004 Matthew Holmes (matthew@wildfiregames.com), Dan Moorehead (dan05a@gmail.com)
+Copyright (c) 2004 - 2008
+Matthew Holmes        (matthew@wildfiregames.com),
+Dan     Moorehead     (dan05a@gmail.com),
+C.J.    Adams-Collier (cjac@colliertech.org),
 
-  Redistribution and use in source and binary forms, with or without modification, are permitted
-  provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
 
-  * Redistributions of source code must retain the above copyright notice, this list of conditions 
-  and the following disclaimer. 
-  * Redistributions in binary form must reproduce the above copyright notice, this list of conditions 
-  and the following disclaimer in the documentation and/or other materials provided with the 
-  distribution. 
-  * The name of the author may not be used to endorse or promote products derived from this software 
-  without specific prior written permission. 
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
 
-  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
-  BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-  ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-  EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-  OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-  OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-  IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+
+* The name of the author may not be used to endorse or promote
+  products derived from this software without specific prior written
+  permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
 */
+
 #endregion
 
 #region CVS Information
 /*
  * $Source$
- * $Author: jendave $
- * $Date: 2007-02-13 21:58:03 +0100 (ti, 13 feb 2007) $
- * $Revision: 205 $
+ * $Author: cjcollier $
+ * $Date: 2008-02-07 10:22:36 +0900 (Thu, 07 Feb 2008) $
+ * $Revision: 255 $
  */
 #endregion
 
@@ -83,9 +95,7 @@ namespace Prebuild.Core.Targets
             if (solution.ProjectsTable.ContainsKey(refr.Name))
             {
                 ProjectNode project = (ProjectNode)solution.ProjectsTable[refr.Name];
-
                 string finalPath = Helper.NormalizePath(((ReferencePathNode)currentProject.ReferencePaths[0]).Path + refr.Name + GetProjectExtension(project), '/');
-
                 return finalPath;
             }
             else
@@ -122,7 +132,6 @@ namespace Prebuild.Core.Targets
             {
                 ProjectNode project = (ProjectNode)solution.ProjectsTable[refr.Name];
                 string finalPath = Helper.NormalizePath(((ReferencePathNode)project.ReferencePaths[0]).Path, '/');
-
                 return finalPath;
             }
             else
@@ -213,7 +222,7 @@ namespace Prebuild.Core.Targets
                 ss.WriteLine("    <target name=\"{0}\">", "build");
                 ss.WriteLine("        <echo message=\"Build Directory is ${project::get-base-directory()}/${build.dir}\" />");
                 ss.WriteLine("        <mkdir dir=\"${project::get-base-directory()}/${build.dir}\" />");
-                ss.WriteLine("        <copy todir=\"${project::get-base-directory()}/${build.dir}\">");
+                ss.WriteLine("        <copy todir=\"${project::get-base-directory()}/${build.dir}\" flatten=\"true\">");
                 ss.WriteLine("            <fileset basedir=\"${project::get-base-directory()}\">");
                 foreach (ReferenceNode refr in project.References)
                 {
@@ -222,8 +231,41 @@ namespace Prebuild.Core.Targets
                         ss.WriteLine("                <include name=\"{0}", Helper.NormalizePath(Helper.MakePathRelativeTo(project.FullPath, BuildReference(solution, project, refr)) + "\" />", '/'));
                     }
                 }
+                
                 ss.WriteLine("            </fileset>");
                 ss.WriteLine("        </copy>");
+                if (project.ConfigFile != null && project.ConfigFile.Length!=0)
+                {
+                    ss.Write("        <copy file=\"" + project.ConfigFile + "\" tofile=\"${project::get-base-directory()}/${build.dir}/${project::get-name()}");
+
+                    if (project.Type == ProjectType.Library)
+                    {
+                        ss.Write(".dll.config\"");
+                    }
+                    else
+                    {
+                        ss.Write(".exe.config\"");
+                    }
+                    ss.WriteLine(" />");
+                }
+
+                // Add the content files to just be copied
+                ss.WriteLine("        {0}", "<copy todir=\"${project::get-base-directory()}/${build.dir}\">");
+                ss.WriteLine("            {0}", "<fileset basedir=\".\">");
+                
+                foreach (string file in project.Files)
+                {
+                    // Ignore if we aren't content
+                    if (project.Files.GetBuildAction(file) != BuildAction.Content)
+                            continue;
+
+                    // Create a include tag
+                    ss.WriteLine("                {0}", "<include name=\"" + Helper.NormalizePath(PrependPath(file), '/') + "\" />");
+                }
+
+                ss.WriteLine("            {0}", "</fileset>");
+                ss.WriteLine("        {0}", "</copy>");
+
                 ss.Write("        <csc");
                 ss.Write(" target=\"{0}\"", project.Type.ToString().ToLower());
                 ss.Write(" debug=\"{0}\"", "${build.debug}");
@@ -242,9 +284,16 @@ namespace Prebuild.Core.Targets
                 }
                 foreach (ConfigurationNode conf in project.Configurations)
                 {
+                    ss.Write(" warnaserror=\"{0}\"", conf.Options.WarningsAsErrors);
+                    break;
+                }
+                foreach (ConfigurationNode conf in project.Configurations)
+                {
                     ss.Write(" define=\"{0}\"", conf.Options.CompilerDefines);
                     break;
                 }
+                ss.Write(" main=\"{0}\"", project.StartupObject);
+
                 foreach (ConfigurationNode conf in project.Configurations)
                 {
                     if (GetXmlDocFile(project, conf) != "")
@@ -330,6 +379,9 @@ namespace Prebuild.Core.Targets
                         ss.WriteLine("            <fileset basedir=\"${project::get-base-directory()}/${build.dir}/\" >");
                         ss.WriteLine("                <include name=\"*.dll\"/>");
                         ss.WriteLine("                <include name=\"*.exe\"/>");
+                        ss.WriteLine("                <if test=\"${build.debug=='true'}\">");
+                        ss.WriteLine("                  <include name=\"*.mdb\"/>");
+                        ss.WriteLine("                </if>");
                         ss.WriteLine("            </fileset>");
                         ss.WriteLine("        </copy>");
                         break;
@@ -476,12 +528,13 @@ namespace Prebuild.Core.Targets
 
                 ss.WriteLine("    <target name=\"init\" description=\"\">");
                 ss.WriteLine("        <call target=\"${project.config}\" />");
-                ss.WriteLine("        <sysinfo />");
+                ss.WriteLine("        <property name=\"sys.os.platform\"");
+                ss.WriteLine("                  value=\"${platform::get-name()}\"");
+                ss.WriteLine("                  />");
                 ss.WriteLine("        <echo message=\"Platform ${sys.os.platform}\" />");
                 ss.WriteLine("        <property name=\"build.dir\" value=\"${bin.dir}/${project.config}\" />");
                 ss.WriteLine("    </target>");
                 ss.WriteLine();
-
 
 
                 // sdague - ok, this is an ugly hack, but what it lets
@@ -547,6 +600,8 @@ namespace Prebuild.Core.Targets
                 ss.WriteLine("            <include name=\"OpenSim*.exe\"/>");
                 ss.WriteLine("            <include name=\"ScriptEngines/*\"/>");
                 ss.WriteLine("            <include name=\"Physics/*\"/>");
+                ss.WriteLine("            <exclude name=\"OpenSim.32BitLaunch.exe\"/>");
+                ss.WriteLine("            <exclude name=\"ScriptEngines/Default.lsl\"/>");
                 ss.WriteLine("        </fileset>");
                 ss.WriteLine("        </delete>");
                 ss.WriteLine("        <delete dir=\"${obj.dir}\" failonerror=\"false\" />");

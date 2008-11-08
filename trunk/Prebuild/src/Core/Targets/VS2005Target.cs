@@ -26,9 +26,9 @@ IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY O
 #region CVS Information
 /*
  * $Source$
- * $Author: robloach $
- * $Date: 2007-02-27 19:52:34 +0100 (ti, 27 feb 2007) $
- * $Revision: 207 $
+ * $Author: borrillis $
+ * $Date: 2007-05-25 01:03:16 +0900 (Fri, 25 May 2007) $
+ * $Revision: 243 $
  */
 #endregion
 
@@ -36,6 +36,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.IO;
+using System.Text;
 
 using Prebuild.Core.Attributes;
 using Prebuild.Core.Interfaces;
@@ -230,45 +231,49 @@ namespace Prebuild.Core.Targets
 
         #region Fields
 
-        string solutionVersion = "9.00";
-        string productVersion = "8.0.50727";
         string schemaVersion = "2.0";
-        string versionName = "Visual C# 2005";
         VSVersion version = VSVersion.VS80;
 
         Hashtable tools;
         Kernel kernel;
 
+        protected virtual string ToolsVersionXml
+        {
+            get
+            {
+                return String.Empty;
+            }
+        }
+
+        protected virtual string SolutionTag
+        {
+            get { return "# Visual Studio 2005"; }
+        }
+
         /// <summary>
         /// Gets or sets the solution version.
         /// </summary>
         /// <value>The solution version.</value>
-        protected string SolutionVersion
+        protected virtual string SolutionVersion
         {
             get
             {
-                return this.solutionVersion;
-            }
-            set
-            {
-                this.solutionVersion = value;
+                return "9.00";
             }
         }
+
         /// <summary>
         /// Gets or sets the product version.
         /// </summary>
         /// <value>The product version.</value>
-        protected string ProductVersion
+        protected virtual string ProductVersion
         {
             get
             {
-                return this.productVersion;
-            }
-            set
-            {
-                this.productVersion = value;
+                return "8.0.50727";
             }
         }
+
         /// <summary>
         /// Gets or sets the schema version.
         /// </summary>
@@ -284,21 +289,19 @@ namespace Prebuild.Core.Targets
                 this.schemaVersion = value;
             }
         }
+
         /// <summary>
         /// Gets or sets the name of the version.
         /// </summary>
         /// <value>The name of the version.</value>
-        protected string VersionName
+        protected virtual string VersionName
         {
             get
             {
-                return this.versionName;
-            }
-            set
-            {
-                this.versionName = value;
+                return "Visual C# 2005";
             }
         }
+
         /// <summary>
         /// Gets or sets the version.
         /// </summary>
@@ -378,7 +381,7 @@ namespace Prebuild.Core.Targets
             #region Project File
             using (ps)
             {
-                ps.WriteLine("<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">");
+                ps.WriteLine("<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\"{0}>", ToolsVersionXml);
                 //ps.WriteLine("  <{0}", toolInfo.XMLTag);
                 ps.WriteLine("  <PropertyGroup>");
                 ps.WriteLine("    <ProjectType>Local</ProjectType>");
@@ -432,7 +435,7 @@ namespace Prebuild.Core.Targets
                     ps.WriteLine("    <ConfigurationOverrideFile>");
                     ps.WriteLine("    </ConfigurationOverrideFile>");
                     ps.WriteLine("    <DefineConstants>{0}</DefineConstants>", conf.Options["CompilerDefines"]);
-                    ps.WriteLine("    <DocumentationFile>{0}</DocumentationFile>", conf.Options["XmlDocFile"]);
+                    ps.WriteLine("    <DocumentationFile>{0}</DocumentationFile>", Helper.NormalizePath(conf.Options["XmlDocFile"].ToString()));
                     ps.WriteLine("    <DebugSymbols>{0}</DebugSymbols>", conf.Options["DebugInformation"]);
                     ps.WriteLine("    <FileAlignment>{0}</FileAlignment>", conf.Options["FileAlignment"]);
                     //                    ps.WriteLine("    <IncrementalBuild = \"{0}\"", conf.Options["IncrementalBuild"]);
@@ -459,7 +462,7 @@ namespace Prebuild.Core.Targets
                 // Assembly References
                 ps.WriteLine("  <ItemGroup>");
                 string refPath = ((ReferencePathNode) project.ReferencePaths[0]).Path;
-                
+
                 foreach (ReferenceNode refr in project.References)
                 {
                     if (!solution.ProjectsTable.ContainsKey(refr.Name))
@@ -472,7 +475,7 @@ namespace Prebuild.Core.Targets
 
                         string path;
                         
-                        if( refr.Name.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase ))
+                        if (refr.Name.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
                         {
                             path = Helper.NormalizePath(Path.Combine( refPath, refr.Name), '\\');
                         }
@@ -480,7 +483,7 @@ namespace Prebuild.Core.Targets
                         {
                             path = refr.Name + ".dll";
                         }
-                        
+
                         // TODO: Allow reference to *.exe files
                         ps.WriteLine("      <HintPath>{0}</HintPath>", path );
                         ps.WriteLine("      <Private>{0}</Private>", refr.LocalCopy);
@@ -603,34 +606,52 @@ namespace Prebuild.Core.Targets
                     {
                         if (!list.Contains(file))
                         {
-                            ps.Write("    <{0} ", project.Files.GetBuildAction(file));
-                            ps.WriteLine("Include=\"{0}\">", file);
+                        ps.Write("    <{0} ", project.Files.GetBuildAction(file));
 
+                        int startPos = 0;
+                        if ( project.Files.GetPreservePath( file ) )
+                        {
+                            while ( ( @"./\" ).IndexOf( file.Substring( startPos, 1 ) ) != -1 )
+                                startPos++;
 
-                            if (file.Contains("Designer.cs"))
-                            {
-                                ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", file.Substring(0, file.IndexOf(".Designer.cs")) + ".cs");
-                            }
-
-                            if (project.Files.GetIsLink(file))
-                            {
-                                ps.WriteLine("      <Link>{0}</Link>", Path.GetFileName(file));
-                            }
-                            else if (project.Files.GetBuildAction(file) != BuildAction.None)
-                            {
-                                if (project.Files.GetBuildAction(file) != BuildAction.EmbeddedResource)
-                                {
-                                    ps.WriteLine("      <SubType>{0}</SubType>", project.Files.GetSubType(file));
-                                }
-                            }
-                            if (project.Files.GetCopyToOutput(file) != CopyToOutput.Never)
-                            {
-                                ps.WriteLine("      <CopyToOutputDirectory>{0}</CopyToOutputDirectory>", project.Files.GetCopyToOutput(file));
-                            }
-
-                            ps.WriteLine("    </{0}>", project.Files.GetBuildAction(file));
                         }
+                        else
+                        {
+                            startPos = file.LastIndexOf( Path.GetFileName( file ) );
+                        }
+                        ps.WriteLine("Include=\"{0}\">", Helper.NormalizePath(file));
+
+
+                        if (file.Contains("Designer.cs"))
+                        {
+                                string d = ".Designer.cs";
+                                int index = file.Contains("\\") ? file.IndexOf("\\") + 1 : 0;
+                                ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", file.Substring(index, file.Length - index - d.Length) + ".cs");
+                        }
+
+                        if (project.Files.GetIsLink(file))
+                        {
+							string alias = project.Files.GetLinkPath( file );
+							alias += file.Substring( startPos );
+							alias = Helper.NormalizePath( alias );
+                            ps.WriteLine( "      <Link>{0}</Link>", alias );
+                        }
+                        else if (project.Files.GetBuildAction(file) != BuildAction.None)
+                        {
+                            if (project.Files.GetBuildAction(file) != BuildAction.EmbeddedResource)
+                            {
+								ps.WriteLine("      <SubType>{0}</SubType>", project.Files.GetSubType(file));
+							}
+                        }
+
+                        if (project.Files.GetCopyToOutput(file) != CopyToOutput.Never)
+                        {
+                            ps.WriteLine("      <CopyToOutputDirectory>{0}</CopyToOutputDirectory>", project.Files.GetCopyToOutput(file));
+                        }
+
+                        ps.WriteLine("    </{0}>", project.Files.GetBuildAction(file));
                     }
+                }
                 }
                 //                ps.WriteLine("      </Include>");
 
@@ -659,15 +680,14 @@ namespace Prebuild.Core.Targets
                 ps.WriteLine("  <PropertyGroup>");
                 //ps.WriteLine("      <Settings ReferencePath=\"{0}\">", MakeRefPath(project));
 
-
                 ps.WriteLine("    <Configuration Condition=\" '$(Configuration)' == '' \">Debug</Configuration>");
-                ps.WriteLine("    <Platform Condition=\" '$(Platform)' == '' \">AnyCPU</Platform>");
 
                 if (projectFile.Contains( "OpenSim.csproj" ))
                 {
                     ps.WriteLine("    <StartArguments>-loginserver -sandbox -accounts</StartArguments>");
                 }
 
+                ps.WriteLine("    <Platform Condition=\" '$(Platform)' == '' \">AnyCPU</Platform>");
                 ps.WriteLine("    <ReferencePath>{0}</ReferencePath>", MakeRefPath(project));
                 ps.WriteLine("    <LastOpenVersion>{0}</LastOpenVersion>", this.ProductVersion);
                 ps.WriteLine("    <ProjectView>ProjectFiles</ProjectView>");
@@ -679,7 +699,7 @@ namespace Prebuild.Core.Targets
                     ps.Write(" Condition = \" '$(Configuration)|$(Platform)' == '{0}|AnyCPU' \"", conf.Name);
                     ps.WriteLine(" />");
                 }
-                
+
                 ps.WriteLine("</Project>");
             }
             #endregion
@@ -699,98 +719,99 @@ namespace Prebuild.Core.Targets
 
             kernel.Log.Write("");
             string solutionFile = Helper.MakeFilePath(solution.FullPath, solution.Name, "sln");
-            StreamWriter ss = new StreamWriter(solutionFile);
-
-            kernel.CurrentWorkingDirectory.Push();
-            Helper.SetCurrentDir(Path.GetDirectoryName(solutionFile));
-
-            using (ss)
+            using (StreamWriter ss = new StreamWriter(solutionFile))
             {
-                ss.WriteLine("Microsoft Visual Studio Solution File, Format Version {0}", this.SolutionVersion);
-                ss.WriteLine("# Visual Studio 2005");
-                foreach (ProjectNode project in solution.Projects)
+                kernel.CurrentWorkingDirectory.Push();
+                Helper.SetCurrentDir(Path.GetDirectoryName(solutionFile));
+
+                using (ss)
                 {
-                    if (!tools.ContainsKey(project.Language))
+                    ss.WriteLine("Microsoft Visual Studio Solution File, Format Version {0}", this.SolutionVersion);
+                    ss.WriteLine(SolutionTag);
+                    foreach (ProjectNode project in solution.Projects)
                     {
-                        throw new UnknownLanguageException("Unknown .NET language: " + project.Language);
-                    }
-
-                    ToolInfo toolInfo = (ToolInfo)tools[project.Language];
-
-                    string path = Helper.MakePathRelativeTo(solution.FullPath, project.FullPath);
-                    ss.WriteLine("Project(\"{0}\") = \"{1}\", \"{2}\", \"{{{3}}}\"",
-                        toolInfo.Guid, project.Name, Helper.MakeFilePath(path, project.Name,
-                        toolInfo.FileExtension), project.Guid.ToString().ToUpper());
-
-                    //ss.WriteLine("  ProjectSection(ProjectDependencies) = postProject");
-                    //ss.WriteLine("  EndProjectSection");
-
-                    ss.WriteLine("EndProject");
-                }
-
-                if (solution.Files != null)
-                {
-                    ss.WriteLine("Project(\"{0}\") = \"Solution Items\", \"Solution Items\", \"{1}\"", "{2150E333-8FDC-42A3-9474-1A3956D46DE8}", "{468F1D07-AD17-4CC3-ABD0-2CA268E4E1A6}");
-                    ss.WriteLine("\tProjectSection(SolutionItems) = preProject");
-                    foreach (string file in solution.Files)
-                        ss.WriteLine("\t\t{0} = {0}", file);
-                    ss.WriteLine("\tEndProjectSection");
-                    ss.WriteLine("EndProject");
-                }
-
-                ss.WriteLine("Global");
-
-                ss.WriteLine("  GlobalSection(SolutionConfigurationPlatforms) = preSolution");
-                foreach (ConfigurationNode conf in solution.Configurations)
-                {
-                    ss.WriteLine("    {0}|Any CPU = {0}|Any CPU", conf.Name);
-                }
-                ss.WriteLine("  EndGlobalSection");
-
-                if (solution.Projects.Count > 1)
-                {
-                    ss.WriteLine("  GlobalSection(ProjectDependencies) = postSolution");
-                }
-                foreach (ProjectNode project in solution.Projects)
-                {
-                    for (int i = 0; i < project.References.Count; i++)
-                    {
-                        ReferenceNode refr = (ReferenceNode)project.References[i];
-                        if (solution.ProjectsTable.ContainsKey(refr.Name))
+                        if (!tools.ContainsKey(project.Language))
                         {
-                            ProjectNode refProject = (ProjectNode)solution.ProjectsTable[refr.Name];
-                            ss.WriteLine("    ({{{0}}}).{1} = ({{{2}}})",
-                                project.Guid.ToString().ToUpper()
-                                , i,
-                                refProject.Guid.ToString().ToUpper()
-                                );
+                            throw new UnknownLanguageException("Unknown .NET language: " + project.Language);
                         }
+
+                        ToolInfo toolInfo = (ToolInfo)tools[project.Language];
+
+                        string path = Helper.MakePathRelativeTo(solution.FullPath, project.FullPath);
+                        ss.WriteLine("Project(\"{0}\") = \"{1}\", \"{2}\", \"{{{3}}}\"",
+                                     toolInfo.Guid, project.Name, Helper.MakeFilePath(path, project.Name,
+                                                                                      toolInfo.FileExtension), project.Guid.ToString().ToUpper());
+
+                        //ss.WriteLine("  ProjectSection(ProjectDependencies) = postProject");
+                        //ss.WriteLine("  EndProjectSection");
+
+                        ss.WriteLine("EndProject");
                     }
-                }
-                if (solution.Projects.Count > 1)
-                {
-                    ss.WriteLine("  EndGlobalSection");
-                }
-                ss.WriteLine("  GlobalSection(ProjectConfigurationPlatforms) = postSolution");
-                foreach (ProjectNode project in solution.Projects)
-                {
+
+                    if (solution.Files != null)
+                    {
+                        ss.WriteLine("Project(\"{0}\") = \"Solution Items\", \"Solution Items\", \"{1}\"", "{2150E333-8FDC-42A3-9474-1A3956D46DE8}", "{468F1D07-AD17-4CC3-ABD0-2CA268E4E1A6}");
+                        ss.WriteLine("\tProjectSection(SolutionItems) = preProject");
+                        foreach (string file in solution.Files)
+                            ss.WriteLine("\t\t{0} = {0}", file);
+                        ss.WriteLine("\tEndProjectSection");
+                        ss.WriteLine("EndProject");
+                    }
+
+                    ss.WriteLine("Global");
+
+                    ss.WriteLine("  GlobalSection(SolutionConfigurationPlatforms) = preSolution");
                     foreach (ConfigurationNode conf in solution.Configurations)
                     {
-                        ss.WriteLine("    {{{0}}}.{1}|Any CPU.ActiveCfg = {1}|Any CPU",
-                            project.Guid.ToString().ToUpper(),
-                            conf.Name);
-
-                        ss.WriteLine("    {{{0}}}.{1}|Any CPU.Build.0 = {1}|Any CPU",
-                            project.Guid.ToString().ToUpper(),
-                            conf.Name);
+                        ss.WriteLine("    {0}|Any CPU = {0}|Any CPU", conf.Name);
                     }
-                }
-                ss.WriteLine("  EndGlobalSection");
-                ss.WriteLine("  GlobalSection(SolutionProperties) = preSolution");
-                ss.WriteLine("    HideSolutionNode = FALSE");
-                ss.WriteLine("  EndGlobalSection");
+                    ss.WriteLine("  EndGlobalSection");
 
-                ss.WriteLine("EndGlobal");
+                    if (solution.Projects.Count > 1)
+                    {
+                        ss.WriteLine("  GlobalSection(ProjectDependencies) = postSolution");
+                    }
+                    foreach (ProjectNode project in solution.Projects)
+                    {
+                        for (int i = 0; i < project.References.Count; i++)
+                        {
+                            ReferenceNode refr = (ReferenceNode)project.References[i];
+                            if (solution.ProjectsTable.ContainsKey(refr.Name))
+                            {
+                                ProjectNode refProject = (ProjectNode)solution.ProjectsTable[refr.Name];
+                                ss.WriteLine("    ({{{0}}}).{1} = ({{{2}}})",
+                                             project.Guid.ToString().ToUpper()
+                                             , i,
+                                             refProject.Guid.ToString().ToUpper()
+                                    );
+                            }
+                        }
+                    }
+                    if (solution.Projects.Count > 1)
+                    {
+                        ss.WriteLine("  EndGlobalSection");
+                    }
+                    ss.WriteLine("  GlobalSection(ProjectConfigurationPlatforms) = postSolution");
+                    foreach (ProjectNode project in solution.Projects)
+                    {
+                        foreach (ConfigurationNode conf in solution.Configurations)
+                        {
+                            ss.WriteLine("    {{{0}}}.{1}|Any CPU.ActiveCfg = {1}|Any CPU",
+                                         project.Guid.ToString().ToUpper(),
+                                         conf.Name);
+
+                            ss.WriteLine("    {{{0}}}.{1}|Any CPU.Build.0 = {1}|Any CPU",
+                                         project.Guid.ToString().ToUpper(),
+                                         conf.Name);
+                        }
+                    }
+                    ss.WriteLine("  EndGlobalSection");
+                    ss.WriteLine("  GlobalSection(SolutionProperties) = preSolution");
+                    ss.WriteLine("    HideSolutionNode = FALSE");
+                    ss.WriteLine("  EndGlobalSection");
+
+                    ss.WriteLine("EndGlobal");
+                }
             }
 
             kernel.CurrentWorkingDirectory.Pop();
