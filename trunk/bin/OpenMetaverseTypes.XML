@@ -546,6 +546,15 @@
             <param name="str">The string to convert</param>
             <returns>A null-terminated UTF8 byte array</returns>
         </member>
+        <member name="M:OpenMetaverse.Utils.HexStringToBytes(System.String,System.Boolean)">
+            <summary>
+            Converts a string containing hexadecimal characters to a byte array
+            </summary>
+            <param name="hexString">String containing hexadecimal characters</param>
+            <param name="handleDirty">If true, gracefully handles null, empty and
+            uneven strings as well as stripping unconvertable characters</param>
+            <returns>The converted byte array</returns>
+        </member>
         <member name="M:OpenMetaverse.Utils.IsHexDigit(System.Char)">
             <summary>
             Returns true is c is a hexadecimal digit (A-F, a-f, 0-9)
@@ -684,6 +693,15 @@
             <param name="lhs">First value</param>
             <param name="rhs">Second value</param>
         </member>
+        <member name="M:OpenMetaverse.Utils.EnumTryParse``1(System.String,``0@)">
+            <summary>
+            Try to parse an enumeration value from a string
+            </summary>
+            <typeparam name="T">Enumeration type</typeparam>
+            <param name="strType">String value to parse</param>
+            <param name="result">Enumeration value on success</param>
+            <returns>True if the parsing succeeded, otherwise false</returns>
+        </member>
         <member name="F:OpenMetaverse.Utils.EnUsCulture">
             <summary>Provide a single instance of the CultureInfo class to
             help parsing in situations where the grid assumes an en-us 
@@ -695,6 +713,10 @@
         <member name="F:OpenMetaverse.Utils.MD5Builder">
             <summary>Provide a single instance of the MD5 class to avoid making
             duplicate copies</summary>
+        </member>
+        <member name="F:OpenMetaverse.Utils.SHA1Builder">
+            <summary>Provide a single instance of the SHA-1 class to avoid
+            making duplicate copies</summary>
         </member>
         <member name="M:OpenMetaverse.Utils.Clamp(System.Single,System.Single,System.Single)">
             <summary>
@@ -754,6 +776,13 @@
             </summary>
             <param name="data">Byte array to compute the hash for</param>
             <returns>MD5 hash of the input data</returns>
+        </member>
+        <member name="M:OpenMetaverse.Utils.SHA1(System.Byte[])">
+            <summary>
+            Compute the SHA-1 hash for a byte array
+            </summary>
+            <param name="data">Byte array to compute the hash for</param>
+            <returns>SHA-1 hash of the input data</returns>
         </member>
         <member name="M:OpenMetaverse.Utils.MD5(System.String)">
             <summary>
