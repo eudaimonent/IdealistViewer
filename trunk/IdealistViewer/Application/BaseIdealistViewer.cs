@@ -278,7 +278,9 @@ wide character strings when displaying text.
                 driver.GetTexture("irrlicht2_bk.jpg")}, 0);
 
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
-
+            SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(128, 40, 128), new Vector3D(0, 0, 0), new Vector3D(0.25f, 0.25f, 0.25f), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+            tree.Position = new Vector3D(128, 20, 128);
+            //tree.Scale = new Vector3D(0.25f, 0.25f, 0.25f);
             cam = new Camera(smgr);
 
 

@@ -152,6 +152,7 @@ namespace IdealistViewer
                     if (vObj.prim.Textures.DefaultTexture != null)
                     {
                         Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
+                        
                         float shinyval = 0;
                         switch (vObj.prim.Textures.DefaultTexture.Shiny)
                         {
@@ -256,8 +257,7 @@ namespace IdealistViewer
                     sn.Rotation = vObj.node.Rotation;
                     sn.Scale = vObj.node.Scale;
                     sn.TriangleSelector = vObj.node.TriangleSelector;
-
-
+                    
                     SceneNode oldnode = vObj.node;
                     vObj.node = sn;
                     device.SceneManager.AddToDeletionQueue(oldnode);
