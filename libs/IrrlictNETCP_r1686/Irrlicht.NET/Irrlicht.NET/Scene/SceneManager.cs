@@ -316,6 +316,17 @@ namespace IrrlichtNETCP
 				NativeElement.GetObject(SceneManager_AddTerrainSceneNode(_raw, heightMap, par, id, position.ToUnmanaged(), rotation.ToUnmanaged(), scale.ToUnmanaged(), vertexColor.ToUnmanaged(), maxLOD, patchSize),
 										typeof(TerrainSceneNode));
 		}
+
+        public SceneNode AddTreeSceneNode(string XMLString, SceneNode parent, int id, Vector3D position,
+            Vector3D rotation, Vector3D scale, Texture TreeTexture, Texture LeafTexture, Texture BillTexture)
+        {
+
+            IntPtr par = IntPtr.Zero;
+            if (parent != null)
+                par = parent.Raw;
+            return (SceneNode)
+                NativeElement.GetObject(SceneManager_AddTreeSceneNode(_raw,XMLString,par,id,position.ToUnmanaged(),rotation.ToUnmanaged(),scale.ToUnmanaged(), TreeTexture.Raw, LeafTexture.Raw, BillTexture.Raw), typeof(SceneNode));
+        }
 		
 		/// <summary>
 		/// Adds a simple cube
@@ -926,7 +937,10 @@ namespace IrrlichtNETCP
 	    static extern IntPtr SceneManager_AddTerrainMesh(IntPtr scenemanager, string meshname, IntPtr texture, IntPtr heightmap, int[] stretchSize, float maxHeight, int[] defaultVertexBlockSize);
 	    
 	     [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
-	    static extern IntPtr SceneManager_AddTerrainSceneNode(IntPtr scenemanager, string heightMap, IntPtr parent, int id, float[] position, float[] rotation, float[] scale, int[] vertexColor,int maxLOD, TerrainPatchSize patchSize);
+        static extern IntPtr SceneManager_AddTerrainSceneNode(IntPtr scenemanager, string TreeXML, IntPtr parent, int id, float[] position, float[] rotation, float[] scale, int[] vertexColor, int maxLOD, TerrainPatchSize patchSize);
+
+        [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
+        static extern IntPtr SceneManager_AddTreeSceneNode(IntPtr scenemanager, string heightMap, IntPtr parent, int id, float[] position, float[] rotation, float[] scale, IntPtr TreeTexture, IntPtr LeafTexture, IntPtr BillTexture);
 	    
 	     [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern IntPtr SceneManager_AddCubeSceneNode(IntPtr scenemanager, float size, IntPtr parent, int id);
