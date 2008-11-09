@@ -745,11 +745,11 @@
 					>
 				</File>
 				<File
-					RelativePath=".\..\..\include\SSkinMeshBuffer.h"
+					RelativePath=".\..\..\include\SParticle.h"
 					>
 				</File>
 				<File
-					RelativePath=".\..\..\include\SParticle.h"
+					RelativePath=".\..\..\include\SSkinMeshBuffer.h"
 					>
 				</File>
 				<File
@@ -1650,6 +1650,14 @@
 			Name="scene impl"
 			>
 			<File
+				RelativePath=".\CBillboardGroupSceneNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CBillboardGroupSceneNode.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CDefaultSceneNodeAnimatorFactory.cpp"
 				>
 			</File>
@@ -1698,7 +1706,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CTreeGenerator.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CTreeGenerator.h"
+				>
+			</File>
+			<File
+				RelativePath=".\CTreeSceneNode.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\CTreeSceneNode.h"
+				>
+			</File>
+			<File
 				RelativePath=".\OctTree.h"
+				>
+			</File>
+			<File
+				RelativePath=".\STreeMesh.h"
 				>
 			</File>
 			<Filter
@@ -2265,19 +2293,19 @@
 					>
 				</File>
 				<File
-					RelativePath=".\CSTLMeshWriter.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\CSTLMeshWriter.h"
-					>
-				</File>
-				<File
 					RelativePath=".\COBJMeshWriter.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\COBJMeshWriter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\CSTLMeshWriter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\CSTLMeshWriter.h"
 					>
 				</File>
 			</Filter>

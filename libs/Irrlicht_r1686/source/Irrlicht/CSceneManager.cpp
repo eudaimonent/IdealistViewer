@@ -14,6 +14,8 @@
 #include "IGUIEnvironment.h"
 #include "IMaterialRenderer.h"
 #include "IReadFile.h"
+#include "ematerialtypes.h"
+#include "IGPUProgrammingServices.h"
 
 #include "os.h"
 
@@ -115,6 +117,7 @@
 
 #include "CLightSceneNode.h"
 #include "CBillboardSceneNode.h"
+#include "CBillboardGroupSceneNode.h"
 #include "CMeshSceneNode.h"
 #include "CSkyBoxSceneNode.h"
 #include "CSkyDomeSceneNode.h"
@@ -125,6 +128,9 @@
 #include "CEmptySceneNode.h"
 #include "CTextSceneNode.h"
 #include "CDefaultSceneNodeFactory.h"
+#include "CTreeSceneNode.h"
+#include "CTreeGenerator.h"
+
 
 #include "CSceneCollisionManager.h"
 #include "CTriangleSelector.h"
@@ -761,6 +767,56 @@ IParticleSystemSceneNode* CSceneManager::addParticleSystemSceneNode(
 	return node;
 }
 
+
+//! Adds a terrain scene node to the scene graph.
+CTreeSceneNode* CSceneManager::addTreeSceneNode(
+	const c8* treeXMLFileName,
+	ISceneNode* parent, s32 id,
+	const core::vector3df& position,
+	const core::vector3df& rotation,
+	const core::vector3df& scale,
+	video::ITexture* TreeTexture,
+    video::ITexture* LeafTexture,
+    video::ITexture* BillTexture
+	)
+{
+	CTreeGenerator* Generator = new CTreeGenerator( this );
+	CTreeSceneNode* tree = 0;
+	io::IXMLReader* xml = FileSystem->createXMLReader( treeXMLFileName );
+	Generator->loadFromXML( xml );
+	xml->drop();
+	
+	video::E_MATERIAL_TYPE leafMaterialType = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	leafMaterialType = (video::E_MATERIAL_TYPE) Driver->getGPUProgrammingServices()->addHighLevelShaderMaterialFromFiles(
+        "../leaves.vert",
+        "main",
+		(irr::video::E_VERTEX_SHADER_TYPE)1,
+        "../leaves.frag",
+        "main",
+		(irr::video::E_PIXEL_SHADER_TYPE)4,
+        0,
+		(irr::video::E_MATERIAL_TYPE)13,
+        0);
+	tree = new CTreeSceneNode( getRootSceneNode(),this);
+	tree->drop();
+
+	tree->setMaterialFlag(video::EMF_LIGHTING, true);
+	tree->setup( Generator, 0, BillTexture );
+	tree->getLeafNode()->getMaterial(0).TextureLayer[0].AnisotropicFilter = true;
+	tree->getLeafNode()->getMaterial(0).TextureLayer[0].BilinearFilter = false;
+
+	tree->getLeafNode()->setMaterialTexture( 0, LeafTexture );
+    tree->getLeafNode()->setMaterialType( video::EMT_TRANSPARENT_ALPHA_CHANNEL_REF );
+	
+    tree->setMaterialTexture( 0, TreeTexture );
+    
+    //if ( lightsEnabled )
+       // tree->getLeafNode()->applyVertexShadows( lightDir, 1.0f, 0.25f );
+    
+    tree->getLeafNode()->setMaterialType( leafMaterialType );
+
+	return tree;
+}
 
 //! Adds a terrain scene node to the scene graph.
 ITerrainSceneNode* CSceneManager::addTerrainSceneNode(
