@@ -104,16 +104,11 @@ namespace IdealistViewer
                 numPrimFaces = (newPrim.viewerFaces[i].primFaceNumber > numPrimFaces) ? newPrim.viewerFaces[i].primFaceNumber : numPrimFaces;
                 startface = (newPrim.viewerFaces[i].primFaceNumber < numPrimFaces) ? newPrim.viewerFaces[i].primFaceNumber : numPrimFaces;
             }
-            MeshBuffer[] mb;
 
-            if (numPrimFaces == 0)
-            {
-                mb = new MeshBuffer[1];
-            }
-            else
-            {
-                mb = new MeshBuffer[numPrimFaces];
-            }
+            MeshBuffer[] mb = new MeshBuffer[numPrimFaces + 1];
+                  
+           
+            
 
             for (int i=0;i<mb.Length;i++)
                 mb[i] = new MeshBuffer(VertexType.Standard);
@@ -133,8 +128,8 @@ namespace IdealistViewer
                 for (uint i = 0; i < numViewerFaces; i++)
                 {
                     ViewerFace vf = newPrim.viewerFaces[(int)i];
-                    
-                    int face = (vf.primFaceNumber != 0) ? vf.primFaceNumber - 1 : 0;
+
+                    int face = vf.primFaceNumber;
 
                     if (isSphere)
                     {

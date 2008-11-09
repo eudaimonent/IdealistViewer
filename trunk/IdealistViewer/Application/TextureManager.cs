@@ -204,7 +204,7 @@ namespace IdealistViewer
                             Primitive.TextureEntryFace teface = vObj.prim.Textures.FaceTextures[i];
                             
 
-                            if (vObj.mesh.MeshBufferCount - 1 > i)
+                            if (vObj.mesh.MeshBufferCount > i)
                             {
                                 //if (tex.
                                 Color4 coldata = teface.RGBA;
