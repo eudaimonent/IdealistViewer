@@ -99,6 +99,7 @@ namespace scene
 	class ILightSceneNode;
 	class IBillboardSceneNode;
 	class ITerrainSceneNode;
+	class CTreeSceneNode;
 	class IMeshSceneNode;
 	class IMeshLoader;
 	class ISceneCollisionManager;
@@ -791,6 +792,7 @@ namespace scene
 			s32 maxLOD=5, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17, s32 smoothFactor=0,
 			bool addAlsoIfHeightmapEmpty = false) = 0;
 
+
 		//! Adds a quake3 scene node to the scene graph.
 		/** A Quake3 Scene renders multiple meshes for a specific HighLanguage Shader (Quake3 Style )
 		 \return Returns a pointer to the quake3 scene node if successful, otherwise NULL.
@@ -799,6 +801,18 @@ namespace scene
 												ISceneNode* parent=0, s32 id=-1
 												) = 0;
 
+
+
+		virtual CTreeSceneNode* addTreeSceneNode(
+			const c8* treeXMLFileName,
+			ISceneNode* parent=0, s32 id=-1,
+			const core::vector3df& position = core::vector3df(0.0f,0.0f,0.0f),
+			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
+			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
+			irr::video::ITexture* TreeTexture = 0,
+			irr::video::ITexture* LeafTexture = 0,
+			irr::video::ITexture* BillTexture = 0
+			) = 0;
 
 		//! Adds an empty scene node to the scene graph.
 		/** Can be used for doing advanced transformations
