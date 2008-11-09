@@ -95,21 +95,9 @@ namespace IdealistViewer
             Mesh mesh = new Mesh();
            
             int numViewerFaces = newPrim.viewerFaces.Count;
-            int numPrimFaces = 0;
-            int startface = 90;
-            
-            
-            for (int i = 0; i < numViewerFaces; i++)
-            {
-                numPrimFaces = (newPrim.viewerFaces[i].primFaceNumber > numPrimFaces) ? newPrim.viewerFaces[i].primFaceNumber : numPrimFaces;
-                startface = (newPrim.viewerFaces[i].primFaceNumber < numPrimFaces) ? newPrim.viewerFaces[i].primFaceNumber : numPrimFaces;
-            }
 
-            MeshBuffer[] mb = new MeshBuffer[numPrimFaces + 1];
+            MeshBuffer[] mb = new MeshBuffer[newPrim.numPrimFaces];
                   
-           
-            
-
             for (int i=0;i<mb.Length;i++)
                 mb[i] = new MeshBuffer(VertexType.Standard);
              
@@ -118,7 +106,7 @@ namespace IdealistViewer
                 
                 
 
-                m_log.DebugFormat("MaxFace:{0} - StartFace:{1}",numPrimFaces,startface);
+               
 
                 uint[] index = new uint[mb.Length];
                 
@@ -129,7 +117,7 @@ namespace IdealistViewer
                 {
                     ViewerFace vf = newPrim.viewerFaces[(int)i];
 
-                    int face = vf.primFaceNumber;
+                    
 
                     if (isSphere)
                     {
@@ -139,9 +127,9 @@ namespace IdealistViewer
                     }
                     try
                     {
-                        mb[face].SetVertex(index[face], new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
-                        mb[face].SetVertex(index[face] + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
-                        mb[face].SetVertex(index[face] + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber], new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
 
                     }
                     catch (OutOfMemoryException)
@@ -149,11 +137,11 @@ namespace IdealistViewer
                         return null;
                     }
 
-                    mb[face].SetIndex(index[face], (ushort)index[face]);
-                    mb[face].SetIndex(index[face] + 1, (ushort)(index[face] + 2));
-                    mb[face].SetIndex(index[face] + 2, (ushort)(index[face] + 1));
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber], (ushort)index[vf.primFaceNumber]);
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 1, (ushort)(index[vf.primFaceNumber] + 2));
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 2, (ushort)(index[vf.primFaceNumber] + 1));
 
-                    index[face] += 3;
+                    index[vf.primFaceNumber] += 3;
                 }
 
                 for (int i=0; i<mb.Length;i++)
@@ -164,6 +152,7 @@ namespace IdealistViewer
             }
             catch (AccessViolationException)
             {
+                m_log.Error("ACCESSVIOLATION");
                 mesh = null;
             }
 
