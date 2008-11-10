@@ -103,11 +103,6 @@ namespace IdealistViewer
              
             try
             {
-                
-                
-
-               
-
                 uint[] index = new uint[mb.Length];
                 
                 for(int i=0;i<index.Length;i++)
@@ -116,8 +111,6 @@ namespace IdealistViewer
                 for (uint i = 0; i < numViewerFaces; i++)
                 {
                     ViewerFace vf = newPrim.viewerFaces[(int)i];
-
-                    
 
                     if (isSphere)
                     {
@@ -157,6 +150,72 @@ namespace IdealistViewer
             }
 
             return mesh;
+        }
+
+
+        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap)
+        {
+            SculptMesh newSculpty = new SculptMesh(bitmap, SculptMesh.SculptType.sphere, 32, true);
+
+            Color color = new Color(255, 255, 0, 50);
+
+            Mesh mesh = new Mesh();
+
+            int numViewerFaces = newSculpty.viewerFaces.Count;
+
+            MeshBuffer[] mb = new MeshBuffer[1];
+
+            for (int i = 0; i < mb.Length; i++)
+                mb[i] = new MeshBuffer(VertexType.Standard);
+
+            try
+            {
+                uint[] index = new uint[mb.Length];
+
+                for (int i = 0; i < index.Length; i++)
+                    index[i] = 0;
+
+                for (uint i = 0; i < numViewerFaces; i++)
+                {
+                    ViewerFace vf = newSculpty.viewerFaces[(int)i];
+
+                    try
+                    {
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber], new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
+
+                    }
+                    catch (OutOfMemoryException)
+                    {
+                        return null;
+                    }
+
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber], (ushort)index[vf.primFaceNumber]);
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 1, (ushort)(index[vf.primFaceNumber] + 2));
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 2, (ushort)(index[vf.primFaceNumber] + 1));
+
+                    index[vf.primFaceNumber] += 3;
+                }
+
+                for (int i = 0; i < mb.Length; i++)
+                    mesh.AddMeshBuffer(mb[i]);
+
+                // don't dispose here
+                //mb.Dispose();
+            }
+            catch (AccessViolationException)
+            {
+                m_log.Error("ACCESSVIOLATION");
+                mesh = null;
+            }
+
+            return mesh;
+        }
+
+        internal static Mesh SculptIrrMesh(System.Drawing.Image image)
+        {
+            throw new NotImplementedException();
         }
     }
 }

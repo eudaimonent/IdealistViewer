@@ -316,9 +316,30 @@ wide character strings when displaying text.
             //if (samplePrim != null)
             //{
             //    SceneNode samplePrimNode = smgr.AddMeshSceneNode(samplePrim, smgr.RootSceneNode, -1);
-            //    samplePrimNode.Position = new Vector3D(128,64,128);
+            //    samplePrimNode.Position = new Vector3D(128, 64, 128);
             //    samplePrimNode.SetMaterialFlag(MaterialFlag.Lighting, true);
             //}
+
+            // dahlia's sample sculpty
+
+            string sculptFileName = "c:\\sampleSculpty.bmp";
+            try
+            {
+                Mesh samplePrim = null;
+                System.Drawing.Image image = System.Drawing.Bitmap.FromFile(sculptFileName);
+
+                samplePrim = PrimMesherG.SculptIrrMesh((System.Drawing.Bitmap)image);
+                if (samplePrim != null)
+                {
+                    SceneNode samplePrimNode = smgr.AddMeshSceneNode(samplePrim, smgr.RootSceneNode, -1);
+                    samplePrimNode.Position = new Vector3D(128, 32, 128);
+                    samplePrimNode.SetMaterialFlag(MaterialFlag.Lighting, true);
+                }
+            }
+            catch (Exception e)
+            {
+                m_log.Error("Unable to open sample sculpty file: " + sculptFileName, e);
+            }
 
             //generateRandomPrim(4000);
             AnimatedMesh mesh = smgr.AddHillPlaneMesh("myHill",
