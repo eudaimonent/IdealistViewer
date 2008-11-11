@@ -24,7 +24,7 @@ namespace IdealistViewer
 
         public Bitmap ResultBitmap
         {
-            get { return bBitmap; }
+            get { return bLOD; }
         }
 
         public int LOD
@@ -58,7 +58,7 @@ namespace IdealistViewer
             bBitmap = new Bitmap(oBitmap);
             if (bBitmap.Width == bBitmap.Height)
             {
-
+                DoLOD();
             }
             else
             {
