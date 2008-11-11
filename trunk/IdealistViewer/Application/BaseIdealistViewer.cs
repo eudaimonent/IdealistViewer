@@ -1205,7 +1205,7 @@ wide character strings when displaying text.
                     sculptYN = false;
                 }
 
-                if (sculptYN == false)
+                if (sculptYN == false || sculpttex == null)
                 {
                     vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
                 }
