@@ -322,7 +322,7 @@ wide character strings when displaying text.
 
             // dahlia's sample sculpty
 
-            string sculptFileName = "c:\\sampleSculpty.bmp";
+            string sculptFileName = "d:\\sampleSculpty.bmp";
             try
             {
                 Mesh samplePrim = null;
@@ -334,7 +334,8 @@ wide character strings when displaying text.
                     SceneNode samplePrimNode = smgr.AddMeshSceneNode(samplePrim, smgr.RootSceneNode, -1);
                     samplePrimNode.Position = new Vector3D(128, 32, 128);
                     samplePrimNode.SetMaterialFlag(MaterialFlag.Lighting, true);
-                }
+                    samplePrimNode.SetMaterialTexture(0, driver.GetTexture("d:\\sampleSculptyTexture.bmp"));
+                    }
             }
             catch (Exception e)
             {

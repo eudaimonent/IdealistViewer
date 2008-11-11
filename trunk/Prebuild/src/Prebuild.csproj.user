@@ -2,8 +2,8 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ReferencePath>C:\Documents and Settings\dcolive\Desktop\IdealistViewer_forge\trunk\bin\</ReferencePath>
-    <LastOpenVersion>8.0.50727</LastOpenVersion>
+    <ReferencePath>D:\Idealist.20081108\bin\</ReferencePath>
+    <LastOpenVersion>9.0.21022</LastOpenVersion>
     <ProjectView>ProjectFiles</ProjectView>
     <ProjectTrust>0</ProjectTrust>
   </PropertyGroup>
