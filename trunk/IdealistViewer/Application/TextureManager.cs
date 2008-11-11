@@ -104,6 +104,49 @@ namespace IdealistViewer
 
         }
 
+        public bool tryGetTexture(UUID assetID, out TextureExtended tex)
+        {
+
+            tex = null;
+            lock (memoryTextures)
+            {
+                if (memoryTextures.ContainsKey(assetID))
+                {
+                    tex = memoryTextures[assetID];
+                }
+            }
+
+            if (tex != null)
+            {
+                return true;
+            }
+
+            string texturefolderpath = device.FileSystem.WorkingDirectory; //System.IO.Path.Combine(Util.ApplicationDataDirectory, imagefolder);
+            //device.FileSystem.WorkingDirectory = texturepath;
+
+            if (File.Exists(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga")))
+            {
+                string oldfs = device.FileSystem.WorkingDirectory;
+                device.FileSystem.WorkingDirectory = texturefolderpath;
+                Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga"));
+                tex = new TextureExtended(texTnorm.Raw);
+                if (tex != null)
+                {
+                    lock (memoryTextures)
+                    {
+                        if (!memoryTextures.ContainsKey(assetID))
+                        {
+                            memoryTextures.Add(assetID, tex);
+                        }
+                    }
+                    return true;
+                }
+
+            }
+
+            return false;
+        }
+
         public void applyTexture(TextureExtended tex, VObject vObj, UUID AssetID)
         {
             try

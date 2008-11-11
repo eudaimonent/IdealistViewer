@@ -38,6 +38,7 @@ namespace IdealistViewer
 
         private static Queue<VObject> objectModQueue = new Queue<VObject>();
         private static Queue<VObject> objectMeshQueue = new Queue<VObject>();
+        public static Dictionary<string, UUID> waitingSculptQueue = new Dictionary<string, UUID>();
 
         private static Queue<VObject> UnAssignedChildObjectModQueue = new Queue<VObject>();
         private static Queue<TextureComplete> assignTextureQueue = new Queue<TextureComplete>();
@@ -279,7 +280,7 @@ wide character strings when displaying text.
 
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
             SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(128, 40, 128), new Vector3D(0, 0, 0), new Vector3D(0.25f, 0.25f, 0.25f), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
-            tree.Position = new Vector3D(128, 20, 128);
+            tree.Position = new Vector3D(129, 22, 129);
             //tree.Scale = new Vector3D(0.25f, 0.25f, 0.25f);
             cam = new Camera(smgr);
 
@@ -621,11 +622,35 @@ wide character strings when displaying text.
                         break;
 
                     tx = assignTextureQueue.Dequeue();
-                    tex = new TextureExtended(driver.GetTexture(tx.texture).Raw);
+                    // Try not to double load the texture first.
+                    if (!textureMan.tryGetTexture(tx.textureID, out tex))
+                    {
+                        tex = new TextureExtended(driver.GetTexture(tx.texture).Raw);
+                    }
                 }
 
                 if (tx.vObj != null && tex != null)
                 {
+                    
+                        if (tx.textureID == tx.vObj.prim.Sculpt.SculptTexture)
+                        {
+                            tx.vObj.updateFullYN = true;
+                            //tx.vObj.mesh.Dispose();
+                            if (tx.vObj.node != null && tx.vObj.node.Raw != IntPtr.Zero)
+                                smgr.AddToDeletionQueue(tx.vObj.node);
+                            
+                            //tx.vObj.mesh = null;
+
+                            lock (objectMeshQueue)
+                            {
+                                m_log.Warn("[SCULPT]: Got Sculpt Callback, remeshing");
+                                objectMeshQueue.Enqueue(tx.vObj);
+                            }
+                            continue;
+                            // applyTexture will skip over textures that are not 
+                            // defined in the textureentry
+                        }
+                    
                     textureMan.applyTexture(tex, tx.vObj, tx.textureID);
                 }
             }
@@ -679,6 +704,9 @@ wide character strings when displaying text.
                 }
                 if (vObj.prim != null)
                 {
+
+
+
                     ulong simhandle = vObj.prim.RegionHandle;
 
                     if (simhandle == 0)
@@ -729,6 +757,8 @@ wide character strings when displaying text.
                     }
                     //}
                     bool creatednode = false;
+#region Avatar 
+
                     SceneNode node = null;
                     if (vObj.prim is Avatar)
                     {
@@ -794,14 +824,20 @@ wide character strings when displaying text.
                         {
                             node = vObj.node;
                         }
-                        
+
                     }
+#endregion
                     else
                     {
                         if (vObj.mesh == null)
                             continue;
                         if (vObj.updateFullYN)
                         {
+                            if (vObj.prim.Sculpt.SculptTexture != UUID.Zero)
+                                m_log.Warn("[SCULPT]: Sending sculpt to the scene....");
+
+                            //Vertex3D vtest = vObj.mesh.GetMeshBuffer(0).GetVertex(0);
+                            //System.Console.WriteLine(" X:" + vtest.Position.X + " Y:" + vtest.Position.Y + " Z:" + vtest.Position.Z);
                             node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
 
                             creatednode = true;
@@ -1132,6 +1168,9 @@ wide character strings when displaying text.
 
         public void doProcessMesh(int pObjects)
         {
+            bool sculptYN = false;
+            TextureExtended sculpttex = null;
+
             for (int i = 0; i < pObjects; i++)
             {
                 VObject vobj = null;
@@ -1142,30 +1181,55 @@ wide character strings when displaying text.
                     vobj = objectMeshQueue.Dequeue();
                 }
 
-
-                vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
-                if (vobj.prim.Textures != null)
+                if (textureMan != null)
                 {
-                    if (vobj.prim.Textures.DefaultTexture != null)
+                    if (vobj.prim.Sculpt.SculptTexture != UUID.Zero)
                     {
-
-                        Color4 coldata = vobj.prim.Textures.DefaultTexture.RGBA;
-                        if (coldata != Color4.White)
+                        m_log.Warn("[SCULPT]: Got Sculpt");
+                        if (!textureMan.tryGetTexture(vobj.prim.Sculpt.SculptTexture, out sculpttex))
                         {
-                            Mesh coolmesh = smgr.MeshManipulator.CreateMeshWithTangents(vobj.mesh);
-                            vobj.mesh = coolmesh;
-                            if (coldata.R != 1f || coldata.B != 1f || coldata.G != 1f)
-                            {
-                                smgr.MeshManipulator.SetVertexColors(vobj.mesh, new Color((int)(coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.G * 255), (int)(coldata.B * 255)));
-                            }
-                            if (coldata.A != 1f)
-                            {
-                                smgr.MeshManipulator.SetVertexColorAlpha(vobj.mesh,(int)(coldata.A * 256f));
-                            }
+                            m_log.Warn("[SCULPT]: Didn't have texture, requesting it");
+                            textureMan.RequestImage(vobj.prim.Sculpt.SculptTexture, vobj);
+                            //Sculpt textures will cause the prim to get put back into the Mesh objects queue
+                            continue;
                         }
-                        
+                        else
+                        {
+                            m_log.Warn("[SCULPT]: have texture, setting sculpt to true");
+                            sculptYN = true;
+                        }
                     }
                 }
+                else
+                {
+                    sculptYN = false;
+                }
+
+                if (sculptYN == false)
+                {
+                    vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
+                }
+                else
+                {
+                    float LOD = 32f;
+                    
+                    if (sculpttex.DOTNETImage.Width < 32f) LOD = sculpttex.DOTNETImage.Width;
+                    if (sculpttex.DOTNETImage.Height < 32f && sculpttex.DOTNETImage.Height < LOD ) LOD = sculpttex.DOTNETImage.Height;
+                    if (LOD < 32f && LOD > 16f) LOD = 32;
+                    if (LOD < 16f && LOD > 8f) LOD = 16;
+                    if (LOD < 8f && LOD > 4f) LOD = 8;
+                    if (LOD < 4 && LOD > 2) LOD = 4;
+                    if (LOD < 2) LOD = 2;
+
+                    m_log.Warn("[SCULPT]: Resizing Sculptie......");
+                    SculptMeshLOD smLOD = new SculptMeshLOD(sculpttex.DOTNETImage,LOD);
+                    m_log.Warn("[SCULPT]: Meshing Sculptie......");
+                    vobj.mesh = PrimMesherG.SculptIrrMesh(smLOD.ResultBitmap);
+                    smLOD.Dispose();
+                    m_log.Warn("[SCULPT]: Sculptie Meshed");
+                    
+                }
+      
                 ulong regionHandle = vobj.prim.RegionHandle;
 
                 if (vobj.prim.ParentID != 0)
