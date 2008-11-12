@@ -259,6 +259,41 @@ namespace IrrlichtNETCP
 					
 			return tmtrx;
 		}
+
+        public static Matrix4 buildTextureTransform(float radians, Vector2D rotatecenter, Vector2D translate, Vector2D scale)
+        {
+            float c = NewMath.FCos(radians);
+            float s = NewMath.FSin(radians);
+            float[] M = new float[16];
+
+		    M[0] = (c * scale.X);
+		    M[1] = (s * scale.Y);
+		    M[2] = 0;
+		    M[3] = 0;
+
+		    M[4] = (-s * scale.X);
+		    M[5] = (c * scale.Y);
+		    M[6] = 0;
+		    M[7] = 0;
+
+		    M[8] = (c * scale.X * rotatecenter.X + -s * rotatecenter.Y + translate.X);
+		    M[9] = (s * scale.Y * rotatecenter.X +  c * rotatecenter.Y + translate.Y);
+		    M[10] = 1;
+		    M[11] = 0;
+
+		    M[12] = 0;
+		    M[13] = 0;
+		    M[14] = 0;
+		    M[15] = 1;
+    		
+		    return Matrix4.From(M);
+        }
+
+        public void setTextureTranslate(float u, float v)
+        {
+            SetMInsecure(1, 0, u);
+            SetMInsecure(1, 1, v);
+        }
 		
 		public void BuildProjectionMatrixPerspectiveFovRH(float fieldOfViewRadians, float aspectRatio, float zNear, float zFar)
 		{
