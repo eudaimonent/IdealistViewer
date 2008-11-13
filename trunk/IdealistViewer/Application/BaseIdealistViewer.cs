@@ -93,6 +93,7 @@ namespace IdealistViewer
         public static IrrlichtNETCP.Quaternion Cordinate_XYZ_XZY = new IrrlichtNETCP.Quaternion();
 
         private TextureManager textureMan = null;
+        private static TrianglePickerMapper triPicker = null;
         // experimental mesh code - only here temporarily - up top so it's visible
 
         public Vector2D convVect2d(UVCoord uv)
@@ -252,9 +253,11 @@ wide character strings when displaying text.
             guienv = device.GUIEnvironment;
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
+            triPicker = new TrianglePickerMapper(smgr.CollisionManager);
+            mts = smgr.CreateMetaTriangleSelector();
             if (loadTextures)
             {
-                textureMan = new TextureManager(device, driver, "IdealistCache", avatarConnection);
+                textureMan = new TextureManager(device, driver, triPicker, mts, "IdealistCache", avatarConnection);
                 textureMan.OnTextureLoaded += textureCompleteCallback;
             }
 
@@ -358,7 +361,7 @@ wide character strings when displaying text.
             SNGlobalwater.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
             SNGlobalwater.Position = new Vector3D(0, 0, 0);
 
-            mts = smgr.CreateMetaTriangleSelector();
+            
             //GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
             //gcontext.Text = "Some Text";
             //gcontext.AddItem("SomeCooItem", 93, true, true);
@@ -442,14 +445,14 @@ wide character strings when displaying text.
 
                     running = device.Run();
                 }
-                catch (AccessViolationException)
+                catch (AccessViolationException e)
                 {
-                    m_log.Error("[VIDEO]: Error in device");
+                    m_log.Error("[VIDEO]: Error in device" + e.ToString());
                 }
                 if (!running)
                     break;
                 tickcount = System.Environment.TickCount;
-                UpdateTerrain();
+                
                 //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
                 //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
                 //avm.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
@@ -507,7 +510,7 @@ wide character strings when displaying text.
                     CheckAndApplyParent(5);
                     doTextureMods(1);
                     doSetCameraPosition();
-                    
+                    UpdateTerrain();
 
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
@@ -636,6 +639,9 @@ wide character strings when displaying text.
                         {
                             tx.vObj.updateFullYN = true;
                             //tx.vObj.mesh.Dispose();
+
+                            if (tx.vObj.node.TriangleSelector != null)
+                                mts.RemoveTriangleSelector(tx.vObj.node.TriangleSelector);
                             if (tx.vObj.node != null && tx.vObj.node.Raw != IntPtr.Zero)
                                 smgr.AddToDeletionQueue(tx.vObj.node);
                             
@@ -957,6 +963,7 @@ wide character strings when displaying text.
 
                         TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                         node.TriangleSelector = trisel;
+                        triPicker.AddTriangleSelector(trisel, node);
                         lock (mts)
                         {
                             mts.AddTriangleSelector(trisel);
@@ -1116,6 +1123,7 @@ wide character strings when displaying text.
 
                             TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                             node.TriangleSelector = trisel;
+                            triPicker.AddTriangleSelector(trisel, node);
                             lock (mts)
                             {
                                 mts.AddTriangleSelector(trisel);
@@ -1603,8 +1611,8 @@ wide character strings when displaying text.
 
                         if (terrain != null)
                         {
+                            triPicker.RemTriangleSelector(terrain.TriangleSelector);
                             smgr.AddToDeletionQueue(terrain);
-
                         }
                         Vector3 relTerrainPos = Vector3.Zero;
                         if (currentSim != null)
@@ -1641,11 +1649,14 @@ wide character strings when displaying text.
                         {
                             mts.RemoveTriangleSelector(terrainsels[regionhandle]);
                             terrainsels.Remove(regionhandle);
+                            
                         }
                     }
 
                     terrainsel = smgr.CreateTerrainTriangleSelector(terrain, 1);
                     terrain.TriangleSelector = terrainsel;
+                    triPicker.AddTriangleSelector(terrainsel, terrain);
+
                     lock (terrainsels)
                     {
                         terrainsels.Add(regionhandle, terrainsel);
@@ -1696,6 +1707,8 @@ wide character strings when displaying text.
             {
                 if (newObject.node != null)
                 {
+                    if (newObject.node.TriangleSelector != null)
+                        mts.RemoveTriangleSelector(newObject.node.TriangleSelector);
                     smgr.AddToDeletionQueue(newObject.node);
                     newObject.node = null;
                 }
@@ -1985,7 +1998,10 @@ wide character strings when displaying text.
                         }
                         if (cam.SNtarget == obj.node)
                             cam.SNtarget = null;
-                        
+
+                        if (obj.node.TriangleSelector != null)
+                            mts.RemoveTriangleSelector(obj.node.TriangleSelector);
+
                         smgr.AddToDeletionQueue(obj.node);
                         obj.node = null;
                         
@@ -2273,10 +2289,19 @@ wide character strings when displaying text.
 
                     Vector3D collisionpoint = new Vector3D(0, 0, 0);
                     Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
-                    SceneNode node = smgr.CollisionManager.GetSceneNodeFromRay(projectedray, 0x0128, true); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
+                    SceneNode node = triPicker.GetSceneNodeFromRay(projectedray, 0x0128, true, cam.SNCamera.Position); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
                     if (node == null)
                     {
-                        m_log.Warn("[PICKER]: Picked null");
+                        if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
+                        {
+
+                            //if (collisionpoint != null)
+                            //{
+                            //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
+                            //}
+                            cam.SetTarget(collisionpoint);
+                            cam.SNtarget = null;
+                        }
                     }
                     else
                     {
@@ -2286,7 +2311,7 @@ wide character strings when displaying text.
                             if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
                             {
                                 
-                                //if (collisionpoint != null)
+                                //if (collisionpoint != nuYesll)
                                 //{
                                 //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
                                 //}

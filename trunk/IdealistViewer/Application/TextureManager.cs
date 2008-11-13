@@ -24,15 +24,17 @@ namespace IdealistViewer
         private IrrlichtDevice device = null;
         private SLProtocol m_user = null;
         private static readonly log4net.ILog m_log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private TrianglePickerMapper triPicker = null;
+        private MetaTriangleSelector mts = null;
 
-
-        public TextureManager(IrrlichtDevice pdevice, VideoDriver pDriver, string folder, SLProtocol pm_user)
+        public TextureManager(IrrlichtDevice pdevice, VideoDriver pDriver, TrianglePickerMapper ptriPicker, MetaTriangleSelector pmts, string folder, SLProtocol pm_user)
         {
             driver = pDriver;
             device = pdevice;
             imagefolder = folder;
             m_user = pm_user;
-
+            triPicker = ptriPicker;
+            mts = pmts;
             m_user.OnImageReceived += imageReceivedCallback;
         }
 
@@ -302,10 +304,18 @@ namespace IdealistViewer
                     sn.Position = vObj.node.Position;
                     sn.Rotation = vObj.node.Rotation;
                     sn.Scale = vObj.node.Scale;
-                    sn.TriangleSelector = vObj.node.TriangleSelector;
+
+                    triPicker.RemTriangleSelector(sn.TriangleSelector);
+
+                    sn.TriangleSelector = device.SceneManager.CreateTriangleSelector(vObj.mesh, sn);
+                    triPicker.AddTriangleSelector(sn.TriangleSelector, sn);
+                    
 
                     SceneNode oldnode = vObj.node;
                     vObj.node = sn;
+                    if (oldnode.TriangleSelector != null)
+                        mts.RemoveTriangleSelector(oldnode.TriangleSelector);
+
                     device.SceneManager.AddToDeletionQueue(oldnode);
                 } // prim texture is not null
 
@@ -396,6 +406,7 @@ namespace IdealistViewer
 
         public void imageReceivedCallback(AssetTexture asset)
         {
+            
             if (asset == null)
             {
                 m_log.Debug("[TEXTURE]: GotLIBOMV callback but asset was null");
