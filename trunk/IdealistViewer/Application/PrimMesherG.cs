@@ -152,16 +152,38 @@ namespace IdealistViewer
             return mesh;
         }
 
+        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, OpenMetaverse.SculptType omSculptType)
+        {
+            switch (omSculptType)
+            {
+                case OpenMetaverse.SculptType.Cylinder:
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.cylinder);
+                case OpenMetaverse.SculptType.Plane:
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.plane);
+                case OpenMetaverse.SculptType.Sphere:
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.sphere);
+                case OpenMetaverse.SculptType.Torus:
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.torus);
+                default:
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.plane);
+            }
+        }
 
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap)
         {
-            SculptMesh newSculpty = new SculptMesh(bitmap, SculptMesh.SculptType.sphere, 32, true);
+            return SculptIrrMesh(bitmap, PrimMesher.SculptMesh.SculptType.sphere);
+        }
 
+        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, PrimMesher.SculptMesh.SculptType sculptType)
+        {
+            SculptMesh newSculpty = new SculptMesh(bitmap, sculptType, 32, true);
+            //newSculpty.Scale(15, 15, 15);
             Color color = new Color(255, 255, 0, 50);
 
             Mesh mesh = new Mesh();
 
             int numViewerFaces = newSculpty.viewerFaces.Count;
+            Console.WriteLine("SculptIrrMesh(): numViewerFaces: " + numViewerFaces.ToString());
 
             MeshBuffer[] mb = new MeshBuffer[1];
 
