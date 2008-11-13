@@ -26,7 +26,10 @@ namespace IdealistViewer
         private static Vector3 m_lastTargetPos = Vector3.Zero;
         private Vector3[] LookAtCam = new Vector3[2];
 
-
+        /// <summary>
+        /// User's Camera
+        /// </summary>
+        /// <param name="psmgr">Scene Manager</param>
         public Camera(SceneManager psmgr)
         {
             //
@@ -46,11 +49,14 @@ namespace IdealistViewer
             UpdateCameraPosition();
         
         }
+        //LibOMV camera position
         public Vector3 Position
         {
             get { return new Vector3(SNCamera.Position.X,SNCamera.Position.Y,SNCamera.Position.Z); }
         }
-
+        /// <summary>
+        /// Update camera position based on it's current PHI, Theta, and mouse offset.
+        /// </summary>
         public void UpdateCameraPosition()
         {
             Vector3D newpos = new Vector3D();
@@ -66,6 +72,11 @@ namespace IdealistViewer
             //m_log.WarnFormat("[CameraPos]: <{0},{1},{2}>", camr.Position.X, camr.Position.Y, camr.Position.Z);
 
         }
+
+        /// <summary>
+        /// Key handler for camera actions
+        /// </summary>
+        /// <param name="key"></param>
         public void DoKeyAction(KeyCode key)
         {
 
@@ -102,6 +113,8 @@ namespace IdealistViewer
 
                     UpdateCameraPosition();
                     break;
+
+                    // Page Down
                 case KeyCode.Next:
 
                     CamRotationAnglePHI -= CAMERASPEED;
@@ -110,6 +123,8 @@ namespace IdealistViewer
 
                     UpdateCameraPosition();
                     break;
+
+                    // Page Up
                 case KeyCode.Prior:
                     //vOrbit.Y += 2f;
                     CamRotationAnglePHI += CAMERASPEED;
@@ -123,12 +138,22 @@ namespace IdealistViewer
             }
 
         }
+
+        /// <summary>
+        /// Mouse Offset Reset.  This usually gets called after applying the 
+        /// values to the actual camera phi and theta first
+        /// </summary>
         public void ResetMouseOffsets()
         {
             loMouseOffsetPHI = 0;
             loMouseOffsetTHETA = 0;
         }
 
+        /// <summary>
+        /// Applies offset PHI and THETA to the camera's values.  
+        /// Usually ResetMouseOffsets gets called immediately after this
+        /// or you get a double effect.
+        /// </summary>
         public void ApplyMouseOffsets()
         {
             if (loMouseOffsetPHI != 0 || loMouseOffsetTHETA != 0)
@@ -142,6 +167,10 @@ namespace IdealistViewer
             }
         }
 
+        /// <summary>
+        /// Action based on mousewheel change
+        /// </summary>
+        /// <param name="delta"></param>
         public void MouseWheelAction(float delta)
         {
             CAMDISTANCE += CAMERAZOOMSPEED * -delta;
@@ -151,6 +180,10 @@ namespace IdealistViewer
             UpdateCameraPosition();
         }
 
+        /// <summary>
+        /// Set Camera target to a Position
+        /// </summary>
+        /// <param name="ptarget"></param>
         public void SetTarget(Vector3D ptarget)
         {
             SNCamera.Target = ptarget;
@@ -160,12 +193,19 @@ namespace IdealistViewer
             UpdateCameraPosition();
         }
 
+        /// <summary>
+        /// Set Target to a ScenNode (for tracking)
+        /// </summary>
+        /// <param name="pTarget"></param>
         public void SetTarget(SceneNode pTarget)
         {
             SetTarget(pTarget.Position);
             SNtarget = pTarget;
         }
 
+        /// <summary>
+        /// Check to ensure that we're still focused on our target.
+        /// </summary>
         public void CheckTarget()
         {
             if (SNtarget != null)
@@ -188,6 +228,11 @@ namespace IdealistViewer
                 }
             }
         }
+
+        /// <summary>
+        /// Prepare Camera LookAT for LibOMV
+        /// </summary>
+        /// <returns></returns>
         public Vector3[] GetCameraLookAt()
         {
             LookAtCam[0].X = SNCamera.Position.X;
@@ -199,6 +244,12 @@ namespace IdealistViewer
             return LookAtCam;
         }
 
+        /// <summary>
+        /// Used for Orbiting the Camera based on the mouse
+        /// </summary>
+        /// <param name="deltaX">Mouse change X (pixels)</param>
+        /// <param name="deltaY">Mouse change Y (pixels)</param>
+
         public void SetDeltaFromMouse(float deltaX, float deltaY)
         {
             CamRotationAnglePHI = CamRotationAnglePHI + ((deltaY * CAMERASPEED) * 0.2f);
@@ -207,6 +258,14 @@ namespace IdealistViewer
             UpdateCameraPosition();
         }
 
+        /// <summary>
+        /// Translate the mouse position on the screen into a ray in 3D space
+        /// </summary>
+        /// <param name="mpos"></param>
+        /// <param name="WindowWidth_DIV2"></param>
+        /// <param name="WindowHeight_DIV2"></param>
+        /// <param name="aspect"></param>
+        /// <returns></returns>
         public Vector3D[] ProjectRayPoints(Position2D mpos, float WindowWidth_DIV2, float WindowHeight_DIV2, float aspect)
         {
 
