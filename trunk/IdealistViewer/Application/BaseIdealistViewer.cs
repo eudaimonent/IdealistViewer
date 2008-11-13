@@ -1234,7 +1234,7 @@ wide character strings when displaying text.
                     m_log.Warn("[SCULPT]: Resizing Sculptie......");
                     SculptMeshLOD smLOD = new SculptMeshLOD(sculpttex.DOTNETImage,LOD);
                     m_log.Warn("[SCULPT]: Meshing Sculptie......");
-                    vobj.mesh = PrimMesherG.SculptIrrMesh(smLOD.ResultBitmap);
+                    vobj.mesh = PrimMesherG.SculptIrrMesh(smLOD.ResultBitmap, vobj.prim.Sculpt.Type);
                     smLOD.Dispose();
                     m_log.Warn("[SCULPT]: Sculptie Meshed");
                     
