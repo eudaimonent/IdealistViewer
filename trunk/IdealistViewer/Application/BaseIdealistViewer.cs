@@ -511,7 +511,7 @@ wide character strings when displaying text.
                     doTextureMods(1);
                     doSetCameraPosition();
                     UpdateTerrain();
-
+                    device.WindowCaption = "IdealistViewer 0.000000000002, FPS:" + driver.FPS.ToString();
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
                     //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
@@ -519,11 +519,12 @@ wide character strings when displaying text.
                     //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
 
                 }
-                //Thread.Sleep(50);
+                
+                
                 int frameTime = System.Environment.TickCount - tickcount;
                 if (frameTime < minFrameTime)
                     Thread.Sleep(minFrameTime - frameTime);
-                //Thread.Sleep(50);
+                
             }
             //In the end, delete the Irrlicht device.
             Shutdown();
