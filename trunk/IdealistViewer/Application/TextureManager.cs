@@ -376,7 +376,7 @@ namespace IdealistViewer
             IrrlichtNETCP.Matrix4 mat = mb.Material.Layer1.TextureMatrix;
 
             mat = IrrlichtNETCP.Matrix4.buildTextureTransform(teface.Rotation, new Vector2D(-0.5f, -0.5f * teface.RepeatV), new Vector2D(0.5f + teface.OffsetU, -(0.5f + teface.OffsetV)), new Vector2D(teface.RepeatU, teface.RepeatV));
-            m_log.WarnFormat("[TEXREPEAT]: <{0},{1}>", teface.RepeatU, teface.RepeatV);
+            //m_log.WarnFormat("[TEXREPEAT]: <{0},{1}>", teface.RepeatU, teface.RepeatV);
             mb.Material.Layer1.TextureMatrix = mat;
             if (coldata.A != 1)
             {
