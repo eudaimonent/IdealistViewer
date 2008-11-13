@@ -171,7 +171,7 @@ namespace IdealistViewer
 
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap)
         {
-            return SculptIrrMesh(bitmap, PrimMesher.SculptMesh.SculptType.sphere);
+            return SculptIrrMesh(bitmap, PrimMesher.SculptMesh.SculptType.plane);
         }
 
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, PrimMesher.SculptMesh.SculptType sculptType)
