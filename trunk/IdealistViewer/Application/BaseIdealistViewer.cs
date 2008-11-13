@@ -1181,6 +1181,7 @@ wide character strings when displaying text.
 
             for (int i = 0; i < pObjects; i++)
             {
+                sculptYN = false;
                 VObject vobj = null;
                 lock (objectMeshQueue)
                 {
