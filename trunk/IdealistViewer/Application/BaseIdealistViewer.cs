@@ -20,63 +20,196 @@ namespace IdealistViewer
     public class BaseIdealistViewer : conscmd_callback
     {
         public IdealistViewerConfigSource m_config = null;
+        public static Dictionary<string, UUID> waitingSculptQueue = new Dictionary<string, UUID>();
+        public static bool backFaceCulling = true;
+
+        /// <summary>
+        /// Irrlicht Instance.  A handle to the Irrlicht device
+        /// </summary>
         private IrrlichtDevice device = null;
+
+        /// <summary>
+        /// Irrlicht Video Driver.  A handle to the video driver being used
+        /// </summary>
         private VideoDriver driver = null;
+
+        /// <summary>
+        /// A handle to the Irrlicht ISceneManager 
+        /// </summary>
         private SceneManager smgr = null;
+
+        /// <summary>
+        /// A Handle to the Irrlicht Gui manager
+        /// </summary>
         private GUIEnvironment guienv = null;
+
+        /// <summary>
+        /// Standard Log4Net setup.
+        /// </summary>
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        
+        /// <summary>
+        /// Thread for running the GUI in.
+        /// </summary>
         private Thread guithread;
+        
+        /// <summary>
+        /// Bitmaps for the terrain in each active region indexed by ulong regionhandle
+        /// </summary>
         private Dictionary<ulong, System.Drawing.Bitmap> terrainBitmap = new Dictionary<ulong, System.Drawing.Bitmap>();
+        
+        /// <summary>
+        /// LibOMV Connection
+        /// </summary>
         private SLProtocol avatarConnection;
+
+        /// <summary>
+        /// TerrainSceneNode Irrlicht representations of the terrain.  Indexed by regionhandle
+        /// </summary>
         private Dictionary<ulong,TerrainSceneNode> terrains = new Dictionary<ulong,TerrainSceneNode>();
         
+        /// <summary>
+        /// Simulator patch storage Indexed by regionhandle  Contains a dictionary with the patch number as an index.
+        /// </summary>
         private Dictionary<ulong, Dictionary<int, float[]>> m_landmaps = new Dictionary<ulong, Dictionary<int, float[]>>();
         
+        /// <summary>
+        /// Terrain Triangle Selectors indexed by ulong regionhandle.  Used for the Picker
+        /// </summary>
         private Dictionary<ulong, TriangleSelector> terrainsels = new Dictionary<ulong,TriangleSelector>();
+        
+        /// <summary>
+        /// Future water use
+        /// </summary>
         private static SceneNode SNGlobalwater;
+
+        /// <summary>
+        /// Combines triangle selectors for all of the objects in the scene.  A reference to the triangles
+        /// </summary>
         private static MetaTriangleSelector mts;
 
+        /// <summary>
+        /// All object modifications run through this Queue
+        /// </summary>
         private static Queue<VObject> objectModQueue = new Queue<VObject>();
-        private static Queue<VObject> objectMeshQueue = new Queue<VObject>();
-        public static Dictionary<string, UUID> waitingSculptQueue = new Dictionary<string, UUID>();
 
+        /// <summary>
+        /// All Meshing gets queued up int this queue.
+        /// </summary>
+        private static Queue<VObject> objectMeshQueue = new Queue<VObject>();
+        
+
+        /// <summary>
+        /// Child prim in a prim group where the children don't yet have parents 
+        /// rendered get put in here to wait for the parent
+        /// </summary>
         private static Queue<VObject> UnAssignedChildObjectModQueue = new Queue<VObject>();
+        
+        /// <summary>
+        /// The texture has completed downloading, put it into this queue for assigning to linked objects
+        /// </summary>
         private static Queue<TextureComplete> assignTextureQueue = new Queue<TextureComplete>();
 
+
+        /// <summary>
+        /// All objects that are interpolated get put into this dictionary.  Indexed by VUtil.GetHashId
+        /// </summary>
         private static Dictionary<string, VObject> interpolationTargets = new Dictionary<string, VObject>();
+        
+        /// <summary>
+        /// Tester for AV Mesh
+        /// </summary>
         private static SkinnedMesh avmeshtest = null;
+
+        /// <summary>
+        /// Tester for AV Mesh 2
+        /// </summary>
         private static AnimatedMeshSceneNode avmeshsntest = null;
 
+        /// <summary>
+        /// Simulator that the client think's it's currently a root agent in.
+        /// Uses this to determine the offset of prim and objects in neighbor regions
+        /// </summary>
         private static Simulator currentSim;
 
+        /// <summary>
+        /// Known Simulators, Indexed by ulong regionhandle
+        /// </summary>
         private static Dictionary<ulong, Simulator> Simulators = new Dictionary<ulong, Simulator>();
+
+        /// <summary>
+        /// Known Entities.  Indexed by VUtil.GetHashId
+        /// </summary>
         private static Dictionary<string, VObject> Entities = new Dictionary<string, VObject>();
+        
+        /// <summary>
+        /// Known Avatars Indexed by Avatar UUID
+        /// </summary>
         private static Dictionary<UUID, VObject> Avatars = new Dictionary<UUID, VObject>();
         
+
+        /// <summary>
+        /// Held Controls
+        /// </summary>
         private static bool ctrlHeld = false;
         private static bool shiftHeld = false;
         private static bool appHeld = false;
         private static bool LMheld = false;
         private static bool RMheld = false;
         private static bool MMheld = false;
+
+        /// <summary>
+        /// Configuration option to load the textures
+        /// </summary>
         private static bool loadTextures = true;
-        public static bool backFaceCulling = true;
+        
+
+        /// <summary>
+        /// Configuration option to represent the avatar mesh.
+        /// </summary>
         private static string avatarMesh = "sydney.md2";
+
+        /// <summary>
+        /// Configuration option.  Texture to apply to avatarMesh
+        /// </summary>
         private static string avatarMaterial = "sydney.BMP";
 
+        /// <summary>
+        /// Stored Mouse cordinates used to determine change.
+        /// </summary>
         private int OldMouseX = 0;
         private int OldMouseY = 0;
 
+        /// <summary>
+        /// Gui Window Width
+        /// </summary>
         private static int WindowWidth = 1024;
+        
+        /// <summary>
+        /// Gui Window Height
+        /// </summary>
         private static int WindowHeight = 768;
+
+        /// <summary>
+        /// Helper objects to support effective Picking.
+        /// </summary>
         private static float WindowWidth_DIV2 = WindowWidth * 0.5f;
         private static float WindowHeight_DIV2 = WindowHeight * 0.5f;
         private static float aspect = (float)WindowWidth / WindowHeight;
+        
+        /// <summary>
+        /// User's Camera
+        /// </summary>
         private Camera cam;
         
+        /// <summary>
+        /// Target Position of the camera
+        /// </summary>
         private static Vector3 m_lastTargetPos = Vector3.Zero;
 
-        
+        /// <summary>
+        /// List of held keys.  Used to process multiple keypresses simulataniously
+        /// </summary>
         private static List<KeyCode> m_heldKeys = new List<KeyCode>();
 
         private int tickcount = 0;
@@ -86,13 +219,34 @@ namespace IdealistViewer
         private uint framecounter = 0;
         private int maxFPS = 30;  // cap frame rate at 30 fps to help keep cpu load down
 
+        /// <summary>
+        /// If the neighbor returned is a 0 ulong region handle, use this one for testing
+        /// </summary>
         private ulong TESTNEIGHBOR = 1099511628032256;
 
+        /// <summary>
+        /// We loop the graphics rendering 10 times per second.
+        /// </summary>
         private uint objectmods = 5; // process object queue 2 times a second
+
+        /// <summary>
+        /// Use this to ensure that meshing occurs one at a time.
+        /// </summary>
         private static Object mesh_synclock = new Object();
+
+        /// <summary>
+        /// Cordinate Switcher Quaternion XYZ space to XZY space.
+        /// </summary>
         public static IrrlichtNETCP.Quaternion Cordinate_XYZ_XZY = new IrrlichtNETCP.Quaternion();
 
+        /// <summary>
+        /// Texture manager for the client.
+        /// </summary>
         private TextureManager textureMan = null;
+
+        /// <summary>
+        /// Picker
+        /// </summary>
         private static TrianglePickerMapper triPicker = null;
         // experimental mesh code - only here temporarily - up top so it's visible
 
@@ -198,6 +352,9 @@ namespace IdealistViewer
 
         #endregion
 
+        /// <summary>
+        /// Queue of terrain that needs to be updated.  ulong region handle.
+        /// </summary>
         private static Queue<ulong> m_dirtyTerrain = new Queue<ulong>();
 
         /// <summary>
@@ -234,43 +391,52 @@ namespace IdealistViewer
         }
 
        
-       
+       /// <summary>
+       /// Starts up Irrlicht for the GUI
+       /// </summary>
+       /// <param name="o"></param>
         public void startupGUI(object o)
         {
 
+            //Create a New Irrlicht Device
             device = new IrrlichtDevice(DriverType.OpenGL,
                                                      new Dimension2D(WindowWidth, WindowHeight),
-                                                    32, false, true, false, true);
-            /*Now we set the caption of the window to some nice text. Note that there is a 'L' in front of the string: the Irrlicht Engine uses
-wide character strings when displaying text.
-            */
+                                                    32, false, true, false, false);
+
             device.WindowCaption = "IdealistViewer 0.000000000002";
+            
+            // Sets directory to load assets from
             device.FileSystem.WorkingDirectory = m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
 
-            //
+            
             driver = device.VideoDriver;
             smgr = device.SceneManager;
+            
             guienv = device.GUIEnvironment;
+
+            // Set up event handler for the GUI window events.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
+            // Set up the picker.
             triPicker = new TrianglePickerMapper(smgr.CollisionManager);
             mts = smgr.CreateMetaTriangleSelector();
+
+            // Only create a texture manager if the user configuration option is enabled for downloading textures
             if (loadTextures)
             {
                 textureMan = new TextureManager(device, driver, triPicker, mts, "IdealistCache", avatarConnection);
                 textureMan.OnTextureLoaded += textureCompleteCallback;
             }
 
-            //guienv.AddStaticText("Hello World! This is the Irrlicht Software engine!",
-            //    new Rect(new Position2D(10, 10), new Dimension2D(200, 22)), true, false, guienv.RootElement, -1, false);
-            //Image img = 
-            //
-            smgr.SetAmbientLight(new Colorf(1, 0.6f, 0.6f, 0.6f));
-            //smgr.VideoDriver.AmbientLight = new Colorf(1, 1f, 1f, 1f);
+
+            smgr.SetAmbientLight(new Colorf(0.6f, 0.6f, 0.6f, 0.6f));
+            
 
 
-            //driver.
+            // Fog is on by default, this line disables it.
             smgr.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
+            
+            // Create the Skybox
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, false);
 
             smgr.AddSkyBoxSceneNode(null, new Texture[] {
@@ -282,9 +448,13 @@ wide character strings when displaying text.
                 driver.GetTexture("irrlicht2_bk.jpg")}, 0);
 
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
+            
+            // Test tree
             SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(128, 40, 128), new Vector3D(0, 0, 0), new Vector3D(0.25f, 0.25f, 0.25f), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
             tree.Position = new Vector3D(129, 22, 129);
             //tree.Scale = new Vector3D(0.25f, 0.25f, 0.25f);
+            
+            // Create User's Camera
             cam = new Camera(smgr);
 
 
@@ -305,13 +475,15 @@ wide character strings when displaying text.
 
 
 
-
-            SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 0.5f, 0.5f, 0.5f), 90, -1);
+            // Set up Scene Lighting.
+            // This light rotates around to highlight prim meshing issues.
+            SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 0.2f, 0.2f, 0.2f), 90, -1);
             Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
             light.AddAnimator(anim);
             anim.Dispose();
 
-            SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(0, 0.75f, 0.75f, 0.75f), 250, -1);
+            // This light simulates the sun
+            SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
 
 
             // dahlia's sample prim
@@ -346,7 +518,7 @@ wide character strings when displaying text.
                 m_log.Error("Unable to open sample sculpty file: " + sculptFileName, e);
             }
 
-            //generateRandomPrim(4000);
+            // Set up the water
             AnimatedMesh mesh = smgr.AddHillPlaneMesh("myHill",
                 new Dimension2Df(120, 120),
                 new Dimension2D(40, 40), 0,
@@ -371,6 +543,7 @@ wide character strings when displaying text.
             //gtb.Text = "Hi";
             //gtb.AddButton(92, "Button", "Click", null, null, true, false);
 
+            // Test Avatar Ruth mesh
             AnimatedMesh av = smgr.GetMesh("Female7.x");
 
             int mbcount = av.GetMesh(0).MeshBufferCount;
@@ -387,12 +560,14 @@ wide character strings when displaying text.
                 av.GetMesh(0).GetMeshBuffer(j).Material.EmissiveColor = new Color(255, 125, 125, 125);
                 av.GetMesh(0).GetMeshBuffer(j).Material.Shininess = 0.80f;
             }
+            // We need to flip the normals since it's a boned mesh.
             smgr.MeshManipulator.FlipSurfaces(av.GetMesh(0));
 
             avmeshsntest = smgr.AddAnimatedMeshSceneNode(av);
             avmeshsntest.JointMode = JointUpdateOnRenderMode.Control;
             //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals,true);
 
+            // Read the Binary Asset Animation format.
             System.IO.BinaryReader br = new BinaryReader(File.Open(m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "") + "\\coolfile.an",FileMode.Open));
             byte[] arr = new byte[(int)br.BaseStream.Length + 20];
             {
@@ -436,6 +611,7 @@ wide character strings when displaying text.
             //SkinnedMesh smm = new SkinnedMesh(avm.AnimatedMesh.Raw);
             //smm.SkinMesh();
 
+            // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
             bool running = true;
             while (running)
@@ -443,6 +619,7 @@ wide character strings when displaying text.
                 try
                 {
 
+                    // If you close the gui window, device.Run returns false.
                     running = device.Run();
                 }
                 catch (AccessViolationException e)
@@ -476,12 +653,14 @@ wide character strings when displaying text.
                 driver.BeginScene(true, true, new Color(255, 100, 101, 140));
                 smgr.DrawAll();
                 guienv.DrawAll();
+
+                // Test Triangle at 0,0,0 to point out the axis
                 driver.Draw3DTriangle(new Triangle3D(
                     new Vector3D(0, 0, 0),
                     new Vector3D(10, 0, 0),
                     new Vector3D(0, 10, 0)),
                     Color.Red);
-                //m_log.Debug(driver.FPS);
+                
                 driver.EndScene();
 
                 mscounter += System.Environment.TickCount - tickcount;
@@ -489,9 +668,13 @@ wide character strings when displaying text.
                 //
                 if (mscounter > msreset)
                 {
+                    // Repeat any held keys
                     processHeldKeys();
 
+                    // Update Interpolation targets
                     updateInterpolationTargets();
+
+                    // Ensure that the camera is still pointing at the target object
                     cam.CheckTarget();
 
                     mscounter = 0;
@@ -505,12 +688,23 @@ wide character strings when displaying text.
               
                 if ((framecounter % objectmods) == 0)
                 {
+                    // Process Mesh Queue.  Parameter is 'Items'
                     doProcessMesh(5);
+
+                    // Process Object Mod Queue.  Parameter is 'Items'
                     doObjectMods(5);
+
+                    // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
+
+                    // Apply textures
                     doTextureMods(1);
                     doSetCameraPosition();
+
+                    // Check for Dirty terrain Update as necessary.
                     UpdateTerrain();
+
+                    // Set the FPS in the window title.
                     device.WindowCaption = "IdealistViewer 0.000000000002, FPS:" + driver.FPS.ToString();
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
@@ -520,7 +714,7 @@ wide character strings when displaying text.
 
                 }
                 
-                
+                // Frame Limiter
                 int frameTime = System.Environment.TickCount - tickcount;
                 if (frameTime < minFrameTime)
                     Thread.Sleep(minFrameTime - frameTime);
@@ -531,6 +725,9 @@ wide character strings when displaying text.
 
         }
 
+        /// <summary>
+        /// Updates all interpolation targets
+        /// </summary>
         private void updateInterpolationTargets()
         {
             List<string> removestr = null;
@@ -539,6 +736,8 @@ wide character strings when displaying text.
                 foreach (string str in interpolationTargets.Keys)
                 {
                     VObject obj = interpolationTargets[str];
+
+                    // Check if the target is dead.
                     if (obj == null)
                     {
                         if (removestr == null)
@@ -563,6 +762,8 @@ wide character strings when displaying text.
                         removestr.Add(str);
                         continue;
                     }
+
+                    // Interpolate
                     try
                     {
                         Vector3D pos = new Vector3D(obj.node.Position.X, obj.node.Position.Y, obj.node.Position.Z);
@@ -584,6 +785,7 @@ wide character strings when displaying text.
                     }
                     catch (System.Runtime.InteropServices.SEHException)
                     {
+                        
                         if (removestr == null)
                             removestr = new List<string>();
 
@@ -592,6 +794,8 @@ wide character strings when displaying text.
                     }
 
                 }
+
+                // Remove dead Interpolation targets
                 if (removestr != null)
                 {
                     foreach (string str2 in removestr)
@@ -606,6 +810,10 @@ wide character strings when displaying text.
 
         }
 
+        /// <summary>
+        /// Assign Textures to objects that requested them
+        /// </summary>
+        /// <param name="pCount">Number of textures to process this round</param>
         private void doTextureMods(int pCount)
         {
             lock (assignTextureQueue)
@@ -626,9 +834,11 @@ wide character strings when displaying text.
                         break;
 
                     tx = assignTextureQueue.Dequeue();
+
                     // Try not to double load the texture first.
                     if (!textureMan.tryGetTexture(tx.textureID, out tex))
                     {
+                        // Nope, we really don't have that texture loaded yet.  Load it now.
                         tex = new TextureExtended(driver.GetTexture(tx.texture).Raw);
                     }
                 }
@@ -664,6 +874,10 @@ wide character strings when displaying text.
             
             
         }
+
+        /// <summary>
+        /// Updates camera position reported by LibOMV
+        /// </summary>
         private void doSetCameraPosition()
         {
             Vector3[] camdata = cam.GetCameraLookAt();
@@ -673,6 +887,11 @@ wide character strings when displaying text.
 
 
         #region Object Management
+
+        /// <summary>
+        /// Enqueues an object for processing.  This is the beginning of the object pipeline.
+        /// </summary>
+        /// <param name="newObject"></param>
         public void enqueueVObject(VObject newObject)
         {
 
@@ -698,6 +917,10 @@ wide character strings when displaying text.
             }
         }
 
+        /// <summary>
+        /// After the prim are meshed, here to be placed in the scene.  Linked object textures are requested
+        /// </summary>
+        /// <param name="pObjects"></param>
         private void doObjectMods(int pObjects)
         {
             for (int i = 0; i < pObjects; i++)
@@ -754,6 +977,7 @@ wide character strings when displaying text.
                                 }
                                 else
                                 {
+                                    // No parent yet...    Stick it in the child prim wait queue.
                                     UnAssignedChildObjectModQueue.Enqueue(vObj);
                                     continue;
                                 }
@@ -769,8 +993,12 @@ wide character strings when displaying text.
                     SceneNode node = null;
                     if (vObj.prim is Avatar)
                     {
+                        // Little known fact.  Dead avatar in LibOMV have the word 'dead' in their UUID
+                        // Skip over this one and move on to the next one if it's dead.
                         if (((Avatar)vObj.prim).ID.ToString().Contains("dead"))
                             continue;
+
+                        // If we don't have an avatar representation yet for this avatar or it's a full update
                         if (vObj.node == null && vObj.updateFullYN)
                         {
                         
@@ -798,11 +1026,17 @@ wide character strings when displaying text.
                                 node = vObj.node;
                             }
 
+                            // TODO: FIXME - this depends on the mesh being loaded. A good candidate for a config item.
                             node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
                             //node.Scale = new Vector3D(15f, 15f, 15f);
+                           
                             if (!isTextured)
                                 node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
+                            
+                            // Light avatar
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
+                            
+                            // Add to Interpolation targets
                             lock (interpolationTargets)
                             {
                                 if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
@@ -814,6 +1048,8 @@ wide character strings when displaying text.
                                     interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
                                 }
                             }
+
+                            // Display the avatar's name over their head.
                             SceneNode trans = smgr.AddEmptySceneNode(node, -1);
                             node.AddChild(trans);
                             trans.Position = new Vector3D(0, 50, 0);
@@ -829,6 +1065,7 @@ wide character strings when displaying text.
                         }
                         else
                         {
+                            // Set the current working node to the already existing node.
                             node = vObj.node;
                         }
 
@@ -836,10 +1073,14 @@ wide character strings when displaying text.
 #endregion
                     else
                     {
+                        // No mesh yet, skip over it.
                         if (vObj.mesh == null)
                             continue;
+
+                        // Full Update
                         if (vObj.updateFullYN)
                         {
+                            // Check if it's a sculptie and we've got it's texture.
                             if (vObj.prim.Sculpt.SculptTexture != UUID.Zero)
                                 m_log.Warn("[SCULPT]: Sending sculpt to the scene....");
 
@@ -852,6 +1093,7 @@ wide character strings when displaying text.
                         }
                         else
                         {
+                            // Set the working node to the pre-existing node for this object
                             node = vObj.node;
                         }
                         if (node == null)
@@ -860,32 +1102,39 @@ wide character strings when displaying text.
 
                     if (node == null && vObj.prim is Avatar)
                     {
-                        // why would node = null?
+                        // why would node = null?  Race Condition?
                         continue;
                     }
+
                     if (vObj.prim is Avatar)
                     {
-                        
+                        // TODO: FIXME - This is dependant on the avatar mesh loaded. a good candidate for a config option.
                         vObj.prim.Position.Z -= 0.2f;
                     }
                     else
                     {
+                        // Set the scale of the prim to the libomv reported scale.
                         node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
                     }
                     
                    // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
+                    
+                    // If this prim is either the parent prim or an individual prim
                     if (vObj.prim.ParentID == 0)
                     {
                         if (vObj.prim is Avatar)
                         {
                             //m_log.WarnFormat("[AVATAR]: W:<{0},{1},{2}> R:<{3},{4},{5}>",WorldoffsetPos.X,WorldoffsetPos.Y,WorldoffsetPos.Z,vObj.prim.Position.X,vObj.prim.Position.Y,vObj.prim.Position.Z);
                             WorldoffsetPos = Vector3.Zero;
+                            // The world offset for avatar doesn't work for some reason yet in LibOMV.  
+                            // It's offset, so don't offset them by their world position yet.
                         }
 
                         try
                         {
                             if (node.Raw == IntPtr.Zero)
                                 continue;
+                            // Offset the node by it's world position
                             node.Position = new Vector3D(WorldoffsetPos.X + vObj.prim.Position.X, WorldoffsetPos.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + vObj.prim.Position.Y);
                         }
                         catch (System.Runtime.InteropServices.SEHException)
@@ -900,13 +1149,15 @@ wide character strings when displaying text.
                     }
                     else
                     {
+                        // Check if the node died
                         if (node.Raw == IntPtr.Zero)
                             continue;
-                        // ROTATION
                         if (vObj == null || parentObj == null)
                             continue;
                         if (vObj.prim == null || parentObj.prim == null)
                             continue;
+
+                        // apply rotation and position reported form LibOMV
                         vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
                         vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
 
@@ -915,6 +1166,7 @@ wide character strings when displaying text.
 
                     if (vObj.updateFullYN)
                     {
+                        // If the prim is physical, add it to the interpolation targets.
                         if ((vObj.prim.Flags & PrimFlags.Physics) == PrimFlags.Physics)
                         {
                             lock (interpolationTargets)
@@ -935,6 +1187,8 @@ wide character strings when displaying text.
                     }
 
                     //m_log.Warn(vObj.prim.Rotation.ToString());
+                    
+                    // Convert Cordinate space
                     IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
                     
                     iqu.makeInverse();
@@ -953,14 +1207,14 @@ wide character strings when displaying text.
 
                     if (node.Raw == IntPtr.Zero)
                         continue;
+                    
+                    // Quaternion to Euler
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
+
                     if (creatednode)
                     {   
-                        //node.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                        //node.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
-                        //node.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                        //node.SetMaterialFlag(MaterialFlag.Lighting, true);
-                        //node.SetMaterialTexture(0, driver.GetTexture("red_stained_wood.tga"));
+                        // If we created this node, then we need to add it to the 
+                        // picker targets and request it's textures
 
                         TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                         node.TriangleSelector = trisel;
@@ -976,12 +1230,15 @@ wide character strings when displaying text.
                                 if (vObj.prim.Textures.DefaultTexture.TextureID != UUID.Zero)
                                 {
                                     UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
+                                    
+                                    // Only request texture if texture downloading is enabled.
                                     if (textureMan != null)
                                         textureMan.RequestImage(textureID, vObj);
 
                                 }
                             }
                             
+                            // If we have individual face texture settings
                             if (vObj.prim.Textures.FaceTextures != null)
                             {
                                 
@@ -1002,6 +1259,7 @@ wide character strings when displaying text.
                             }
                         }
                     }
+                    // Check for dead nodes
                     if (node.Raw == IntPtr.Zero)
                         continue;
                     node.UpdateAbsolutePosition();
@@ -1010,6 +1268,11 @@ wide character strings when displaying text.
             }
         }
 
+        /// <summary>
+        /// This is mostly a duplication of doObjectMods.  A good candidate for abstraction
+        /// Acts on child objects
+        /// </summary>
+        /// <param name="pObjects"></param>
         private void CheckAndApplyParent(int pObjects)
         {
             if (UnAssignedChildObjectModQueue.Count < pObjects)
@@ -1175,6 +1438,10 @@ wide character strings when displaying text.
             }
         }
 
+        /// <summary>
+        /// Mesh pObjects count prim in the ObjectMeshQueue
+        /// </summary>
+        /// <param name="pObjects">number of prim to mesh this time around</param>
         public void doProcessMesh(int pObjects)
         {
             bool sculptYN = false;
@@ -1201,6 +1468,7 @@ wide character strings when displaying text.
                             m_log.Warn("[SCULPT]: Didn't have texture, requesting it");
                             textureMan.RequestImage(vobj.prim.Sculpt.SculptTexture, vobj);
                             //Sculpt textures will cause the prim to get put back into the Mesh objects queue
+                            // Skipping it for now.
                             continue;
                         }
                         else
@@ -1217,10 +1485,13 @@ wide character strings when displaying text.
 
                 if (sculptYN == false || sculpttex == null)
                 {
+                    // Mesh a regular prim.
                     vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
                 }
                 else
                 {
+                    // Mesh a scupted prim.
+                    // First we have to resize the texture..    
                     float LOD = 32f;
                     
                     if (sculpttex.DOTNETImage.Width < 32f) LOD = sculpttex.DOTNETImage.Width;
@@ -1239,7 +1510,7 @@ wide character strings when displaying text.
                     m_log.Warn("[SCULPT]: Sculptie Meshed");
                     
                 }
-      
+                // Add the newly meshed object ot the objectModQueue
                 ulong regionHandle = vobj.prim.RegionHandle;
 
                 if (vobj.prim.ParentID != 0)
@@ -1273,6 +1544,9 @@ wide character strings when displaying text.
             }
         }
 
+        /// <summary>
+        /// Future animation method..   does nothing now
+        /// </summary>
         public void doAnimationFrame()
         {
             lock (Avatars)
@@ -1510,6 +1784,7 @@ wide character strings when displaying text.
             loadTextures = loadtextures;
             MainConsole.Instance = m_console;
 
+            // Initialize LibOMV
             avatarConnection = new SLProtocol();
             avatarConnection.OnLandPatch += landPatchCallback;
             avatarConnection.OnGridConnected += connectedCallback;
@@ -1519,12 +1794,13 @@ wide character strings when displaying text.
             avatarConnection.OnObjectKilled += objectKilledCallback;
             avatarConnection.OnNewAvatar += newAvatarCallback;
 
+            // Startup the GUI
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
             guithread.Start();
 
             
 
-
+            // Compose Coordinate space converter quaternion
             IrrlichtNETCP.Matrix4 m4 = new IrrlichtNETCP.Matrix4();
             m4.SetM(0, 0, 1);
             m4.SetM(1, 0, 0);
@@ -1548,7 +1824,7 @@ wide character strings when displaying text.
             Cordinate_XYZ_XZY.makeInverse();
             //Cordinate_XYZ_XZY = (CoordinateConversion.
 
-            
+            // Begin Login!
             avatarConnection.BeginLogin(loginURI, firstName + " " + lastName, password, startlocation);
             //base.StartupSpecific();
         }
@@ -1572,15 +1848,20 @@ wide character strings when displaying text.
         /// </summary>      
         protected void ShutdownSpecific()
         {
+            // Shutdown Irrlicht
             device.Close();
             device.Dispose();
+
+            // Shutdown LibOMV
             avatarConnection.Logout();
             //base.ShutdownSpecific();
         }
 
         #endregion
 
-
+        /// <summary>
+        /// Update all terrain that's dirty!
+        /// </summary>
         public void UpdateTerrain()
         {
             lock (m_dirtyTerrain)
@@ -1613,6 +1894,7 @@ wide character strings when displaying text.
 
                         if (terrain != null)
                         {
+                            // Remove old pickers
                             triPicker.RemTriangleSelector(terrain.TriangleSelector);
                             smgr.AddToDeletionQueue(terrain);
                         }
@@ -1644,6 +1926,7 @@ wide character strings when displaying text.
                         terrains.Add(regionhandle, terrain);
                     }
 
+                    // Manage pickers
                     TriangleSelector terrainsel;
                     lock (terrainsels)
                     {
@@ -1672,6 +1955,7 @@ wide character strings when displaying text.
                     //terrain.ScaleTexture(1f, 1f);
                     if (currentSim != null)
                     {
+                        // Update camera position
                         if (currentSim.Handle == regionhandle)
                         {
                             cam.SNCamera.Target = terrain.TerrainCenter;
@@ -1683,11 +1967,20 @@ wide character strings when displaying text.
             }
         }
 
+
+        /// LibOMV Callbacks.  These execute in the threadcontext of LIBOMV, so be careful!
+        /// Stick the result in queues so we can process them in our own threads later.
         #region LibOMV Callbacks
 
         
 
-
+        /// <summary>
+        /// LibOMV gave us a Full Object Update
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="prim"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
         public void newPrimCallback(Simulator sim, Primitive prim, ulong regionHandle,
                                       ushort timeDilation)
         {
@@ -1718,11 +2011,12 @@ wide character strings when displaying text.
             }
 
             
+            // Box the object and node
             newObject = VUtil.NewVObject(prim,newObject);
             
 
                 
-            
+            // Add to the mesh queue
             lock (objectMeshQueue)
             {
                 objectMeshQueue.Enqueue(newObject);
@@ -1857,10 +2151,19 @@ wide character strings when displaying text.
                 }
             }
         }
+
+        /// <summary>
+        /// LibOMV has informed us that it's connected
+        /// </summary>
         protected void connectedCallback()
         {
 
         }
+
+        /// <summary>
+        /// LibOMV has informed us that it's connected to a simulator.
+        /// </summary>
+        /// <param name="sim"></param>
         protected void SimConnectedCallback(Simulator sim)
         {
             bool isCurrentSim = false;
@@ -1885,7 +2188,7 @@ wide character strings when displaying text.
                 }
             }
             
-
+            // Add the simulators to our known simulators and initialize the terrain constructs
             lock (Simulators)
             {
                 if (!Simulators.ContainsKey(simhandle))
@@ -1911,12 +2214,20 @@ wide character strings when displaying text.
             }
             if (isCurrentSim)
             {
+                // Set the water position
                 SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight-0.5f, 0);
                 //SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight - 50.5f, 0);
                 // TODO REFIX!
             }
         }
 
+        /// <summary>
+        /// LibOMV has informed us that an object has moved.  This is a terse update.
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="update"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
         private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle, 
             ushort timeDilation)
         {
@@ -1940,7 +2251,7 @@ wide character strings when displaying text.
                         {
                             obj.updateFullYN = false;
                         }
-
+                        // Update the primitive properties for this object.
                         obj.prim.Acceleration = update.Acceleration;
                         obj.prim.AngularVelocity = update.AngularVelocity;
                         obj.prim.CollisionPlane = update.CollisionPlane;
@@ -1950,9 +2261,14 @@ wide character strings when displaying text.
                         obj.prim.Textures = update.Textures;
                         obj.prim.Velocity = update.Velocity;
                         
+                        // Save back to the Entities.  vObject used to be a value type, so this was neccessary.
+                        // it may not be anymore.
+
                         Entities[regionHandle.ToString() + update.LocalID.ToString()] = obj;
                     }
                 }
+
+                // Enqueue this object into the modification queue.
                 if (obj != null)
                 {
                     if (obj.prim is Avatar)
@@ -1972,6 +2288,12 @@ wide character strings when displaying text.
                 }
             //}
         }
+
+        /// <summary>
+        ///  LibOMV has informed us that an object was deleted.
+        /// </summary>
+        /// <param name="psim"></param>
+        /// <param name="pLocalID"></param>
         private void objectKilledCallback(Simulator psim, uint pLocalID)
         {
             ulong regionHandle = psim.Handle;
@@ -1990,6 +2312,7 @@ wide character strings when displaying text.
 
                     if (obj.node != null)
                     {
+                        // If we're interpolating this object, stop
                         lock (interpolationTargets)
                         {
                             if (interpolationTargets.ContainsKey(regionHandle.ToString() + obj.prim.LocalID.ToString()))
@@ -1998,9 +2321,11 @@ wide character strings when displaying text.
                             }
 
                         }
+                        // If the camera is targetting this object, stop targeting this object
                         if (cam.SNtarget == obj.node)
                             cam.SNtarget = null;
 
+                        // Remove this object from our picker.
                         if (obj.node.TriangleSelector != null)
                             mts.RemoveTriangleSelector(obj.node.TriangleSelector);
 
@@ -2008,9 +2333,12 @@ wide character strings when displaying text.
                         obj.node = null;
                         
                     }
+                    // Remove this object from the known entities.
                     Entities.Remove(regionHandle.ToString() + pLocalID.ToString());
                 }
             }
+
+            // If it's an avatar, remove it from known avatars
             if (obj != null)
             {
                 if (obj.prim is Avatar)
@@ -2026,6 +2354,13 @@ wide character strings when displaying text.
             }
         }
 
+        /// <summary>
+        /// LibOMV has informed us of a new avatar
+        /// </summary>
+        /// <param name="sim"></param>
+        /// <param name="avatar"></param>
+        /// <param name="regionHandle"></param>
+        /// <param name="timeDilation"></param>
         private void newAvatarCallback(Simulator sim, Avatar avatar, ulong regionHandle,
                                        ushort timeDilation)
         {
@@ -2044,6 +2379,8 @@ wide character strings when displaying text.
             }
             lock (Entities)
             {
+                // If we've got an entitiy for this avatar, then this is a full object update
+                // not a new avatar
                 if (Entities.ContainsKey(regionHandle.ToString() + avatar.LocalID.ToString()))
                 {
                     VObject existingob = Entities[regionHandle.ToString() + avatar.LocalID.ToString()];
@@ -2061,6 +2398,7 @@ wide character strings when displaying text.
                     
                 }
             }
+            // Add to the Object Modification queue.
             lock (objectModQueue)
             {
                 avob.updateFullYN = true;
@@ -2072,6 +2410,9 @@ wide character strings when displaying text.
 
         #region KeyActions
 
+        /// <summary>
+        /// Processes held keys.  This allows us to do multiple keypresses.
+        /// </summary>
         private void processHeldKeys()
         {
             lock (m_heldKeys)
@@ -2085,6 +2426,10 @@ wide character strings when displaying text.
 
         }
 
+        /// <summary>
+        /// does an action for a held key
+        /// </summary>
+        /// <param name="ky"></param>
         private void doHeldKeyActions(KeyCode ky)
         {
             switch (ky)
@@ -2186,6 +2531,11 @@ wide character strings when displaying text.
 
         }
 
+        /// <summary>
+        /// Manage held keys
+        /// </summary>
+        /// <param name="ky"></param>
+        /// <param name="held"></param>
         public void doKeyHeldStore(KeyCode ky, bool held)
         {
             lock (m_heldKeys)
@@ -2210,12 +2560,20 @@ wide character strings when displaying text.
 
         #endregion
 
+
+        /// <summary>
+        /// The Irrlicht window has had an event.
+        /// </summary>
+        /// <param name="p_event"></param>
+        /// <returns></returns>
         public bool device_OnEvent(Event p_event)
         {
             processHeldKeys();
 
+            // !Mouse event  (we do this so that we don't process the rest of this each mouse move
             if (p_event.Type != EventType.MouseInputEvent)
             {
+                //Keyboard event
                 if (p_event.Type == EventType.KeyInputEvent)
                 {
                     
@@ -2283,17 +2641,21 @@ wide character strings when displaying text.
                 LMheld = true;
                 if (ctrlHeld)
                 {
-                    //OldMouseX = 0;
-                    // OldMouseY = 0;
+                    
+                    // Pick!
+
                     cam.ResetMouseOffsets();
                     Vector3D[] projection = cam.ProjectRayPoints(p_event.MousePosition, WindowWidth_DIV2,WindowHeight_DIV2, aspect);
                     Line3D projectedray = new Line3D(projection[0], projection[1]);
 
                     Vector3D collisionpoint = new Vector3D(0, 0, 0);
                     Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
+                    
+                    // Check if we have a node under the mouse
                     SceneNode node = triPicker.GetSceneNodeFromRay(projectedray, 0x0128, true, cam.SNCamera.Position); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
                     if (node == null)
                     {
+                        // Collide test against the terrain
                         if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
                         {
 
@@ -2307,6 +2669,8 @@ wide character strings when displaying text.
                     }
                     else
                     {
+                        // Sometimes the terrain picker returns weird values.
+                        // If it's weird try the general 'everything' triangle picker.
                         m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>",node.Position.X,node.Position.Y,node.Position.Z);
                         if (node.Position.X == 0 && node.Position.Z == 0)
                         {
@@ -2323,7 +2687,7 @@ wide character strings when displaying text.
                         }
                         else
                         {
-                            
+                            // Target the node
                             cam.SetTarget(node.Position);
                             cam.SNtarget = node;
                         }
@@ -2358,6 +2722,7 @@ wide character strings when displaying text.
                 //float pos1 = (float)((p_event.MousePosition.X / WindowWidth_DIV2 - 1.0f) / aspect);
                 //float pos2 = (float)(1.0f - p_event.MousePosition.Y / WindowHeight_DIV2);
 
+                // Handles Orbiting
                 if (LMheld && ctrlHeld)
                 {
 
@@ -2381,7 +2746,13 @@ wide character strings when displaying text.
         }
 
         #endregion
-
+        /// <summary>
+        /// Callback from the texture Manager
+        /// Enqueues an object to be textured
+        /// </summary>
+        /// <param name="tex"></param>
+        /// <param name="vObj"></param>
+        /// <param name="AssetID"></param>
         public void textureCompleteCallback(string tex, VObject vObj, UUID AssetID)
         {
             TextureComplete tx = new TextureComplete();
@@ -2392,6 +2763,9 @@ wide character strings when displaying text.
         }
     }
     
+    /// <summary>
+    /// embedded struct for texture complete object.
+    /// </summary>
     public struct TextureComplete 
     {
         public VObject vObj;
