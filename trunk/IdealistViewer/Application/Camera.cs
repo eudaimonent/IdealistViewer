@@ -84,19 +84,20 @@ namespace IdealistViewer
 
                     if (SNtarget != null)
                     {
+                        //SNtarget.UpdateAbsolutePosition();
                         Vector3D currentTargetPos = SNtarget.Position;
                         Vector3D currentTargetRot = SNtarget.Rotation;
-                        //IrrlichtNETCP.Quaternion quatrot = new IrrlichtNETCP.Quaternion(currentTargetRot.X, currentTargetRot.Y, currentTargetRot.Z);
-                        //quatrot.makeInverse();
-                        //Vector3D offset = new Vector3D(0, 0.5f, -2);
-                       // newpos = currentTargetPos + (offset * quatrot);
-                        Vector3D facing = new Vector3D(NewMath.FCos(currentTargetRot.Y * NewMath.PI / 180), 
-                                                       0.2f, 
-                                                       NewMath.FSin(currentTargetRot.Y * NewMath.PI / 180));
+                        Vector3D Delta1 = new Vector3D(-CAMDISTANCE, 0, 0);
+                        IrrlichtNETCP.Matrix4 transform1 = new IrrlichtNETCP.Matrix4();
+
+                        transform1.RotationDegrees = new Vector3D(SNtarget.Rotation.X, SNtarget.Rotation.Y, SNtarget.Rotation.Z);
                         
-                        facing.Normalize();
-                        newpos = (facing * CAMDISTANCE) + currentTargetPos;
-                        SNCamera.Position = newpos;
+                        transform1.TransformVect(ref Delta1);
+
+                        //transform1.RotationDegrees = new Vector3D(0, SNCamera.Rotation.Y - currentTargetRot.Y - 0, 0);
+                        //transform1.TransformVect(ref Delta1);
+                        newpos = Delta1 + new Vector3D(0, 0.2f * CAMDISTANCE, 0);
+                        SNCamera.Position = currentTargetPos + newpos;
                         SNCamera.Target = SNtarget.Position;
 
 

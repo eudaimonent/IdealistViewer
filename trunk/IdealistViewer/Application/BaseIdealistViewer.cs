@@ -434,7 +434,7 @@ namespace IdealistViewer
                 textureMan.OnTextureLoaded += textureCompleteCallback;
             }
 
-            AVControl = new AvatarController(avatarConnection);
+            AVControl = new AvatarController(avatarConnection, null);
 
             smgr.SetAmbientLight(new Colorf(0.6f, 0.6f, 0.6f, 0.6f));
             
@@ -677,9 +677,11 @@ namespace IdealistViewer
                 {
                     // Repeat any held keys
                     processHeldKeys();
-
+                    
                     // Update Interpolation targets
                     updateInterpolationTargets();
+
+                    AVControl.update(System.Environment.TickCount - tickcount);
 
                     // Ensure that the camera is still pointing at the target object
                     cam.CheckTarget();
@@ -723,7 +725,8 @@ namespace IdealistViewer
 
                 if ((framecounter % modAVUpdates) == 0)
                 {
-                    AVControl.update(System.Environment.TickCount - tickcount);
+                    AVControl.UpdateRemote();
+                    
                 }
                 
                 // Frame Limiter
@@ -1059,6 +1062,14 @@ namespace IdealistViewer
                                 {
                                     interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
                                 }
+                            }
+
+                            // Is this an update about us?
+                            if (vObj.prim.ID == avatarConnection.GetSelfUUID)
+                            {
+                                if (UserAvatar == null)
+                                    SetSelfVObj(vObj);
+
                             }
 
                             // Display the avatar's name over their head.
@@ -2416,13 +2427,7 @@ namespace IdealistViewer
                 }
             }
 
-            // Is this an update about us?
-            if (avatar.ID == avatarConnection.GetSelfUUID)
-            {
-                if (UserAvatar == null)
-                    SetSelfVObj(avob);
-
-            }
+            
 
             // Add to the Object Modification queue.
             lock (objectModQueue)
@@ -2458,6 +2463,7 @@ namespace IdealistViewer
         /// <param name="ky"></param>
         private void DoMotorAction(KeyCode ky, bool kydown, bool held)
         {
+            //m_log.DebugFormat("{0},{1},{2}", ky.ToString(), kydown, held);
             switch (ky)
             {
                 case KeyCode.Up:
@@ -2903,6 +2909,7 @@ namespace IdealistViewer
             if (UserAvatar == null)
             {
                 UserAvatar = self;
+                AVControl.AvatarNode = UserAvatar.node;
             }
         }
 

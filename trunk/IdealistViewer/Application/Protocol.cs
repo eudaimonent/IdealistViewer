@@ -296,8 +296,13 @@ namespace IdealistViewer
 
         public void SetCameraPosition(Vector3 pPosition,Vector3 pTarget)
         {
-            m_user.Self.Movement.Camera.Position = pPosition;
-            m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
+            
+                if (Single.IsNaN(pPosition.X) || Single.IsNaN(pPosition.Y) || Single.IsNaN(pPosition.Z))
+                    return;
+
+                m_user.Self.Movement.Camera.Position = pPosition;
+                m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
+            
         }
 
         public UUID GetSelfUUID

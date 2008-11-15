@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using IrrlichtNETCP;
 
 namespace IdealistViewer
 {
@@ -14,17 +15,24 @@ namespace IdealistViewer
         private const float pi2 = pi * 2;
         float turn_increment = (pi / 240f);
 
-        SLProtocol avatarConnection = null;
+        private SLProtocol avatarConnection = null;
+        private SceneNode av = null;
         
-        public AvatarController(SLProtocol pAvatarConnection)
+        public AvatarController(SLProtocol pAvatarConnection, SceneNode pAVNode)
         {
             avatarConnection = pAvatarConnection;
+            av = pAVNode;
+        }
 
+        public SceneNode AvatarNode
+        {
+            set { av = value; }
 
         }
 
         public void update(int ticks)
         {
+            ticks = (int)(ticks * 0.2f);
             if (turning_left != turning_right)
             {
                 if (turning_left)
@@ -35,13 +43,30 @@ namespace IdealistViewer
                 {
                     heading = normalizeHeading(heading - turn_increment * ticks);
                 }
-                Set_Heading(heading);
+                UpdateLocal();
+                
             }
         }
 
-        public void Set_Heading(float heading)
+        public void UpdateRemote()
         {
             avatarConnection.UpdateFromHeading(heading);
+            
+        }
+        public void UpdateLocal()
+        {
+            if (av != null && av.Raw != IntPtr.Zero)
+            {
+                try
+                {
+                    float vheading = -heading * NewMath.RADTODEG;
+                    av.Rotation = new Vector3D((vheading > 180)? 180 : 0, vheading, (vheading > 180)? 180 : 0);
+                }
+                catch (AccessViolationException)
+                {
+                    av = null; 
+                }
+            }
         }
 
         public bool TurnLeft
@@ -82,14 +107,14 @@ namespace IdealistViewer
 
         public bool Up
         {
-            get { return false; }
-            set { return; }
+            get { return avatarConnection.Up; }
+            set { avatarConnection.Up = value; }
         }
 
         public bool Down
         {
-            get { return false; }
-            set { return; }
+            get { return avatarConnection.Down; }
+            set { avatarConnection.Down = value; }
         }
 
         public bool Fly
