@@ -293,10 +293,76 @@ namespace IdealistViewer
         {
             m_user.Assets.RequestImage(assetID, ImageType.Normal);
         }
+
         public void SetCameraPosition(Vector3 pPosition,Vector3 pTarget)
         {
             m_user.Self.Movement.Camera.Position = pPosition;
             m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
         }
+
+        public UUID GetSelfUUID
+        {
+            get { return m_user.Self.AgentID; }
+        }
+
+        public bool StraffLeft
+        {
+            set {m_user.Self.Movement.LeftPos = value;}
+            get { return m_user.Self.Movement.LeftPos; }
+        }
+        public bool StraffRight
+        {
+            set { m_user.Self.Movement.LeftNeg = value; }
+            get { return m_user.Self.Movement.LeftNeg; }
+        }
+
+        public void UpdateFromHeading(double heading)
+        {
+            m_user.Self.Movement.UpdateFromHeading(heading ,false);
+        }
+
+        public void TurnToward(Vector3 target)
+        {
+            m_user.Self.Movement.TurnToward(target);
+        }
+
+        public bool Forward
+        {
+            set {m_user.Self.Movement.AtPos = value;}
+            get { return m_user.Self.Movement.AtPos; }
+        }
+
+        public bool Backward
+        {
+            set { m_user.Self.Movement.AtNeg = value; }
+            get { return m_user.Self.Movement.AtNeg; }
+        }
+
+        public bool Jump
+        {
+            set { m_user.Self.Jump(value); }
+        }
+
+        public bool Flying
+        {
+            get { return m_user.Self.Movement.Fly; }
+            set { m_user.Self.Movement.Fly = value; }
+        }
+
+        public bool Up
+        {
+            get { return m_user.Self.Movement.UpPos; }
+            set { m_user.Self.Movement.UpPos = value; }
+        }
+
+        public bool Down
+        {
+            get { return m_user.Self.Movement.UpNeg; }
+            set { m_user.Self.Movement.UpNeg = value; }
+        }
+
+        
+
+
     }
 }

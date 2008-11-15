@@ -6,6 +6,7 @@ using IrrlichtNETCP;
 
 namespace IdealistViewer
 {
+    
     public class Camera
     {
         public CameraSceneNode SNCamera;
@@ -22,6 +23,11 @@ namespace IdealistViewer
         public float loMouseOffsetTHETA = 0;
         public float CamRotationAnglePHI = 0f;
         public float CamRotationAngleTHETA = 0f;
+
+        private float zDirection, direction = 0;
+        
+        public ECameraMode CameraMode = ECameraMode.Build;
+
         private SceneManager smgr = null;
         private static Vector3 m_lastTargetPos = Vector3.Zero;
         private Vector3[] LookAtCam = new Vector3[2];
@@ -61,14 +67,44 @@ namespace IdealistViewer
         {
             Vector3D newpos = new Vector3D();
             Vector3D oldTarget = SNCamera.Target;
-            newpos.X = oldTarget.X + (CAMDISTANCE * (float)Math.Cos(CamRotationAngleTHETA + loMouseOffsetTHETA) * (float)Math.Sin(CamRotationAnglePHI + loMouseOffsetPHI));
-            newpos.Y = oldTarget.Y + CAMDISTANCE * (float)Math.Cos(CamRotationAnglePHI + loMouseOffsetPHI);
-            newpos.Z = oldTarget.Z + CAMDISTANCE * (float)Math.Sin(CamRotationAngleTHETA + loMouseOffsetTHETA) * (float)Math.Sin(CamRotationAnglePHI + loMouseOffsetPHI);
+            switch (CameraMode)
+            {
+                case ECameraMode.Build:
+
+                    newpos.X = oldTarget.X + (CAMDISTANCE * (float)Math.Cos(CamRotationAngleTHETA + loMouseOffsetTHETA) * (float)Math.Sin(CamRotationAnglePHI + loMouseOffsetPHI));
+                    newpos.Y = oldTarget.Y + CAMDISTANCE * (float)Math.Cos(CamRotationAnglePHI + loMouseOffsetPHI);
+                    newpos.Z = oldTarget.Z + CAMDISTANCE * (float)Math.Sin(CamRotationAngleTHETA + loMouseOffsetTHETA) * (float)Math.Sin(CamRotationAnglePHI + loMouseOffsetPHI);
 
 
-            SNCamera.Position = newpos;
-            SNCamera.Target = oldTarget;
-            SNCamera.UpdateAbsolutePosition();
+                    SNCamera.Position = newpos;
+                    SNCamera.Target = oldTarget;
+                    SNCamera.UpdateAbsolutePosition();
+                    break;
+                case ECameraMode.Third:
+
+                    if (SNtarget != null)
+                    {
+                        Vector3D currentTargetPos = SNtarget.Position;
+                        Vector3D currentTargetRot = SNtarget.Rotation;
+                        //IrrlichtNETCP.Quaternion quatrot = new IrrlichtNETCP.Quaternion(currentTargetRot.X, currentTargetRot.Y, currentTargetRot.Z);
+                        //quatrot.makeInverse();
+                        //Vector3D offset = new Vector3D(0, 0.5f, -2);
+                       // newpos = currentTargetPos + (offset * quatrot);
+                        Vector3D facing = new Vector3D(NewMath.FCos(currentTargetRot.Y * NewMath.PI / 180), 
+                                                       0.2f, 
+                                                       NewMath.FSin(currentTargetRot.Y * NewMath.PI / 180));
+                        
+                        facing.Normalize();
+                        newpos = (facing * CAMDISTANCE) + currentTargetPos;
+                        SNCamera.Position = newpos;
+                        SNCamera.Target = SNtarget.Position;
+
+
+                    }
+
+                    break;
+
+            }
             //m_log.WarnFormat("[CameraPos]: <{0},{1},{2}>", camr.Position.X, camr.Position.Y, camr.Position.Z);
 
         }
@@ -214,10 +250,18 @@ namespace IdealistViewer
                 {
                     try
                     {
-                        if (SNtarget.Position != SNCamera.Target)
+                        switch (CameraMode)
                         {
-                            SNCamera.Target = SNtarget.Position;
-                            UpdateCameraPosition();
+                            case ECameraMode.Build:
+                                if (SNtarget.Position != SNCamera.Target)
+                                {
+                                    SNCamera.Target = SNtarget.Position;
+                                    UpdateCameraPosition();
+                                }
+                                break;
+                            case ECameraMode.Third:
+                                UpdateCameraPosition();
+                                break;
                         }
                     }
                     catch (AccessViolationException)
@@ -289,6 +333,18 @@ namespace IdealistViewer
             return returnvectors;
         }
 
-
+        public void SwitchMode(ECameraMode pNewMode)
+        {
+            CameraMode = pNewMode;
+            UpdateCameraPosition();
+        }
     }
+    public enum ECameraMode : int
+    {
+        Build = 1,
+        Third = 2, 
+        First = 3
+    }
+
+
 }

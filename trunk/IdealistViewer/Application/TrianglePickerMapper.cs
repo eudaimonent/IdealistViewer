@@ -39,14 +39,21 @@ namespace IdealistViewer
             Vector3D collisionpoint = new Vector3D(0, 0, 0);
             Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
             Vector3D closestpoint = new Vector3D(999, 999, 9999);
+            List<TriangleSelector> removeList = new List<TriangleSelector>();
             lock (trilist)
             {
                 foreach (TriangleSelector trisel in trilist)
                 {
                     if (trisel == null)
+                    {
+                        removeList.Add(trisel);
                         continue;
+                    }
                     if (trisel.Raw == IntPtr.Zero)
+                    {
+                        removeList.Add(trisel);
                         continue;
+                    }
                     try
                     {
                         if (scm.GetCollisionPoint(ray, trisel, out collisionpoint, out tri))
@@ -68,8 +75,18 @@ namespace IdealistViewer
                     }
                     catch (AccessViolationException)
                     {
+                        removeList.Add(trisel);
                         continue;
                     }
+                    catch (System.Runtime.InteropServices.SEHException)
+                    {
+                        removeList.Add(trisel);
+                        continue;
+                    }
+                }
+                foreach (TriangleSelector trisel2 in removeList)
+                {
+                    trilist.Remove(trisel2);
                 }
 
             }

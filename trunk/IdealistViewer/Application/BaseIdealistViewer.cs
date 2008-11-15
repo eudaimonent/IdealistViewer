@@ -146,7 +146,11 @@ namespace IdealistViewer
         /// Known Avatars Indexed by Avatar UUID
         /// </summary>
         private static Dictionary<UUID, VObject> Avatars = new Dictionary<UUID, VObject>();
-        
+
+
+        private static AvatarController AVControl = null;
+
+        private const int modAVUpdates = 10;
 
         /// <summary>
         /// Held Controls
@@ -374,6 +378,8 @@ namespace IdealistViewer
 
         protected ConsoleBase m_console;
 
+        private VObject UserAvatar = null;
+
         public BaseIdealistViewer(IConfigSource iconfig)
         {
 
@@ -428,6 +434,7 @@ namespace IdealistViewer
                 textureMan.OnTextureLoaded += textureCompleteCallback;
             }
 
+            AVControl = new AvatarController(avatarConnection);
 
             smgr.SetAmbientLight(new Colorf(0.6f, 0.6f, 0.6f, 0.6f));
             
@@ -713,6 +720,11 @@ namespace IdealistViewer
                     //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
 
                 }
+
+                if ((framecounter % modAVUpdates) == 0)
+                {
+                    AVControl.update(System.Environment.TickCount - tickcount);
+                }
                 
                 // Frame Limiter
                 int frameTime = System.Environment.TickCount - tickcount;
@@ -740,26 +752,26 @@ namespace IdealistViewer
                     // Check if the target is dead.
                     if (obj == null)
                     {
-                        if (removestr == null)
-                            removestr = new List<string>();
+                        //if (removestr == null)
+                            //removestr = new List<string>();
 
-                        removestr.Add(str);
+                        //removestr.Add(str);
                         continue;
                     }
                     if (obj.node == null)
                     {
-                        if (removestr == null)
-                            removestr = new List<string>();
+                        //if (removestr == null)
+                        //    removestr = new List<string>();
 
-                        removestr.Add(str);
+                        //removestr.Add(str);
                         continue;
                     }
                     if (obj.node.Raw == IntPtr.Zero)
                     {
-                        if (removestr == null)
-                            removestr = new List<string>();
+                        //if (removestr == null)
+                        //    removestr = new List<string>();
 
-                        removestr.Add(str);
+                        //removestr.Add(str);
                         continue;
                     }
 
@@ -777,19 +789,19 @@ namespace IdealistViewer
                     }
                     catch (AccessViolationException)
                     {
-                        if (removestr == null)
-                            removestr = new List<string>();
+                        //if (removestr == null)
+                        //    removestr = new List<string>();
 
-                        removestr.Add(str);
+                        //removestr.Add(str);
                         continue;
                     }
                     catch (System.Runtime.InteropServices.SEHException)
                     {
                         
-                        if (removestr == null)
-                            removestr = new List<string>();
+                       // if (removestr == null)
+                        //    removestr = new List<string>();
 
-                        removestr.Add(str);
+                       // removestr.Add(str);
                         continue;
                     }
 
@@ -851,7 +863,7 @@ namespace IdealistViewer
                             tx.vObj.updateFullYN = true;
                             //tx.vObj.mesh.Dispose();
 
-                            if (tx.vObj.node.TriangleSelector != null)
+                            if (tx.vObj.node != null && tx.vObj.node.TriangleSelector != null)
                                 mts.RemoveTriangleSelector(tx.vObj.node.TriangleSelector);
                             if (tx.vObj.node != null && tx.vObj.node.Raw != IntPtr.Zero)
                                 smgr.AddToDeletionQueue(tx.vObj.node);
@@ -1179,6 +1191,7 @@ namespace IdealistViewer
                         {
                             lock (interpolationTargets)
                             {
+                                if (! (vObj.prim is Avatar))
                                 if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
                                     interpolationTargets.Remove(simhandle.ToString() + vObj.prim.LocalID.ToString());
                             }
@@ -2350,6 +2363,10 @@ namespace IdealistViewer
                             Avatars.Remove(obj.prim.ID);
                         }
                     }
+                    if (obj.prim.ID == avatarConnection.GetSelfUUID)
+                    {
+                        UserAvatar = null;
+                    }
                 }
             }
         }
@@ -2398,6 +2415,15 @@ namespace IdealistViewer
                     
                 }
             }
+
+            // Is this an update about us?
+            if (avatar.ID == avatarConnection.GetSelfUUID)
+            {
+                if (UserAvatar == null)
+                    SetSelfVObj(avob);
+
+            }
+
             // Add to the Object Modification queue.
             lock (objectModQueue)
             {
@@ -2427,6 +2453,54 @@ namespace IdealistViewer
         }
 
         /// <summary>
+        /// Does an avatar movement based on provided key
+        /// </summary>
+        /// <param name="ky"></param>
+        private void DoMotorAction(KeyCode ky, bool kydown, bool held)
+        {
+            switch (ky)
+            {
+                case KeyCode.Up:
+                    
+                    AVControl.Forward = kydown;
+                    break;
+
+                case KeyCode.Down:
+                    AVControl.Back = kydown;
+                    break;
+
+                case KeyCode.Left:
+                    AVControl.TurnLeft = kydown;
+                    break;
+
+                case KeyCode.Right:
+                    AVControl.TurnRight = kydown;
+                    break;
+
+                case KeyCode.Prior:
+                    if (AVControl.Fly)
+                        AVControl.Up = kydown;
+                    else
+                        if (kydown)
+                            AVControl.Jump = true;
+                        else
+                            AVControl.Jump = false;
+
+                    break;
+
+                case KeyCode.Next:
+                    AVControl.Down = kydown;
+                    break;
+
+                case KeyCode.Home:
+                    if (!held)
+                        AVControl.Fly = !AVControl.Fly;
+                    break;
+
+            }
+        }
+
+        /// <summary>
         /// does an action for a held key
         /// </summary>
         /// <param name="ky"></param>
@@ -2437,12 +2511,22 @@ namespace IdealistViewer
                 case KeyCode.Up:
                     if (!shiftHeld && !ctrlHeld)
                     {
+                        if (cam.CameraMode == ECameraMode.Build)
+                        {
+                            if (UserAvatar != null)
+                            {
+                                cam.SetTarget(UserAvatar.node);
+                                cam.SwitchMode(ECameraMode.Third);
+                            }
+                        }
 
+                        DoMotorAction(ky, true, true);
                     }
                     else
                     {
                         if (ctrlHeld)
                         {
+                           
                             cam.DoKeyAction(ky);
                         }
 
@@ -2452,12 +2536,22 @@ namespace IdealistViewer
                 case KeyCode.Down:
                     if (!shiftHeld && !ctrlHeld)
                     {
+                        if (cam.CameraMode == ECameraMode.Build)
+                        {
+                            if (UserAvatar != null)
+                            {
+                                cam.SetTarget(UserAvatar.node);
+                                cam.SwitchMode(ECameraMode.Third);
+                            }
+                        }
 
+                        DoMotorAction(ky, true, true);
                     }
                     else
                     {
                         if (ctrlHeld)
                         {
+                            cam.SwitchMode(ECameraMode.Build);
                             cam.DoKeyAction(ky);
                         }
 
@@ -2467,13 +2561,23 @@ namespace IdealistViewer
                 case KeyCode.Left:
                     if (!shiftHeld && !ctrlHeld)
                     {
+                        if (cam.CameraMode == ECameraMode.Build)
+                        {
+                            if (UserAvatar != null)
+                            {
+                                cam.SetTarget(UserAvatar.node);
+                                cam.SwitchMode(ECameraMode.Third);
+                            }
+                        }
 
+                        DoMotorAction(ky, true, true);
                     }
                     else
                     {
                         if (ctrlHeld)
                         {
                             //vOrbit.X -= 2f;
+                            cam.SwitchMode(ECameraMode.Build);
                             cam.DoKeyAction(ky);
                         }
 
@@ -2483,7 +2587,16 @@ namespace IdealistViewer
                 case KeyCode.Right:
                     if (!shiftHeld && !ctrlHeld)
                     {
+                        if (cam.CameraMode == ECameraMode.Build)
+                        {
+                            if (UserAvatar != null)
+                            {
+                                cam.SetTarget(UserAvatar.node);
+                                cam.SwitchMode(ECameraMode.Third);
+                            }
+                        }
 
+                        DoMotorAction(ky, true, true);
                     }
                     else
                     {
@@ -2491,6 +2604,7 @@ namespace IdealistViewer
                         {
                             //vOrbit.X += 2f;
                             //vOrbit.X -= 2f;
+                            cam.SwitchMode(ECameraMode.Build);
                             cam.DoKeyAction(ky);
                         }
 
@@ -2499,13 +2613,23 @@ namespace IdealistViewer
                 case KeyCode.Prior:
                     if (!shiftHeld && !ctrlHeld)
                     {
+                        if (cam.CameraMode == ECameraMode.Build)
+                        {
+                            if (UserAvatar != null)
+                            {
+                                cam.SetTarget(UserAvatar.node);
+                                cam.SwitchMode(ECameraMode.Third);
+                            }
+                        }
 
+                        DoMotorAction(ky, true, true);
                     }
                     else
                     {
                         if (ctrlHeld)
                         {
                             //vOrbit.Y -= 2f;
+                            cam.SwitchMode(ECameraMode.Build);
                             cam.DoKeyAction(ky);
                         }
 
@@ -2515,12 +2639,22 @@ namespace IdealistViewer
                 case KeyCode.Next:
                     if (!shiftHeld && !ctrlHeld)
                     {
+                        if (cam.CameraMode == ECameraMode.Build)
+                        {
+                            if (UserAvatar != null)
+                            {
+                                cam.SetTarget(UserAvatar.node);
+                                cam.SwitchMode(ECameraMode.Third);
+                            }
+                        }
 
+                        DoMotorAction(ky, true, true);
                     }
                     else
                     {
                         if (ctrlHeld)
                         {
+                            cam.SwitchMode(ECameraMode.Build);
                             cam.DoKeyAction(ky);
                         }
 
@@ -2568,7 +2702,7 @@ namespace IdealistViewer
         /// <returns></returns>
         public bool device_OnEvent(Event p_event)
         {
-            processHeldKeys();
+            
 
             // !Mouse event  (we do this so that we don't process the rest of this each mouse move
             if (p_event.Type != EventType.MouseInputEvent)
@@ -2583,6 +2717,7 @@ namespace IdealistViewer
                             ctrlHeld = p_event.KeyPressedDown;
                             if (ctrlHeld)
                             {
+                                
                                 cam.ResetMouseOffsets();
                             }
                             else
@@ -2599,10 +2734,15 @@ namespace IdealistViewer
                         case KeyCode.Right:
                         case KeyCode.Prior:
                         case KeyCode.Next:
+                        case KeyCode.Home:
+                            if (!ctrlHeld)
+                                DoMotorAction(p_event.KeyCode, p_event.KeyPressedDown, false);
+
                             doKeyHeldStore(p_event.KeyCode,p_event.KeyPressedDown);
                             break;
                     }
                 }
+                processHeldKeys();
             }
 
             if (p_event.Type == EventType.MouseInputEvent)
@@ -2629,7 +2769,7 @@ namespace IdealistViewer
                 {
                     //if (loMouseOffsetPHI != 0 || loMouseOffsetTHETA != 0)
                     //{
-
+                    //cam.SwitchMode(ECameraMode.Build);
                     cam.ApplyMouseOffsets();
                     //}
                 }
@@ -2641,7 +2781,7 @@ namespace IdealistViewer
                 LMheld = true;
                 if (ctrlHeld)
                 {
-                    
+                    cam.SwitchMode(ECameraMode.Build);
                     // Pick!
 
                     cam.ResetMouseOffsets();
@@ -2663,8 +2803,11 @@ namespace IdealistViewer
                             //{
                             //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
                             //}
-                            cam.SetTarget(collisionpoint);
-                            cam.SNtarget = null;
+                            if (cam.CameraMode == ECameraMode.Build)
+                            {
+                                cam.SetTarget(collisionpoint);
+                                cam.SNtarget = null;
+                            }
                         }
                     }
                     else
@@ -2681,30 +2824,23 @@ namespace IdealistViewer
                                 //{
                                 //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
                                 //}
-                                cam.SetTarget(collisionpoint);
-                                cam.SNtarget = null;
+                                if (cam.CameraMode == ECameraMode.Build)
+                                {
+                                    cam.SetTarget(collisionpoint);
+                                    cam.SNtarget = null;
+                                }
                             }
                         }
                         else
                         {
                             // Target the node
-                            cam.SetTarget(node.Position);
-                            cam.SNtarget = node;
+                            if (cam.CameraMode == ECameraMode.Build)
+                            {
+                                cam.SetTarget(node.Position);
+                                cam.SNtarget = node;
+                            }
                         }
                     }
-                    
-                    
-                    //else
-                    //{
-                        //if (smgr.CollisionManager.GetCollisionPoint(projectedray, terrainsel, out collisionpoint, out tri))
-                        //{
-                            //if (collisionpoint != null)
-                            //{
-                            //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
-                            //}
-                          //  cam.SetTarget(collisionpoint);
-                        //}
-                    //}
                 }
             }
             if (p_event.MouseInputEvent == MouseInputEvent.RMouseLeftUp)
@@ -2761,6 +2897,15 @@ namespace IdealistViewer
             tx.textureID = AssetID;
             assignTextureQueue.Enqueue(tx);
         }
+
+        public void SetSelfVObj(VObject self)
+        {
+            if (UserAvatar == null)
+            {
+                UserAvatar = self;
+            }
+        }
+
     }
     
     /// <summary>
