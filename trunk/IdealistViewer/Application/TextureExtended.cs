@@ -10,6 +10,7 @@ namespace IdealistViewer
         public object Userdata = null;
         public TextureExtended(IntPtr raw) : base(raw)
         {
+            base.Dispose();
         }
         
     }

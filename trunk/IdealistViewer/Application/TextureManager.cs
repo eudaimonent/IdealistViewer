@@ -192,6 +192,25 @@ namespace IdealistViewer
             return false;
         }
 
+        public uint TextureCacheCount
+        {
+            get { return (uint)memoryTextures.Count; }
+        }
+
+        public void ClearMemoryCache()
+        {
+            lock (memoryTextures)
+            {
+                foreach (Texture tx in memoryTextures.Values)
+                {
+                    tx.Dispose();
+                }
+                memoryTextures.Clear();
+            }
+                
+            m_log.Debug("[TEXTURE]: Memory Cache Cleared");
+        }
+
         /// <summary>
         /// Bread and butter of the texture system.
         /// This is the start point for the texture-> graphics pipeline
@@ -386,6 +405,7 @@ namespace IdealistViewer
                     
                     // Delete the old node
                     SceneNode oldnode = vObj.node;
+                    
                     vObj.node = sn;
                     if (oldnode.TriangleSelector != null)
                         mts.RemoveTriangleSelector(oldnode.TriangleSelector);

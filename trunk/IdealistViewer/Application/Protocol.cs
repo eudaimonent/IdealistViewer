@@ -103,7 +103,7 @@ namespace IdealistViewer
         }
         private void simConnectedCallback(Simulator sender)
         {
-            m_user.Throttle.Total = 500000;
+            m_user.Throttle.Total = 600000;
             m_user.Throttle.Land = 80000;
             m_user.Throttle.Task = 200000;
             m_user.Throttle.Texture = 150000;
@@ -113,7 +113,7 @@ namespace IdealistViewer
             m_user.Throttle.Cloud = 10000;
             m_user.Self.Movement.Camera.Far = 64f;
             m_user.Self.Movement.Camera.Position = m_user.Self.RelativePosition;
-            
+            SetHeightWidth(768, 1024);
             if (OnSimConnected != null)
             {
                 OnSimConnected(sender);
@@ -294,15 +294,24 @@ namespace IdealistViewer
             m_user.Assets.RequestImage(assetID, ImageType.Normal);
         }
 
-        public void SetCameraPosition(Vector3 pPosition,Vector3 pTarget)
+        public void SetCameraPosition(Vector3[] camdata)
         {
-            
-                if (Single.IsNaN(pPosition.X) || Single.IsNaN(pPosition.Y) || Single.IsNaN(pPosition.Z))
+
+            for (int i=0;i<camdata.Length; i++)
+                if (Single.IsNaN(camdata[i].X) || Single.IsNaN(camdata[i].Y) || Single.IsNaN(camdata[i].Z))
                     return;
 
-                m_user.Self.Movement.Camera.Position = pPosition;
-                m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
+                //m_user.Self.Movement.Camera.Position = pPosition;
+                //m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
+            m_user.Self.Movement.Camera.AtAxis = camdata[1];
+            m_user.Self.Movement.Camera.LeftAxis = camdata[0];
+            m_user.Self.Movement.Camera.LeftAxis = camdata[2];
             
+        }
+        
+        public void SetHeightWidth(uint height, uint width)
+        {
+            m_user.Self.SetHeightWidth((ushort)height, (ushort)width);
         }
 
         public UUID GetSelfUUID

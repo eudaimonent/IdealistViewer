@@ -128,6 +128,7 @@ namespace IdealistViewer
         public void  Dispose()
         {
             bBitmap.Dispose();
+            bLOD.Dispose();
         }
 
 #endregion

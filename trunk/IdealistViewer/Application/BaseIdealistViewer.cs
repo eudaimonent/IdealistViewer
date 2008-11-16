@@ -1,3 +1,6 @@
+//#define DebugObjectPipeline
+#define DebugTexturePipeline
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -237,6 +240,8 @@ namespace IdealistViewer
         /// Use this to ensure that meshing occurs one at a time.
         /// </summary>
         private static Object mesh_synclock = new Object();
+
+        private uint primcount = 0;
 
         /// <summary>
         /// Cordinate Switcher Quaternion XYZ space to XZY space.
@@ -551,7 +556,7 @@ namespace IdealistViewer
             //gtb.AddButton(92, "Button", "Click", null, null, true, false);
 
             // Test Avatar Ruth mesh
-            AnimatedMesh av = smgr.GetMesh("Female7.x");
+            /* AnimatedMesh av = smgr.GetMesh("Female7.x");
 
             int mbcount = av.GetMesh(0).MeshBufferCount;
             for (int j = 0; j < mbcount; j++)
@@ -617,7 +622,7 @@ namespace IdealistViewer
 
             //SkinnedMesh smm = new SkinnedMesh(avm.AnimatedMesh.Raw);
             //smm.SkinMesh();
-
+            */
             // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
             bool running = true;
@@ -698,17 +703,17 @@ namespace IdealistViewer
                 if ((framecounter % objectmods) == 0)
                 {
                     // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(5);
+                    doProcessMesh(20);
 
                     // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(5);
+                    doObjectMods(20);
 
                     // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
 
                     // Apply textures
-                    doTextureMods(1);
-                    doSetCameraPosition();
+                    doTextureMods(5);
+                    
 
                     // Check for Dirty terrain Update as necessary.
                     UpdateTerrain();
@@ -726,7 +731,7 @@ namespace IdealistViewer
                 if ((framecounter % modAVUpdates) == 0)
                 {
                     AVControl.UpdateRemote();
-                    
+                    doSetCameraPosition();
                 }
                 
                 // Frame Limiter
@@ -897,7 +902,7 @@ namespace IdealistViewer
         {
             Vector3[] camdata = cam.GetCameraLookAt();
 
-            avatarConnection.SetCameraPosition(camdata[0],camdata[1]);
+            avatarConnection.SetCameraPosition(camdata);
         }
 
 
@@ -978,6 +983,9 @@ namespace IdealistViewer
                     
                     if (vObj.prim.ParentID != 0)
                     {
+#if DebugObjectPipeline
+                        m_log.DebugFormat("[OBJ]: NonRootPrim ID: {0}", vObj.prim.ID);
+#endif
                         lock (Entities)
                         {
                             if (Entities.ContainsKey(simhandle.ToString() + vObj.prim.ParentID.ToString()))
@@ -992,6 +1000,9 @@ namespace IdealistViewer
                                 }
                                 else
                                 {
+#if DebugObjectPipeline
+                                    m_log.DebugFormat("[OBJ]: No Parent Yet for ID: {0}", vObj.prim.ID);
+#endif
                                     // No parent yet...    Stick it in the child prim wait queue.
                                     UnAssignedChildObjectModQueue.Enqueue(vObj);
                                     continue;
@@ -1008,6 +1019,9 @@ namespace IdealistViewer
                     SceneNode node = null;
                     if (vObj.prim is Avatar)
                     {
+#if DebugObjectPipeline
+                        m_log.DebugFormat("[OBJ]: Avatar ID: {0}", vObj.prim.ID);
+#endif
                         // Little known fact.  Dead avatar in LibOMV have the word 'dead' in their UUID
                         // Skip over this one and move on to the next one if it's dead.
                         if (((Avatar)vObj.prim).ID.ToString().Contains("dead"))
@@ -1016,7 +1030,9 @@ namespace IdealistViewer
                         // If we don't have an avatar representation yet for this avatar or it's a full update
                         if (vObj.node == null && vObj.updateFullYN)
                         {
-                        
+#if DebugObjectPipeline
+                            m_log.DebugFormat("[OBJ]: Created Avatar ID: {0}", vObj.prim.ID);
+#endif
                             AnimatedMesh avmesh = smgr.GetMesh(avatarMesh);
 
                             bool isTextured = false;
@@ -1050,7 +1066,9 @@ namespace IdealistViewer
                             
                             // Light avatar
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
-                            
+#if DebugObjectPipeline
+                            m_log.DebugFormat("[OBJ]: Added Interpolation Target for Avatar ID: {0}", vObj.prim.ID);
+#endif
                             // Add to Interpolation targets
                             lock (interpolationTargets)
                             {
@@ -1088,6 +1106,9 @@ namespace IdealistViewer
                         }
                         else
                         {
+#if DebugObjectPipeline
+                            m_log.DebugFormat("[OBJ]: update for existing avatar ID: {0}", vObj.prim.ID);
+#endif
                             // Set the current working node to the already existing node.
                             node = vObj.node;
                         }
@@ -1096,9 +1117,17 @@ namespace IdealistViewer
 #endregion
                     else
                     {
+#if DebugObjectPipeline
+                        m_log.DebugFormat("[OBJ]: Update for Prim ID: {0}", vObj.prim.ID);
+#endif
                         // No mesh yet, skip over it.
                         if (vObj.mesh == null)
+                        {
+#if DebugObjectPipeline
+                            m_log.WarnFormat("[OBJ]: No Mesh for Prim ID: {0}.  This prim won't be displayed", vObj.prim.ID);
+#endif
                             continue;
+                        }
 
                         // Full Update
                         if (vObj.updateFullYN)
@@ -1119,8 +1148,18 @@ namespace IdealistViewer
                             // Set the working node to the pre-existing node for this object
                             node = vObj.node;
                         }
+
+#if DebugObjectPipeline
+                        m_log.DebugFormat("[OBJ]: Update Data Prim ID: {0}, FULL:{1}, CREATED:{2}", vObj.prim.ID, vObj.updateFullYN ,creatednode);
+#endif
+
                         if (node == null)
+                        {
+#if DebugObjectPipeline
+                            m_log.WarnFormat("[OBJ]: Node was Null for Prim ID: {0}.  This prim won't be displayed", vObj.prim.ID);
+#endif
                             continue;
+                        }
                     }
 
                     if (node == null && vObj.prim is Avatar)
@@ -1174,11 +1213,26 @@ namespace IdealistViewer
                     {
                         // Check if the node died
                         if (node.Raw == IntPtr.Zero)
+                        {
+#if DebugObjectPipeline
+                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing Node, IntPtr.Zero", vObj.prim.ID);
+#endif
                             continue;
+                        }
                         if (vObj == null || parentObj == null)
+                        {
+#if DebugObjectPipeline
+                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing Node, vObj == null || parentVObj == null", vObj.prim.ID);
+#endif
                             continue;
+                        }
                         if (vObj.prim == null || parentObj.prim == null)
+                        {
+#if DebugObjectPipeline
+                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing prim, vObj.prim == null || parentObj.prim == null", vObj.prim.ID);
+#endif
                             continue;
+                        }
 
                         // apply rotation and position reported form LibOMV
                         vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
@@ -1230,7 +1284,12 @@ namespace IdealistViewer
 
 
                     if (node.Raw == IntPtr.Zero)
+                    {
+#if DebugObjectPipeline
+                        m_log.WarnFormat("[OBJ]: Prim ID: {0} Node IntPtr.Zero, node.Raw == IntPtr.Zero", vObj.prim.ID);
+#endif
                         continue;
+                    }
                     
                     // Quaternion to Euler
                     node.Rotation  = finalpos.Matrix.RotationDegrees;
@@ -1364,9 +1423,17 @@ namespace IdealistViewer
                             }
                             else
                             {
-                                node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
-                                creatednode = true;
-                                vObj.node = node;
+                                try
+                                {
+                                    node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
+                                    creatednode = true;
+                                    vObj.node = node;
+                                }
+                                catch (AccessViolationException)
+                                {
+
+                                    continue;
+                                }
                             }
                         }
                         else
@@ -2010,26 +2077,68 @@ namespace IdealistViewer
         {
             //System.Console.WriteLine(prim.ToString());
             //return;
+            primcount++;
             VObject newObject = null;
 
             //bool foundEntity = false;
-
+#if DebugObjectPipeline
+            m_log.DebugFormat("[OBJ]: Got New Prim ID: {0}", prim.ID);
+#endif
             lock (Entities)
             {
                 if (Entities.ContainsKey(regionHandle.ToString() + prim.LocalID.ToString()))
                 {
                     //foundEntity = true;
                     newObject = Entities[regionHandle.ToString() + prim.LocalID.ToString()];
+#if DebugObjectPipeline
+                    m_log.DebugFormat("[OBJ]: Reusing Entitity ID: {0}", prim.ID);
+#endif
+                }
+                else
+                {
+#if DebugObjectPipeline
+    m_log.DebugFormat("[OBJ]: New Entitity ID: {0}", prim.ID);
+#endif
                 }
             }
+
             if (newObject != null)
             {
                 if (newObject.node != null)
                 {
                     if (newObject.node.TriangleSelector != null)
                         mts.RemoveTriangleSelector(newObject.node.TriangleSelector);
+
+                    for (uint i = 0; i < newObject.node.MaterialCount; i++)
+                    {
+                        IrrlichtNETCP.Material objmaterial = newObject.node.GetMaterial((int)i);
+                        //objmaterial.Texture1.Dispose();
+                        if (objmaterial.Layer1 != null)
+                        {
+                            if (objmaterial.Layer1.Texture != null)
+                            {
+                                objmaterial.Layer1.Texture.Dispose();
+                            }
+                            objmaterial.Layer1.Dispose();
+                        }
+                        objmaterial.Dispose();
+                    }
+
                     smgr.AddToDeletionQueue(newObject.node);
+#if DebugObjectPipeline
+                    m_log.DebugFormat("[OBJ]: Deleted Node for ID: {0}", prim.ID);
+#endif
+
                     newObject.node = null;
+                    Mesh objmesh = newObject.mesh;
+                    for (int i = 0; i < objmesh.MeshBufferCount; i++)
+                    {
+                        MeshBuffer mb = objmesh.GetMeshBuffer(i);
+                        mb.Dispose();
+
+                    }
+                    newObject.mesh.Dispose();
+                    newObject.prim = null;
                 }
 
             }
@@ -2323,16 +2432,13 @@ namespace IdealistViewer
             ulong regionHandle = psim.Handle;
             m_log.Debug("[DELETE]: obj " + regionHandle.ToString() + ":" + pLocalID.ToString());
             VObject obj = null;
-
-            
+          
             lock (Entities)
             {
 
                 if (Entities.ContainsKey(regionHandle.ToString() + pLocalID.ToString()))
                 {
                     obj = Entities[regionHandle.ToString() + pLocalID.ToString()];
-
-                    
 
                     if (obj.node != null)
                     {
@@ -2427,8 +2533,6 @@ namespace IdealistViewer
                 }
             }
 
-            
-
             // Add to the Object Modification queue.
             lock (objectModQueue)
             {
@@ -2499,7 +2603,7 @@ namespace IdealistViewer
                     break;
 
                 case KeyCode.Home:
-                    if (!held)
+                    if (!held && !kydown) 
                         AVControl.Fly = !AVControl.Fly;
                     break;
 
@@ -2532,10 +2636,8 @@ namespace IdealistViewer
                     {
                         if (ctrlHeld)
                         {
-                           
                             cam.DoKeyAction(ky);
                         }
-
                     }
                     break;
 
@@ -2745,6 +2847,25 @@ namespace IdealistViewer
                                 DoMotorAction(p_event.KeyCode, p_event.KeyPressedDown, false);
 
                             doKeyHeldStore(p_event.KeyCode,p_event.KeyPressedDown);
+                            break;
+                        case KeyCode.Key_P:
+                            if (p_event.KeyPressedDown)
+                            {
+                                uint texcount = 0;
+                                if (textureMan != null)
+                                    texcount = textureMan.TextureCacheCount;
+                                m_log.DebugFormat("PrimCount:{0}, EntityCount:{1}, TextureCount{2}", primcount, Entities.Count, texcount);
+                            }
+                            break;
+                        case KeyCode.Key_C:
+                            if (p_event.KeyPressedDown)
+                            {
+                                if (textureMan != null)
+                                {
+                                    textureMan.ClearMemoryCache();
+
+                                }
+                            }
                             break;
                     }
                 }

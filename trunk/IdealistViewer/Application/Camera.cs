@@ -30,7 +30,7 @@ namespace IdealistViewer
 
         private SceneManager smgr = null;
         private static Vector3 m_lastTargetPos = Vector3.Zero;
-        private Vector3[] LookAtCam = new Vector3[2];
+        private Vector3[] LookAtCam = new Vector3[3];
 
         /// <summary>
         /// User's Camera
@@ -51,6 +51,7 @@ namespace IdealistViewer
 
             LookAtCam[0] = Vector3.Zero;
             LookAtCam[1] = Vector3.Zero;
+            LookAtCam[2] = Vector3.Zero;
 
             UpdateCameraPosition();
         
@@ -280,12 +281,20 @@ namespace IdealistViewer
         /// <returns></returns>
         public Vector3[] GetCameraLookAt()
         {
-            LookAtCam[0].X = SNCamera.Position.X;
-            LookAtCam[0].Y = SNCamera.Position.Z;
-            LookAtCam[0].Z = SNCamera.Position.Y;
-            LookAtCam[1].X = SNCamera.Target.X;
-            LookAtCam[1].Y = SNCamera.Target.Z;
-            LookAtCam[1].Z = SNCamera.Target.Y;
+            IrrlichtNETCP.Matrix4 viewm = SNCamera.ViewMatrix;
+            IrrlichtNETCP.Matrix4 transform = BaseIdealistViewer.Cordinate_XYZ_XZY.Matrix;
+            transform.MakeInverse();
+            viewm = viewm * transform;
+
+            LookAtCam[0].X = viewm.M[0];
+            LookAtCam[0].Y = viewm.M[2];
+            LookAtCam[0].Z = viewm.M[1];
+            LookAtCam[1].X = viewm.M[4];
+            LookAtCam[1].Y = viewm.M[6];
+            LookAtCam[1].Z = viewm.M[5];
+            LookAtCam[2].Z = viewm.M[8];
+            LookAtCam[2].Z = viewm.M[10];
+            LookAtCam[2].Z = viewm.M[9];
             return LookAtCam;
         }
 
