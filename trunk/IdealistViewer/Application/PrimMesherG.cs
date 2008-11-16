@@ -31,6 +31,65 @@ namespace IdealistViewer
             return new Vector3D(c.X, c.Z, c.Y);
         }
 
+        private static Mesh FacesToIrrMesh(List<ViewerFace> viewerFaces, int numPrimFaces)
+        {
+            Color color = new Color(255, 255, 0, 50);
+
+            Mesh mesh = new Mesh();
+
+            int numViewerFaces = viewerFaces.Count;
+
+            MeshBuffer[] mb = new MeshBuffer[numPrimFaces];
+
+            for (int i = 0; i < mb.Length; i++)
+                mb[i] = new MeshBuffer(VertexType.Standard);
+
+            try
+            {
+                uint[] index = new uint[mb.Length];
+
+                for (int i = 0; i < index.Length; i++)
+                    index[i] = 0;
+
+                for (uint i = 0; i < numViewerFaces; i++)
+                {
+                    ViewerFace vf = viewerFaces[(int)i];
+
+                    try
+                    {
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber], new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
+                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
+
+                    }
+                    catch (OutOfMemoryException)
+                    {
+                        return null;
+                    }
+
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber], (ushort)index[vf.primFaceNumber]);
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 1, (ushort)(index[vf.primFaceNumber] + 2));
+                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 2, (ushort)(index[vf.primFaceNumber] + 1));
+
+                    index[vf.primFaceNumber] += 3;
+                }
+
+                for (int i = 0; i < mb.Length; i++)
+                    mesh.AddMeshBuffer(mb[i]);
+
+                // don't dispose here
+                //mb.Dispose();
+            }
+            catch (AccessViolationException)
+            {
+                m_log.Error("ACCESSVIOLATION");
+                mesh = null;
+            }
+
+            return mesh;
+        }
+
+      
         public static Mesh PrimitiveToIrrMesh(Primitive prim)
         {
             Primitive.ConstructionData primData = prim.PrimData;
@@ -89,67 +148,22 @@ namespace IdealistViewer
                 newPrim.twistEnd = (int)(360 * primData.PathTwist);
                 newPrim.ExtrudeCircular();
             }
-            
-            Color color = new Color(255, 255, 0, 50);
 
-            Mesh mesh = new Mesh();
-           
             int numViewerFaces = newPrim.viewerFaces.Count;
 
-            MeshBuffer[] mb = new MeshBuffer[newPrim.numPrimFaces];
-                  
-            for (int i=0;i<mb.Length;i++)
-                mb[i] = new MeshBuffer(VertexType.Standard);
-             
-            try
+            for (uint i = 0; i < numViewerFaces; i++)
             {
-                uint[] index = new uint[mb.Length];
-                
-                for(int i=0;i<index.Length;i++)
-                    index[i] = 0;
+                ViewerFace vf = newPrim.viewerFaces[(int)i];
 
-                for (uint i = 0; i < numViewerFaces; i++)
+                if (isSphere)
                 {
-                    ViewerFace vf = newPrim.viewerFaces[(int)i];
-
-                    if (isSphere)
-                    {
-                        vf.uv1.U = (vf.uv1.U - 0.5f) * 2.0f;
-                        vf.uv2.U = (vf.uv2.U - 0.5f) * 2.0f;
-                        vf.uv3.U = (vf.uv3.U - 0.5f) * 2.0f;
-                    }
-                    try
-                    {
-                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber], new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
-                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
-                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
-
-                    }
-                    catch (OutOfMemoryException)
-                    {
-                        return null;
-                    }
-
-                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber], (ushort)index[vf.primFaceNumber]);
-                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 1, (ushort)(index[vf.primFaceNumber] + 2));
-                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 2, (ushort)(index[vf.primFaceNumber] + 1));
-
-                    index[vf.primFaceNumber] += 3;
+                    vf.uv1.U = (vf.uv1.U - 0.5f) * 2.0f;
+                    vf.uv2.U = (vf.uv2.U - 0.5f) * 2.0f;
+                    vf.uv3.U = (vf.uv3.U - 0.5f) * 2.0f;
                 }
-
-                for (int i=0; i<mb.Length;i++)
-                    mesh.AddMeshBuffer(mb[i]);
-
-                // don't dispose here
-                //mb.Dispose();
-            }
-            catch (AccessViolationException)
-            {
-                m_log.Error("ACCESSVIOLATION");
-                mesh = null;
             }
 
-            return mesh;
+            return FacesToIrrMesh(newPrim.viewerFaces, newPrim.numPrimFaces);
         }
 
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, OpenMetaverse.SculptType omSculptType)
@@ -177,67 +191,8 @@ namespace IdealistViewer
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, PrimMesher.SculptMesh.SculptType sculptType)
         {
             SculptMesh newSculpty = new SculptMesh(bitmap, sculptType, 32, true);
-            //newSculpty.Scale(15, 15, 15);
-            Color color = new Color(255, 255, 0, 50);
 
-            Mesh mesh = new Mesh();
-
-            int numViewerFaces = newSculpty.viewerFaces.Count;
-            m_log.Warn("SculptIrrMesh(): numViewerFaces: " + numViewerFaces.ToString());
-
-            MeshBuffer[] mb = new MeshBuffer[1];
-
-            for (int i = 0; i < mb.Length; i++)
-                mb[i] = new MeshBuffer(VertexType.Standard);
-
-            try
-            {
-                uint[] index = new uint[mb.Length];
-
-                for (int i = 0; i < index.Length; i++)
-                    index[i] = 0;
-
-                for (uint i = 0; i < numViewerFaces; i++)
-                {
-                    ViewerFace vf = newSculpty.viewerFaces[(int)i];
-
-                    try
-                    {
-                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber], new Vertex3D(convVect3d(vf.v1), convNormal(vf.n1), color, convVect2d(vf.uv1)));
-                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 1, new Vertex3D(convVect3d(vf.v2), convNormal(vf.n2), color, convVect2d(vf.uv2)));
-                        mb[vf.primFaceNumber].SetVertex(index[vf.primFaceNumber] + 2, new Vertex3D(convVect3d(vf.v3), convNormal(vf.n3), color, convVect2d(vf.uv3)));
-
-                    }
-                    catch (OutOfMemoryException)
-                    {
-                        return null;
-                    }
-
-                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber], (ushort)index[vf.primFaceNumber]);
-                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 1, (ushort)(index[vf.primFaceNumber] + 2));
-                    mb[vf.primFaceNumber].SetIndex(index[vf.primFaceNumber] + 2, (ushort)(index[vf.primFaceNumber] + 1));
-
-                    index[vf.primFaceNumber] += 3;
-                }
-
-                for (int i = 0; i < mb.Length; i++)
-                    mesh.AddMeshBuffer(mb[i]);
-
-                // don't dispose here
-                //mb.Dispose();
-            }
-            catch (AccessViolationException)
-            {
-                m_log.Error("ACCESSVIOLATION");
-                mesh = null;
-            }
-
-            return mesh;
-        }
-
-        internal static Mesh SculptIrrMesh(System.Drawing.Image image)
-        {
-            throw new NotImplementedException();
+            return FacesToIrrMesh(newSculpty.viewerFaces, 1);
         }
     }
 }
