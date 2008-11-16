@@ -183,7 +183,7 @@ namespace IdealistViewer
             Mesh mesh = new Mesh();
 
             int numViewerFaces = newSculpty.viewerFaces.Count;
-            Console.WriteLine("SculptIrrMesh(): numViewerFaces: " + numViewerFaces.ToString());
+            m_log.Warn("SculptIrrMesh(): numViewerFaces: " + numViewerFaces.ToString());
 
             MeshBuffer[] mb = new MeshBuffer[1];
 

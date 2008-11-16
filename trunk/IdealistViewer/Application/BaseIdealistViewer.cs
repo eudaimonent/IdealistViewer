@@ -1580,27 +1580,37 @@ namespace IdealistViewer
                     vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
                 }
                 else
+                //{
+                //    // Mesh a scupted prim.
+                //    // First we have to resize the texture..    
+                //    float LOD = 32f;
+
+                //    if (sculpttex.DOTNETImage.Width < 32f) LOD = sculpttex.DOTNETImage.Width;
+                //    if (sculpttex.DOTNETImage.Height < 32f && sculpttex.DOTNETImage.Height < LOD) LOD = sculpttex.DOTNETImage.Height;
+                //    if (LOD < 32f && LOD > 16f) LOD = 32;
+                //    if (LOD < 16f && LOD > 8f) LOD = 16;
+                //    if (LOD < 8f && LOD > 4f) LOD = 8;
+                //    if (LOD < 4 && LOD > 2) LOD = 4;
+                //    if (LOD < 2) LOD = 2;
+
+                //    m_log.Warn("[SCULPT]: Resizing Sculptie......");
+                //    SculptMeshLOD smLOD = new SculptMeshLOD(sculpttex.DOTNETImage, LOD);
+                //    m_log.Warn("[SCULPT]: Meshing Sculptie......");
+                //    vobj.mesh = PrimMesherG.SculptIrrMesh(smLOD.ResultBitmap, vobj.prim.Sculpt.Type);
+                //    sculpttex.DOTNETImage.Dispose();
+                //    smLOD.Dispose();
+                //    m_log.Warn("[SCULPT]: Sculptie Meshed");
+                    
+                //}
                 {
                     // Mesh a scupted prim.
-                    // First we have to resize the texture..    
-                    float LOD = 32f;
-                    
-                    if (sculpttex.DOTNETImage.Width < 32f) LOD = sculpttex.DOTNETImage.Width;
-                    if (sculpttex.DOTNETImage.Height < 32f && sculpttex.DOTNETImage.Height < LOD ) LOD = sculpttex.DOTNETImage.Height;
-                    if (LOD < 32f && LOD > 16f) LOD = 32;
-                    if (LOD < 16f && LOD > 8f) LOD = 16;
-                    if (LOD < 8f && LOD > 4f) LOD = 8;
-                    if (LOD < 4 && LOD > 2) LOD = 4;
-                    if (LOD < 2) LOD = 2;
-
-                    m_log.Warn("[SCULPT]: Resizing Sculptie......");
-                    SculptMeshLOD smLOD = new SculptMeshLOD(sculpttex.DOTNETImage,LOD);
                     m_log.Warn("[SCULPT]: Meshing Sculptie......");
-                    vobj.mesh = PrimMesherG.SculptIrrMesh(smLOD.ResultBitmap, vobj.prim.Sculpt.Type);
-                    smLOD.Dispose();
+                    vobj.mesh = PrimMesherG.SculptIrrMesh(sculpttex.DOTNETImage, vobj.prim.Sculpt.Type);
+                    sculpttex.DOTNETImage.Dispose();
                     m_log.Warn("[SCULPT]: Sculptie Meshed");
-                    
+
                 }
+
                 // Add the newly meshed object ot the objectModQueue
                 ulong regionHandle = vobj.prim.RegionHandle;
 
