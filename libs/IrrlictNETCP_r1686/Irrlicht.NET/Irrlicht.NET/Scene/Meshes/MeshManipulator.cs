@@ -146,6 +146,13 @@ namespace IrrlichtNETCP
 		{
 			MeshManipulator_TransformMesh(_raw, mesh.Raw, mat.ToUnmanaged());
 		}
+
+        public Mesh CreateMeshCopy(Mesh mesh)
+        {
+            return (Mesh)
+                NativeElement.GetObject(MeshManipulator_CreateMeshCopy(_raw, mesh.Raw),
+                                        typeof(Mesh));
+        }
 		
 
 
@@ -184,7 +191,10 @@ namespace IrrlichtNETCP
 		static extern IntPtr MeshManipulator_CreateMeshWith2TCoords (IntPtr mm, IntPtr mesh);
 		
 		[DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
-		static extern void MeshManipulator_TransformMesh (IntPtr mm, IntPtr mesh, float[] mat);		
+		static extern void MeshManipulator_TransformMesh (IntPtr mm, IntPtr mesh, float[] mat);
+
+        [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
+        static extern IntPtr MeshManipulator_CreateMeshCopy(IntPtr mm, IntPtr mesh);
         #endregion
     }
 }

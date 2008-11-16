@@ -9,6 +9,11 @@ namespace IrrlichtNETCP
 		public TriangleSelector(IntPtr raw) : base(raw)
 		{
 		}
+
+        public override int GetHashCode()
+        {
+            return (int)Raw;
+        }
 	}
 
     public class MetaTriangleSelector : TriangleSelector

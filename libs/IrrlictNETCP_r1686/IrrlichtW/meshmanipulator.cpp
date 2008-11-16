@@ -69,4 +69,9 @@ int MeshManipulator_GetPolyCountA(IntPtr mm, IntPtr amesh)
 	return GetMMForIntPtr(mm)->getPolyCount((IAnimatedMesh*)amesh);
 }
 
+IntPtr MeshManipulator_CreateMeshCopy(IntPtr mm, IntPtr mesh)
+{
+	return GetMMForIntPtr(mm)->createMeshCopy((IMesh*)mesh);
+}
+
 
