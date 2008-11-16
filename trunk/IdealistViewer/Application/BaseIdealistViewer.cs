@@ -2876,7 +2876,7 @@ namespace IdealistViewer
                                 uint texcount = 0;
                                 if (textureMan != null)
                                     texcount = textureMan.TextureCacheCount;
-                                m_log.DebugFormat("PrimCount:{0}, EntityCount:{1}, TextureCount{2}", primcount, Entities.Count, texcount);
+                                m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount,m_MeshFactory.UniqueObjects);
                             }
                             break;
                         case KeyCode.Key_C:

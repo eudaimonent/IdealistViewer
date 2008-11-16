@@ -25,7 +25,7 @@ namespace IdealistViewer
 
             float profileBegin = primData.ProfileBegin;
             float profileEnd = primData.ProfileEnd;
-            bool isSphere = false;
+            
 
             if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.Circle)
                 sides = 24;
@@ -33,7 +33,6 @@ namespace IdealistViewer
                 sides = 3;
             else if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.HalfCircle)
             { // half circle, prim is a sphere
-                isSphere = true;
                 sides = 24;
                 profileBegin = 0.5f * profileBegin + 0.5f;
                 profileEnd = 0.5f * profileEnd + 0.5f;
@@ -46,7 +45,12 @@ namespace IdealistViewer
             else if ((HoleType)primData.ProfileHole == HoleType.Triangle)
                 hollowsides = 3;
             Mesh objMesh = null;
-            string code = (sides.ToString() + profileBegin.ToString() + profileEnd.ToString() + ((float)primData.ProfileHollow).ToString() + hollowsides.ToString());
+
+            string code = (sides.ToString() + profileBegin.ToString() + profileEnd.ToString() + ((float)primData.ProfileHollow).ToString() + hollowsides.ToString() + primData.PathScaleX.ToString() + primData.PathScaleY.ToString() + primData.PathBegin.ToString() +
+                primData.PathEnd.ToString() + primData.PathShearX.ToString() + primData.PathShearY.ToString() +
+                primData.PathRadiusOffset.ToString() + primData.PathRevolutions.ToString() + primData.PathSkew.ToString() +
+                ((int)primData.PathCurve).ToString() + primData.PathScaleX.ToString() + primData.PathScaleY.ToString() +
+                primData.PathTwistBegin.ToString() + primData.PathTwist.ToString());
             
             lock (StoredMesh)
             {
@@ -75,6 +79,10 @@ namespace IdealistViewer
             }
 
             return null;
+        }
+        public int UniqueObjects
+        {
+            get { return StoredMesh.Count; }
         }
     }
 }
