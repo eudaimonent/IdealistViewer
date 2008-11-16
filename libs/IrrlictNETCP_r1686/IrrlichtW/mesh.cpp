@@ -191,6 +191,20 @@ void MeshBuffer_SetVertex(IntPtr meshb, unsigned int nr, IntPtr vert)
 	else
 		(((S3DVertex*)(mb->getVertices()))[nr]) = *((S3DVertex*)vert);
 }
+void MeshBuffer_SetColor(IntPtr meshb, M_SCOLOR color)
+{
+	SMeshBuffer *mb = ((SMeshBuffer*)meshb);
+	int cnt = mb->getVertexCount();
+	//mb->grab();
+	for (int i=0;i<cnt;i++)
+	{
+
+		mb->Vertices[i].Color = MU_SCOLOR(color);
+		
+	}
+	mb->setDirty(irr::scene::EBT_VERTEX);
+
+}
 
 IntPtr MeshBuffer_GetVertex2T(IntPtr meshb, unsigned int nr)
 {

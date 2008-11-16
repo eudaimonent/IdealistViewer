@@ -70,6 +70,11 @@ namespace IrrlichtNETCP
             MeshBuffer_SetIndex(_raw, nr, val);
         }
 
+        public void SetColor(Color col)
+        {
+            MeshBuffer_SetColor(_raw, col.ToUnmanaged());
+        }
+
         public Material Material
         {
             get
@@ -135,6 +140,9 @@ namespace IrrlichtNETCP
 
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern void MeshBuffer_SetIndex(IntPtr meshb, uint nr, ushort val);
+
+        [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
+        static extern void MeshBuffer_SetColor(IntPtr meshb, int[] color);
 
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern IntPtr MeshBuffer_GetMaterial(IntPtr meshb);

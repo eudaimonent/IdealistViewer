@@ -34,6 +34,7 @@ extern "C"
 	EXPORT void MeshBuffer_SetVertex(IntPtr meshb, unsigned int nr, IntPtr vert);
 	EXPORT IntPtr MeshBuffer_GetVertex2T(IntPtr meshb, unsigned int nr);
 	EXPORT void MeshBuffer_SetVertex2T(IntPtr meshb, unsigned int nr, IntPtr vert);
+	EXPORT void MeshBuffer_SetColor(IntPtr meshb, M_SCOLOR color);
 
 	/* Mesh Cache */
 	
