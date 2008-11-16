@@ -220,6 +220,7 @@ namespace IdealistViewer
         /// <param name="AssetID"></param>
         public void applyTexture(TextureExtended tex, VObject vObj, UUID AssetID)
         {
+            //return;
             try
             {
                 // works
@@ -513,15 +514,16 @@ namespace IdealistViewer
                 coldata.G *= coldata.A;
             }
 
+            mb.SetColor(new Color(Util.Clamp<int>((int)(coldata.A * 255),0,255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255)));
             // Set the color and alpha
-            uint vcount = (uint)mb.VertexCount;
-            for (uint j2 = 0; j2 < vcount; j2++)
-            {
+            //uint vcount = (uint)mb.VertexCount;
+            //for (uint j2 = 0; j2 < vcount; j2++)
+            //{
                 
-                mb.GetVertex(j2).Color = new Color(Util.Clamp<int>((int)(coldata.A * 255),0,255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255));
+             //   mb.GetVertex(j2).Color = new 
                 
                 //m_log.Debug(coldata.A.ToString());
-            }   
+           // }   
 
             // If it's partially translucent inform Irrlicht
             if (coldata.A != 1)

@@ -80,6 +80,44 @@ namespace IdealistViewer
 
             return null;
         }
+
+        public Mesh GetSculptMesh(UUID assetid, TextureExtended sculpttex, SculptType stype)
+        {
+            Mesh result = null;
+            lock (StoredMesh)
+            {
+                if (StoredMesh.ContainsKey(assetid.ToString()))
+                {
+                    result = StoredMesh[assetid.ToString()];
+                    return result;
+                }
+            }
+            if (result == null)
+            {
+                System.Drawing.Bitmap bm = sculpttex.DOTNETImage;
+                result = PrimMesherG.SculptIrrMesh(bm, stype);
+                bm.Dispose();
+                if (result != null)
+                {
+                    lock (StoredMesh)
+                    {
+                        if (!StoredMesh.ContainsKey(assetid.ToString()))
+                        {
+                            StoredMesh.Add(assetid.ToString(), result);
+                        }
+                    }
+                }
+            }
+
+            if (result != null)
+            {
+                return mm.CreateMeshCopy(result);
+            }
+
+            return null;
+            
+        }
+
         public int UniqueObjects
         {
             get { return StoredMesh.Count; }

@@ -416,7 +416,7 @@ namespace IdealistViewer
                                                      new Dimension2D(WindowWidth, WindowHeight),
                                                     32, false, true, false, false);
 
-            device.WindowCaption = "IdealistViewer 0.000000000002";
+            device.WindowCaption = "IdealistViewer 0.001";
             
             // Sets directory to load assets from
             device.FileSystem.WorkingDirectory = m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
@@ -715,10 +715,10 @@ namespace IdealistViewer
                 if ((framecounter % objectmods) == 0)
                 {
                     // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(5);
+                    doProcessMesh(10);
 
                     // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(5);
+                    doObjectMods(10);
 
                     // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
@@ -731,7 +731,7 @@ namespace IdealistViewer
                     UpdateTerrain();
 
                     // Set the FPS in the window title.
-                    device.WindowCaption = "IdealistViewer 0.000000000002, FPS:" + driver.FPS.ToString();
+                    device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
                     //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
@@ -1617,8 +1617,7 @@ namespace IdealistViewer
                 {
                     // Mesh a scupted prim.
                     m_log.Warn("[SCULPT]: Meshing Sculptie......");
-                    vobj.mesh = PrimMesherG.SculptIrrMesh(sculpttex.DOTNETImage, vobj.prim.Sculpt.Type);
-                    sculpttex.DOTNETImage.Dispose();
+                    vobj.mesh = m_MeshFactory.GetSculptMesh(vobj.prim.Sculpt.SculptTexture, sculpttex, vobj.prim.Sculpt.Type);
                     m_log.Warn("[SCULPT]: Sculptie Meshed");
 
                 }
