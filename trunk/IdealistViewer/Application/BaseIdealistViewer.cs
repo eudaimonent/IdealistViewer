@@ -253,6 +253,8 @@ namespace IdealistViewer
         /// </summary>
         private TextureManager textureMan = null;
 
+        private MeshFactory m_MeshFactory = null;
+
         /// <summary>
         /// Picker
         /// </summary>
@@ -427,6 +429,8 @@ namespace IdealistViewer
 
             // Set up event handler for the GUI window events.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
+
+            m_MeshFactory = new MeshFactory(smgr.MeshManipulator);
 
             // Set up the picker.
             triPicker = new TrianglePickerMapper(smgr.CollisionManager);
@@ -663,7 +667,15 @@ namespace IdealistViewer
 
 
                 driver.BeginScene(true, true, new Color(255, 100, 101, 140));
-                smgr.DrawAll();
+                // Use this only for profiling.
+                try
+                {
+                    smgr.DrawAll();
+                }
+                catch (AccessViolationException)
+                {
+
+                }
                 guienv.DrawAll();
 
                 // Test Triangle at 0,0,0 to point out the axis
@@ -703,10 +715,10 @@ namespace IdealistViewer
                 if ((framecounter % objectmods) == 0)
                 {
                     // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(20);
+                    doProcessMesh(5);
 
                     // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(20);
+                    doObjectMods(5);
 
                     // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
@@ -1577,7 +1589,7 @@ namespace IdealistViewer
                 if (sculptYN == false || sculpttex == null)
                 {
                     // Mesh a regular prim.
-                    vobj.mesh = PrimMesherG.PrimitiveToIrrMesh(vobj.prim);
+                    vobj.mesh = m_MeshFactory.GetMeshInstance(vobj.prim);
                 }
                 else
                 //{

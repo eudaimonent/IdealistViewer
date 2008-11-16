@@ -56,14 +56,14 @@ namespace IdealistViewer
                 lod = (int)_lod;
 
             bBitmap = new Bitmap(oBitmap);
-            if (bBitmap.Width == bBitmap.Height)
-            {
+            //if (bBitmap.Width == bBitmap.Height)
+            //{
                 DoLOD();
-            }
-            else
-            {
-                System.Console.WriteLine("[SCULPT]: Unable to use a bad sculpt mesh.");
-            }
+            //}
+           // else
+           // {
+           //     System.Console.WriteLine("[SCULPT]: Unable to use a bad sculpt mesh.");
+           // }
 
         }
         private void DoLOD()

@@ -49,9 +49,9 @@ namespace IdealistViewer
             //m_user.Settings.AVATAR_TRACKING = true;
             m_user.Settings.USE_TEXTURE_CACHE = false;
             //m_user.Settings.
-            m_user.Settings.ALWAYS_DECODE_OBJECTS = true;
+            m_user.Settings.ALWAYS_DECODE_OBJECTS = false;
             
-            //m_user.Settings.SEND_AGENT_THROTTLE = true;
+            m_user.Settings.SEND_AGENT_THROTTLE = true;
             //m_user.Settings.SEND_PINGS = true;
 
             m_user.Network.OnConnected += gridConnectedCallback;
