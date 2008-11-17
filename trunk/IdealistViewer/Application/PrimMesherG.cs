@@ -89,6 +89,46 @@ namespace IdealistViewer
             return mesh;
         }
 
+        // experimental - build sculpt mesh using indexed access to vertex, normal, and UV lists
+        private static Mesh SculptMeshToIrrMesh(SculptMesh sculptMesh)
+        {
+            Color color = new Color(255, 255, 0, 50);
+
+            Mesh mesh = new Mesh();
+
+            int numFaces = sculptMesh.faces.Count;
+
+            MeshBuffer mb = new MeshBuffer(VertexType.Standard);
+
+            int numVerts = sculptMesh.coords.Count;
+
+            try
+            {
+                for (int i = 0; i < numVerts; i++)
+                    mb.SetVertex((uint)i, new Vertex3D(convVect3d(sculptMesh.coords[i]), convNormal(sculptMesh.normals[i]), color, convVect2d(sculptMesh.uvs[i])));
+
+                ushort index = 0;
+                foreach (Face face in sculptMesh.faces)
+                {
+                    mb.SetIndex(index++, (ushort)face.v1);
+                    mb.SetIndex(index++, (ushort)face.v3);
+                    mb.SetIndex(index++, (ushort)face.v2);
+                }
+
+                mesh.AddMeshBuffer(mb);
+
+                // don't dispose here
+                //mb.Dispose();
+            }
+
+            catch (AccessViolationException)
+            {
+                m_log.Error("ACCESSVIOLATION");
+                mesh = null;
+            }
+
+            return mesh;
+        }
       
         public static Mesh PrimitiveToIrrMesh(Primitive prim)
         {
@@ -192,7 +232,10 @@ namespace IdealistViewer
         {
             SculptMesh newSculpty = new SculptMesh(bitmap, sculptType, 32, true);
 
-            return FacesToIrrMesh(newSculpty.viewerFaces, 1);
+            //return FacesToIrrMesh(newSculpty.viewerFaces, 1);
+
+            // experimental - build sculpt mesh using vertex, normal, and coord lists
+            return SculptMeshToIrrMesh(newSculpty);
         }
     }
 }
