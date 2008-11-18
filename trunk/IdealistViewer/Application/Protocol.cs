@@ -43,8 +43,8 @@ namespace IdealistViewer
         {
             m_user = new GridClient();
             //m_user.Settings.STORE_LAND_PATCHES = true;
-            //m_user.Settings.MULTIPLE_SIMS = true;
-            m_user.Settings.MULTIPLE_SIMS = false;
+            m_user.Settings.MULTIPLE_SIMS = true;
+            //m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
             m_user.Settings.USE_TEXTURE_CACHE = false;
@@ -152,6 +152,11 @@ namespace IdealistViewer
             m_user.Self.Chat(message, 0, ChatType.Shout);
         }
 
+        public void Teleport(string region, float x, float y, float z)
+        {
+            m_user.Self.Teleport(region, new Vector3(x, y, z));
+        }
+
         private LoginParams getLoginParams(string loginURI, string username, string password, string startlocation)
         {
             string firstname;
@@ -244,10 +249,14 @@ namespace IdealistViewer
             // other avatars, and we get messages back that we sent.
             // (Tested on OpenSim r3187)
             // So we explicitly check for those cases here.
-            if (OnChat != null && (int)type < 4 && id != m_user.Self.AgentID)
+            if ((int)type < 4 && id != m_user.Self.AgentID)
             {
-                OnChat(message, audible, type, sourcetype,
-                                  fromName, id, ownerid, position);
+                m_log.Debug("Chat: " + fromName + ": " + message);
+                if (OnChat != null)
+                {
+                    OnChat(message, audible, type, sourcetype,
+                                      fromName, id, ownerid, position);
+                }
             }
         }
         

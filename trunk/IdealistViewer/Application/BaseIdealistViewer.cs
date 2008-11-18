@@ -1736,11 +1736,34 @@ namespace IdealistViewer
         {
             switch (command)
             {
+                case "goto":
+                    float x = 128f;
+                    float y = 128f;
+                    float z = 22f;
+                    string cmdStr = "";
+                    foreach (string arg in cmdparams)
+                        cmdStr += arg + " ";
+                    cmdStr = cmdStr.Trim();
+                    string[] dest = cmdStr.Split(new char[] { '/' });
+                    if (float.TryParse(dest[1], out x) &&
+                        float.TryParse(dest[2], out y) &&
+                        float.TryParse(dest[3], out z))
+                    {
+                        avatarConnection.Teleport(dest[0], x, y, z);
+                    }
+                    else
+                        m_log.Warn("Usage: goto simname x y z");
+                    break;
                 case "help":
                     ShowHelp(cmdparams);
                     Notice("");
                     break;
-
+                case "say":
+                    string message = "";
+                    foreach (string word in cmdparams)
+                        message += word + " ";
+                    avatarConnection.Say(message);
+                    break;
                 case "set":
                     Set(cmdparams);
                     break;
@@ -1789,6 +1812,11 @@ namespace IdealistViewer
             if (helpArgs.Length == 0)
             {
                 Notice("");
+
+
+                Notice("goto region/x/y/z - teleport to a location");
+                Notice("say [message] - says a message over chat");
+
                 // TODO: not yet implemented
                 //Notice("help [command] - display general help or specific command help.  Try help help for more info.");
                 Notice("quit - equivalent to shutdown.");
