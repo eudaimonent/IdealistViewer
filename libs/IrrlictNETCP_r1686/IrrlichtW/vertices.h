@@ -21,4 +21,5 @@ extern "C"
 	EXPORT void Vertices_SetBinormal (IntPtr vertex, M_VECT3DF binormal);
 	EXPORT void Vertices_GetTangent (IntPtr vertex, M_VECT3DF tangent);
 	EXPORT void Vertices_SetTangent (IntPtr vertex, M_VECT3DF tangent);
+	EXPORT void Vertices_Dispose (IntPtr vertex);
 }

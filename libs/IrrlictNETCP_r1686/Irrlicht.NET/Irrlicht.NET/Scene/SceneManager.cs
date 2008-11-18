@@ -190,14 +190,14 @@ namespace IrrlichtNETCP
 		/// <param name="mesh">A static mesh often obtained via GetMesh(0)</param>
 		/// <param name="parent">Parent of the node</param>
 		/// <param name="id">ID of the node (-1 for automatic assignation)</param>
-		public SceneNode AddMeshSceneNode(Mesh mesh, SceneNode parent, int id)
+        public MeshSceneNode AddMeshSceneNode(Mesh mesh, SceneNode parent, int id)
 		{
 			IntPtr par = IntPtr.Zero;
 			if(parent != null)
 				par = parent.Raw;
-			return (SceneNode)
+			return (MeshSceneNode)
 				NativeElement.GetObject(SceneManager_AddMeshSceneNode(_raw, mesh.Raw, par, id),
-										typeof(SceneNode));
+                                        typeof(MeshSceneNode));
 		}
 		
 		/// <summary>

@@ -50,6 +50,12 @@ extern "C"
     EXPORT void SceneNode_UpdateAbsolutePosition(IntPtr scenenode);
 
     //Other little scene nodes
+	EXPORT void MeshSceneNode_SetMesh(IntPtr meshnode, IntPtr mesh);
+	EXPORT IntPtr MeshSceneNode_GetMesh(IntPtr meshnode);
+	EXPORT void MeshSceneNode_SetReadOnlyMaterials(IntPtr meshnode, bool readonly);
+	EXPORT bool MeshSceneNode_IsReadOnlyMaterials(IntPtr meshnode);
+	EXPORT void MeshSceneNode_DropAllMeshBuffers(IntPtr meshnode);
+
     EXPORT void BillboardSceneNode_GetSize(IntPtr billboard, M_DIM2DF dim);
     EXPORT void BillboardSceneNode_SetSize(IntPtr billboard, M_DIM2DF size);
 

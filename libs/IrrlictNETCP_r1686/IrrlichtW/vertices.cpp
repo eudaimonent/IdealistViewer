@@ -92,3 +92,8 @@ void Vertices_SetTangent (IntPtr vertex, M_VECT3DF tangent)
 	S3DVertexTangents *vert = ((S3DVertexTangents*)vertex);
 	vert->Tangent = MU_VECT3DF(tangent);	
 }
+void Vertices_Dispose (IntPtr vertex)
+{
+	S3DVertex *vert = ((S3DVertex*)vertex);
+	delete vert;
+}

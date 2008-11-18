@@ -7,7 +7,7 @@ namespace IrrlichtNETCP
 {
 	
 
-    public class Vertex3D : NativeElement
+    public class Vertex3D : NativeElement, IDisposable
     {
         public Vertex3D() : base(Vertices_CreateVertex())
         {
@@ -115,6 +115,20 @@ namespace IrrlichtNETCP
 		
 		[DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
 		static extern int Vertices_GetType(IntPtr vertex);
+
+        [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
+        static extern void Vertices_Dispose(IntPtr vertex);
+
+        #endregion
+
+        #region IDisposable Members
+
+        public override void Dispose()
+        {
+            Vertices_Dispose(_raw);
+            base.Dispose();
+        }
+
         #endregion
     }
 
@@ -152,6 +166,7 @@ namespace IrrlichtNETCP
             }
         }
 
+
         #region Native Invokes
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern IntPtr Vertices_CreateVertex2TCoords();
@@ -162,9 +177,13 @@ namespace IrrlichtNETCP
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern void Vertices_SetTCoords2(IntPtr vertex, float[] tcoords);
 
+
+
         #endregion
+
+       
     }
-	
+
     public class Vertex3DTangents : Vertex3D
     {
         public Vertex3DTangents()
@@ -216,7 +235,7 @@ namespace IrrlichtNETCP
                 Vertices_SetTangent(_raw, value.ToUnmanaged());
             }
         }
-
+        
 
         #region Native Invokes
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
@@ -232,8 +251,11 @@ namespace IrrlichtNETCP
 		static extern void Vertices_GetTangent (IntPtr vertex, [MarshalAs(UnmanagedType.LPArray)] float[] tangent);
         
          [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
-		static extern void Vertices_SetTangent (IntPtr vertex, float[] tangent);				
-	
+		static extern void Vertices_SetTangent (IntPtr vertex, float[] tangent);
+
+       
         #endregion
+
+        
     }	
 }
