@@ -387,6 +387,8 @@ namespace IdealistViewer
 
         private VObject UserAvatar = null;
 
+        private Texture GreenGrassTexture = null;
+
         public BaseIdealistViewer(IConfigSource iconfig)
         {
 
@@ -424,13 +426,15 @@ namespace IdealistViewer
             
             driver = device.VideoDriver;
             smgr = device.SceneManager;
+
+            GreenGrassTexture = driver.GetTexture("Green_Grass_Detailed.tga");
             
             guienv = device.GUIEnvironment;
 
             // Set up event handler for the GUI window events.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
-            m_MeshFactory = new MeshFactory(smgr.MeshManipulator);
+            m_MeshFactory = new MeshFactory(smgr.MeshManipulator, device);
 
             // Set up the picker.
             triPicker = new TrianglePickerMapper(smgr.CollisionManager);
@@ -465,11 +469,12 @@ namespace IdealistViewer
 
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
             
+            /*
             // Test tree
             SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(128, 40, 128), new Vector3D(0, 0, 0), new Vector3D(0.25f, 0.25f, 0.25f), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
             tree.Position = new Vector3D(129, 22, 129);
             //tree.Scale = new Vector3D(0.25f, 0.25f, 0.25f);
-            
+            */
             // Create User's Camera
             cam = new Camera(smgr);
 
@@ -493,10 +498,10 @@ namespace IdealistViewer
 
             // Set up Scene Lighting.
             // This light rotates around to highlight prim meshing issues.
-            SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 0.2f, 0.2f, 0.2f), 90, -1);
-            Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
-            light.AddAnimator(anim);
-            anim.Dispose();
+            //SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 0.2f, 0.2f, 0.2f), 90, -1);
+           // Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
+            //light.AddAnimator(anim);
+            //anim.Dispose();
 
             // This light simulates the sun
             SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
@@ -679,11 +684,11 @@ namespace IdealistViewer
                 guienv.DrawAll();
 
                 // Test Triangle at 0,0,0 to point out the axis
-                driver.Draw3DTriangle(new Triangle3D(
-                    new Vector3D(0, 0, 0),
-                    new Vector3D(10, 0, 0),
-                    new Vector3D(0, 10, 0)),
-                    Color.Red);
+                //driver.Draw3DTriangle(new Triangle3D(
+                //    new Vector3D(0, 0, 0),
+                //    new Vector3D(10, 0, 0),
+                //    new Vector3D(0, 10, 0)),
+                //    Color.Red);
                 
                 driver.EndScene();
 
@@ -715,16 +720,16 @@ namespace IdealistViewer
                 if ((framecounter % objectmods) == 0)
                 {
                     // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(10);
+                    doProcessMesh(20);
 
                     // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(10);
+                    doObjectMods(20);
 
                     // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
 
                     // Apply textures
-                    doTextureMods(5);
+                    doTextureMods(20);
                     
 
                     // Check for Dirty terrain Update as necessary.
@@ -1617,7 +1622,7 @@ namespace IdealistViewer
                 {
                     // Mesh a scupted prim.
                     m_log.Warn("[SCULPT]: Meshing Sculptie......");
-                    vobj.mesh = m_MeshFactory.GetSculptMesh(vobj.prim.Sculpt.SculptTexture, sculpttex, vobj.prim.Sculpt.Type);
+                    vobj.mesh = m_MeshFactory.GetSculptMesh(vobj.prim.Sculpt.SculptTexture, sculpttex, vobj.prim.Sculpt.Type, vobj.prim);
                     m_log.Warn("[SCULPT]: Sculptie Meshed");
 
                 }
@@ -2055,7 +2060,7 @@ namespace IdealistViewer
                         terrain.SetMaterialFlag(MaterialFlag.Lighting, true);
                         terrain.SetMaterialType(MaterialType.DetailMap);
                         terrain.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                        terrain.SetMaterialTexture(0, driver.GetTexture("Green_Grass_Detailed.tga"));
+                        terrain.SetMaterialTexture(0, GreenGrassTexture);
                         //terrain.SetMaterialTexture(1, driver.GetTexture("detailmap3.jpg"));
                         terrain.ScaleTexture(16, 16);
                         terrain.Scale = new Vector3D(1.0275f, 1, 1.0275f);

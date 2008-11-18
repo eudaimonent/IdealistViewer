@@ -12,6 +12,12 @@ using log4net.Repository;
 
 namespace IdealistViewer
 {
+    public enum LevelOfDetail
+    {
+        Low,
+        Medium,
+        High
+    }
     public static class PrimMesherG
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -130,7 +136,7 @@ namespace IdealistViewer
             return mesh;
         }
       
-        public static Mesh PrimitiveToIrrMesh(Primitive prim)
+        public static Mesh PrimitiveToIrrMesh(Primitive prim, LevelOfDetail detail)
         {
             Primitive.ConstructionData primData = prim.PrimData;
             int sides = 4;
@@ -141,13 +147,37 @@ namespace IdealistViewer
             bool isSphere = false;
 
             if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.Circle)
-                sides = 24;
+            {
+                switch (detail)
+                {
+                    case LevelOfDetail.Low:
+                        sides = 6;
+                        break;
+                    case LevelOfDetail.Medium:
+                        sides = 12;
+                        break;
+                    default:
+                        sides = 24;
+                        break;
+                }
+            }
             else if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.EqualTriangle)
                 sides = 3;
             else if ((ProfileCurve)(primData.profileCurve & 0x07) == ProfileCurve.HalfCircle)
             { // half circle, prim is a sphere
                 isSphere = true;
-                sides = 24;
+                switch (detail)
+                {
+                    case LevelOfDetail.Low:
+                        sides = 6;
+                        break;
+                    case LevelOfDetail.Medium:
+                        sides = 12;
+                        break;
+                    default:
+                        sides = 24;
+                        break;
+                }
                 profileBegin = 0.5f * profileBegin + 0.5f;
                 profileEnd = 0.5f * profileEnd + 0.5f;
             }
@@ -155,7 +185,21 @@ namespace IdealistViewer
             if ((HoleType)primData.ProfileHole == HoleType.Same)
                 hollowsides = sides;
             else if ((HoleType)primData.ProfileHole == HoleType.Circle)
-                hollowsides = 24;
+            {
+                switch (detail)
+                {
+                    case LevelOfDetail.Low:
+                        hollowsides = 6;
+                        break;
+                    case LevelOfDetail.Medium:
+                        hollowsides = 12;
+                        break;
+                    default:
+                        hollowsides = 24;
+                        break;
+                }
+
+            }
             else if ((HoleType)primData.ProfileHole == HoleType.Triangle)
                 hollowsides = 3;
 
@@ -170,7 +214,20 @@ namespace IdealistViewer
             newPrim.radius = primData.PathRadiusOffset;
             newPrim.revolutions = primData.PathRevolutions;
             newPrim.skew = primData.PathSkew;
-            newPrim.stepsPerRevolution = 24;
+            switch (detail)
+            {
+                case LevelOfDetail.Low:
+                    newPrim.stepsPerRevolution = 6;
+                    break;
+                case LevelOfDetail.Medium:
+                    newPrim.stepsPerRevolution = 12;
+                    break;
+                default:
+                    newPrim.stepsPerRevolution = 24;
+                    break;
+            }
+
+            
 
             if (primData.PathCurve == PathCurve.Line)
             {

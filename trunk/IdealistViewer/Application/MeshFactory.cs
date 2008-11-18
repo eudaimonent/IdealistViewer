@@ -9,12 +9,15 @@ namespace IdealistViewer
     public class MeshFactory
     {
         private Dictionary<string, IrrlichtNETCP.Mesh> StoredMesh = new Dictionary<string, Mesh>();
-        
+        private Dictionary<string, IrrlichtNETCP.Mesh> IdenticalMesh = new Dictionary<string, Mesh>();
+        IrrlichtDevice device;
         private MeshManipulator mm = null;
+        private List<IntPtr> killed = new List<IntPtr>();
         
-        public MeshFactory(MeshManipulator pmm)
+        public MeshFactory(MeshManipulator pmm, IrrlichtDevice pdevice)
         {
             mm = pmm;
+            device = pdevice;
         }
 
         public IrrlichtNETCP.Mesh GetMeshInstance(Primitive prim)
@@ -46,28 +49,83 @@ namespace IdealistViewer
                 hollowsides = 3;
             Mesh objMesh = null;
 
-            string code = (sides.ToString() + profileBegin.ToString() + profileEnd.ToString() + ((float)primData.ProfileHollow).ToString() + hollowsides.ToString() + primData.PathScaleX.ToString() + primData.PathScaleY.ToString() + primData.PathBegin.ToString() +
+            string storedmeshcode = (sides.ToString() + profileBegin.ToString() + profileEnd.ToString() + ((float)primData.ProfileHollow).ToString() + hollowsides.ToString() + primData.PathScaleX.ToString() + primData.PathScaleY.ToString() + primData.PathBegin.ToString() +
                 primData.PathEnd.ToString() + primData.PathShearX.ToString() + primData.PathShearY.ToString() +
                 primData.PathRadiusOffset.ToString() + primData.PathRevolutions.ToString() + primData.PathSkew.ToString() +
                 ((int)primData.PathCurve).ToString() + primData.PathScaleX.ToString() + primData.PathScaleY.ToString() +
                 primData.PathTwistBegin.ToString() + primData.PathTwist.ToString());
+
+            
+            
+            bool identicalcandidate = true;
+            foreach (Primitive.TextureEntryFace face in prim.Textures.FaceTextures)
+            {
+                if (face != null)
+                    identicalcandidate = false;
+            }
+
+            StringBuilder sbIdenticalMesh = new StringBuilder();
+            sbIdenticalMesh.Append(storedmeshcode);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.TextureID);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Bump);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Fullbright);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Glow);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.MediaFlags);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.OffsetU);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.OffsetV);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RepeatU);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RepeatV);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RGBA.ToRGBString());
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Rotation);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Shiny);
+            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.TexMapType.ToString());
+
+            string identicalmeshcode = sbIdenticalMesh.ToString();
+
+
+            if (identicalcandidate)
+            {
+                lock (IdenticalMesh)
+                {
+                    if (IdenticalMesh.ContainsKey(identicalmeshcode))
+                        objMesh = IdenticalMesh[identicalmeshcode];
+                    
+                }
+                if (objMesh == null)
+                {
+                    objMesh = PrimMesherG.PrimitiveToIrrMesh(prim, LevelOfDetail.High);
+                }
+                lock (IdenticalMesh)
+                {
+                    if (!IdenticalMesh.ContainsKey(identicalmeshcode))
+                        IdenticalMesh.Add(identicalmeshcode, objMesh);
+                }
+
+                lock (StoredMesh)
+                {
+                    if (!StoredMesh.ContainsKey(storedmeshcode))
+                        StoredMesh.Add(storedmeshcode, objMesh);
+                }
+                return objMesh;
+            }
+
             
             lock (StoredMesh)
             {
-                if (StoredMesh.ContainsKey(code))
+                if (StoredMesh.ContainsKey(storedmeshcode))
                 {
-                    objMesh = StoredMesh[code];
+                    objMesh = StoredMesh[storedmeshcode];
                 }
             }
 
             if (objMesh == null)
             {
-                objMesh = PrimMesherG.PrimitiveToIrrMesh(prim);
+                objMesh = PrimMesherG.PrimitiveToIrrMesh(prim, LevelOfDetail.High);
                 lock (StoredMesh)
                 {
-                    if (!StoredMesh.ContainsKey(code))
+                    if (!StoredMesh.ContainsKey(storedmeshcode))
                     {
-                        StoredMesh.Add(code, objMesh);
+                        StoredMesh.Add(storedmeshcode, objMesh);
                     }
                 }
             }
@@ -81,9 +139,11 @@ namespace IdealistViewer
             return null;
         }
 
-        public Mesh GetSculptMesh(UUID assetid, TextureExtended sculpttex, SculptType stype)
+        public Mesh GetSculptMesh(UUID assetid, TextureExtended sculpttex, SculptType stype, Primitive prim)
         {
             Mesh result = null;
+
+
             lock (StoredMesh)
             {
                 if (StoredMesh.ContainsKey(assetid.ToString()))
@@ -96,6 +156,18 @@ namespace IdealistViewer
             {
                 System.Drawing.Bitmap bm = sculpttex.DOTNETImage;
                 result = PrimMesherG.SculptIrrMesh(bm, stype);
+                if (!killed.Contains(sculpttex.Raw))
+                {
+                    try
+                    {
+                        killed.Add(sculpttex.Raw);
+                        device.VideoDriver.RemoveTexture(sculpttex);
+                    }
+                    catch (AccessViolationException)
+                    {
+                        System.Console.WriteLine("Unable to remove a sculpt texture from the video driver!");
+                    }
+                }
                 bm.Dispose();
                 if (result != null)
                 {
@@ -111,7 +183,8 @@ namespace IdealistViewer
 
             if (result != null)
             {
-                return mm.CreateMeshCopy(result);
+                //return mm.CreateMeshCopy(result);
+                return result;
             }
 
             return null;

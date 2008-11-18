@@ -272,6 +272,7 @@ namespace IdealistViewer
                 // Apply the Texture based on the TextureEntry
                 if (vObj.prim.Textures != null)
                 {
+                    device.SceneManager.MeshCache.RemoveMesh(vObj.mesh);
                     // Check the default texture to ensure that it's not null (why would it be null?)
                     if (vObj.prim.Textures.DefaultTexture != null)
                     {
@@ -383,35 +384,44 @@ namespace IdealistViewer
                             }
                         }// end check if textureentry face is null
                     } // end loop over textureentry faces array
-                    
-                    // Swap out the visible untextured object with a textured one.
-                    SceneNode sn = device.SceneManager.AddMeshSceneNode(vObj.mesh, null, -1);
-                    sn.Position = vObj.node.Position;
-                    sn.Rotation = vObj.node.Rotation;
-                    sn.Scale = vObj.node.Scale;
-                    sn.DebugDataVisible = DebugSceneType.Off;
 
-                    // If it's translucent, register it for the Transparent phase of rendering
-                    if (vObj.prim.Textures.DefaultTexture.RGBA.A != 1)
+                    if (vObj.node is MeshSceneNode)
                     {
-                        device.SceneManager.RegisterNodeForRendering(sn, SceneNodeRenderPass.Transparent);
+                        MeshSceneNode msn = (MeshSceneNode)vObj.node;
+                        
+                        msn.SetMesh(vObj.mesh);
                     }
+                    else
+                    {
+                        // Swap out the visible untextured object with a textured one.
+                        SceneNode sn = device.SceneManager.AddMeshSceneNode(vObj.mesh, null, -1);
+                        sn.Position = vObj.node.Position;
+                        sn.Rotation = vObj.node.Rotation;
+                        sn.Scale = vObj.node.Scale;
+                        sn.DebugDataVisible = DebugSceneType.Off;
 
-                    // Delete the old triangle selector
-                    triPicker.RemTriangleSelector(sn.TriangleSelector);
+                        // If it's translucent, register it for the Transparent phase of rendering
+                        if (vObj.prim.Textures.DefaultTexture.RGBA.A != 1)
+                        {
+                            device.SceneManager.RegisterNodeForRendering(sn, SceneNodeRenderPass.Transparent);
+                        }
 
-                    // Add the new one
-                    sn.TriangleSelector = device.SceneManager.CreateTriangleSelector(vObj.mesh, sn);
-                    triPicker.AddTriangleSelector(sn.TriangleSelector, sn);
-                    
-                    // Delete the old node
-                    SceneNode oldnode = vObj.node;
-                    
-                    vObj.node = sn;
-                    if (oldnode.TriangleSelector != null)
-                        mts.RemoveTriangleSelector(oldnode.TriangleSelector);
+                        // Delete the old triangle selector
+                        triPicker.RemTriangleSelector(sn.TriangleSelector);
 
-                    device.SceneManager.AddToDeletionQueue(oldnode);
+                        // Add the new one
+                        sn.TriangleSelector = device.SceneManager.CreateTriangleSelector(vObj.mesh, sn);
+                        triPicker.AddTriangleSelector(sn.TriangleSelector, sn);
+
+                        // Delete the old node
+                        SceneNode oldnode = vObj.node;
+
+                        vObj.node = sn;
+                        if (oldnode.TriangleSelector != null)
+                            mts.RemoveTriangleSelector(oldnode.TriangleSelector);
+
+                        device.SceneManager.AddToDeletionQueue(oldnode);
+                    }
                 } // prim texture is not null
 
 
