@@ -422,7 +422,7 @@ namespace IdealistViewer
             device.WindowCaption = "IdealistViewer 0.001";
             
             // Sets directory to load assets from
-            device.FileSystem.WorkingDirectory = m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
 
             
             driver = device.VideoDriver;
