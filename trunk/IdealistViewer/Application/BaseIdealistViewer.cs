@@ -14,6 +14,7 @@ using log4net.Appender;
 using log4net.Core;
 using log4net.Repository;
 using IrrlichtNETCP;
+using IrrlichtNETCP.Extensions;
 using OpenMetaverse;
 using Nini.Config;
 using PrimMesher;
@@ -457,6 +458,7 @@ namespace IdealistViewer
             smgr.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
             
             // Create the Skybox
+            /*
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, false);
 
             smgr.AddSkyBoxSceneNode(null, new Texture[] {
@@ -468,6 +470,9 @@ namespace IdealistViewer
                 driver.GetTexture("irrlicht2_bk.jpg")}, 0);
 
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
+            */
+            ATMOSkySceneNode skynode = new ATMOSkySceneNode(driver.GetTexture("irrlicht2_up.jpg"), null, smgr, 20, -1);
+            
             
             /*
             // Test tree

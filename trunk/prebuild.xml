@@ -57,6 +57,7 @@
       <Reference name="Nini.dll" />
       <Reference name="log4net.dll" />
       <Reference name="Irrlicht.NET.dll" />
+      <Reference name="Irrlicht.Extensions.dll" />
       <Reference name="OpenMetaverse.dll" />
       <Reference name="OpenMetaverseTypes.dll" />
       <Reference name="PrimMesher.dll" />
