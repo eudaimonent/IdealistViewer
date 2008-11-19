@@ -14,7 +14,7 @@
 #include "IGUIEnvironment.h"
 #include "IMaterialRenderer.h"
 #include "IReadFile.h"
-#include "ematerialtypes.h"
+#include "EMaterialTypes.h"
 #include "IGPUProgrammingServices.h"
 
 #include "os.h"
