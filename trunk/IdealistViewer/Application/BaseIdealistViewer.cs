@@ -2273,14 +2273,10 @@ namespace IdealistViewer
 
             lock (m_landMap)
             {
-                if (!m_landMap.ContainsKey(y * 16 + x))
-                {
-                    m_landMap.Add(y * 16 + x, data);
-                }
-                else
-                {
+                if (m_landMap.ContainsKey(y * 16 + x))
                     m_landMap[y * 16 + x] = data;
-                }
+                else
+                    m_landMap.Add(y * 16 + x, data);
             }
 
             updateTerrainBitmap(x, y, sim);
@@ -2356,7 +2352,8 @@ namespace IdealistViewer
                         col = currentPatch[cy * 16 + cx];
                         if (col > 1000f || col < 0)
                             col = 0f;
-                        col *= 0.00388f;
+                        //col *= 0.00388f;
+                        col *= 0.00397f;  // looks a little closer by eyeball
                         
                         
                         //m_log.Debug("[COLOR]: " + currentPatch[cy * 16 + cx].ToString());
