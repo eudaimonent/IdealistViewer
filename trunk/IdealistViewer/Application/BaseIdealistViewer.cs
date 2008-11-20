@@ -439,7 +439,7 @@ namespace IdealistViewer
 
             // Set up the picker.
             triPicker = new TrianglePickerMapper(smgr.CollisionManager);
-            //mts = smgr.CreateMetaTriangleSelector();
+           // mts = smgr.CreateMetaTriangleSelector();
 
             // Only create a texture manager if the user configuration option is enabled for downloading textures
             if (loadTextures)
@@ -471,7 +471,7 @@ namespace IdealistViewer
 
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
             */
-            ATMOSkySceneNode skynode = new ATMOSkySceneNode(driver.GetTexture("irrlicht2_up.jpg"), null, smgr, 20, -1);
+            //ATMOSkySceneNode skynode = new ATMOSkySceneNode(driver.GetTexture("irrlicht2_up.jpg"), null, smgr, 20, -1);
             
             
             /*

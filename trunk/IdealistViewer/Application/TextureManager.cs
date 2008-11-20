@@ -97,7 +97,8 @@ namespace IdealistViewer
                 string oldfs = device.FileSystem.WorkingDirectory;
                 device.FileSystem.WorkingDirectory = texturefolderpath;
                 Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga"));
-                tex = new TextureExtended(texTnorm.Raw);
+                if (texTnorm != null)
+                    tex = new TextureExtended(texTnorm.Raw);
                 if (tex != null)
                 {
                     lock (memoryTextures)
