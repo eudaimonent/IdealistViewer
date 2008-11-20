@@ -439,7 +439,7 @@ namespace IdealistViewer
 
             // Set up the picker.
             triPicker = new TrianglePickerMapper(smgr.CollisionManager);
-            mts = smgr.CreateMetaTriangleSelector();
+            //mts = smgr.CreateMetaTriangleSelector();
 
             // Only create a texture manager if the user configuration option is enabled for downloading textures
             if (loadTextures)
@@ -894,7 +894,13 @@ namespace IdealistViewer
                             //tx.vObj.mesh.Dispose();
 
                             if (tx.vObj.node != null && tx.vObj.node.TriangleSelector != null)
-                                mts.RemoveTriangleSelector(tx.vObj.node.TriangleSelector);
+                            {
+                                if (mts != null)
+                                {
+                                    mts.RemoveTriangleSelector(tx.vObj.node.TriangleSelector);
+                                }
+
+                            }
                             if (tx.vObj.node != null && tx.vObj.node.Raw != IntPtr.Zero)
                                 smgr.AddToDeletionQueue(tx.vObj.node);
                             
@@ -1324,9 +1330,12 @@ namespace IdealistViewer
                         TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                         node.TriangleSelector = trisel;
                         triPicker.AddTriangleSelector(trisel, node);
-                        lock (mts)
+                        if (mts != null)
                         {
-                            mts.AddTriangleSelector(trisel);
+                            lock (mts)
+                            {
+                                mts.AddTriangleSelector(trisel);
+                            }
                         }
                         if (vObj.prim.Textures != null)
                         {
@@ -1501,9 +1510,12 @@ namespace IdealistViewer
                             TriangleSelector trisel = smgr.CreateTriangleSelector(vObj.mesh, node);
                             node.TriangleSelector = trisel;
                             triPicker.AddTriangleSelector(trisel, node);
-                            lock (mts)
+                            if (mts != null)
                             {
-                                mts.AddTriangleSelector(trisel);
+                                lock (mts)
+                                {
+                                    mts.AddTriangleSelector(trisel);
+                                }
                             }
                             if (vObj.prim.Textures != null)
                             {
@@ -2025,10 +2037,10 @@ namespace IdealistViewer
                     System.Drawing.Bitmap terrainbmp = terrainBitmap[regionhandle];
                     lock (terrainbmp)
                     {
-                        Util.SaveBitmapToFile(terrainbmp, m_startupDirectory + "\\" + path);
+                        Util.SaveBitmapToFile(terrainbmp, m_startupDirectory + "/" + path);
 
                     }
-                    device.FileSystem.WorkingDirectory = m_startupDirectory + "\\" + Util.MakePath("media", "materials", "textures", "");
+                    device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");
                     TerrainSceneNode terrain = null;
                     lock (terrains)
                     {
@@ -2082,7 +2094,10 @@ namespace IdealistViewer
                     {
                         if (terrainsels.ContainsKey(regionhandle))
                         {
-                            mts.RemoveTriangleSelector(terrainsels[regionhandle]);
+                            if (mts != null)
+                            {
+                                mts.RemoveTriangleSelector(terrainsels[regionhandle]);
+                            }
                             terrainsels.Remove(regionhandle);
                             
                         }
@@ -2097,7 +2112,10 @@ namespace IdealistViewer
                         terrainsels.Add(regionhandle, terrainsel);
 
                     }
-                    mts.AddTriangleSelector(terrainsel);
+                    if (mts != null)
+                    {
+                        mts.AddTriangleSelector(terrainsel);
+                    }
                     //Vector3D terrainpos = terrain.TerrainCenter;
                     //terrainpos.Z = terrain.TerrainCenter.Z - 100f;
                     //terrain.Position = terrainpos;
@@ -2166,7 +2184,12 @@ namespace IdealistViewer
                 if (newObject.node != null)
                 {
                     if (newObject.node.TriangleSelector != null)
-                        mts.RemoveTriangleSelector(newObject.node.TriangleSelector);
+                    {
+                        if (mts != null)
+                        {
+                            mts.RemoveTriangleSelector(newObject.node.TriangleSelector);
+                        }
+                    }
 
                     for (uint i = 0; i < newObject.node.MaterialCount; i++)
                     {
@@ -2516,7 +2539,12 @@ namespace IdealistViewer
 
                         // Remove this object from our picker.
                         if (obj.node.TriangleSelector != null)
-                            mts.RemoveTriangleSelector(obj.node.TriangleSelector);
+                        {
+                            if (mts != null)
+                            {
+                                mts.RemoveTriangleSelector(obj.node.TriangleSelector);
+                            }
+                        }
 
                         smgr.AddToDeletionQueue(obj.node);
                         obj.node = null;
@@ -2981,18 +3009,21 @@ namespace IdealistViewer
                     SceneNode node = triPicker.GetSceneNodeFromRay(projectedray, 0x0128, true, cam.SNCamera.Position); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
                     if (node == null)
                     {
-                        // Collide test against the terrain
-                        if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
+                        if (mts != null)
                         {
-
-                            //if (collisionpoint != null)
-                            //{
-                            //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
-                            //}
-                            if (cam.CameraMode == ECameraMode.Build)
+                            // Collide test against the terrain
+                            if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
                             {
-                                cam.SetTarget(collisionpoint);
-                                cam.SNtarget = null;
+
+                                //if (collisionpoint != null)
+                                //{
+                                //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
+                                //}
+                                if (cam.CameraMode == ECameraMode.Build)
+                                {
+                                    cam.SetTarget(collisionpoint);
+                                    cam.SNtarget = null;
+                                }
                             }
                         }
                     }
@@ -3003,17 +3034,20 @@ namespace IdealistViewer
                         m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>",node.Position.X,node.Position.Y,node.Position.Z);
                         if (node.Position.X == 0 && node.Position.Z == 0)
                         {
-                            if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
+                            if (mts != null)
                             {
-                                
-                                //if (collisionpoint != nuYesll)
-                                //{
-                                //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
-                                //}
-                                if (cam.CameraMode == ECameraMode.Build)
+                                if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
                                 {
-                                    cam.SetTarget(collisionpoint);
-                                    cam.SNtarget = null;
+
+                                    //if (collisionpoint != nuYesll)
+                                    //{
+                                    //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
+                                    //}
+                                    if (cam.CameraMode == ECameraMode.Build)
+                                    {
+                                        cam.SetTarget(collisionpoint);
+                                        cam.SNtarget = null;
+                                    }
                                 }
                             }
                         }

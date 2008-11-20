@@ -418,7 +418,12 @@ namespace IdealistViewer
 
                         vObj.node = sn;
                         if (oldnode.TriangleSelector != null)
-                            mts.RemoveTriangleSelector(oldnode.TriangleSelector);
+                        {
+                            if (mts != null)
+                            {
+                                mts.RemoveTriangleSelector(oldnode.TriangleSelector);
+                            }
+                        }
 
                         device.SceneManager.AddToDeletionQueue(oldnode);
                     }
