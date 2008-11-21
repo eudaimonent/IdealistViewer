@@ -55,7 +55,9 @@ namespace IdealistViewer
             //m_user.Settings.SEND_PINGS = true;
 
             m_user.Network.OnConnected += gridConnectedCallback;
+            m_user.Network.OnDisconnected += disconnectedCallback;
             m_user.Network.OnSimConnected += simConnectedCallback;
+            m_user.Network.OnLogin += loginStatusCallback;
             m_user.Terrain.OnLandPatch += landPatchCallback;
             m_user.Self.OnChat += chatCallback;
             m_user.Objects.OnNewAvatar += newAvatarCallback;
@@ -67,6 +69,13 @@ namespace IdealistViewer
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
 
+        }
+        public void loginStatusCallback(LoginStatus login, string message)
+        {
+            if (login == LoginStatus.Failed)
+            {
+                m_log.ErrorFormat("[CONNECTION]: Login Failed:{0}",message);
+            }
         }
         private void imageReceivedCallback(ImageDownload image, AssetTexture asset)
         {
@@ -132,6 +141,10 @@ namespace IdealistViewer
             {
                 m_user.Network.Logout();
             }
+        }
+        public void disconnectedCallback(NetworkManager.DisconnectType reason, string message)
+        {
+            m_log.ErrorFormat("[CONNECTION]: Disconnected{0}: Message:{1}",reason.ToString(), message);
         }
         public bool Connected
         {
