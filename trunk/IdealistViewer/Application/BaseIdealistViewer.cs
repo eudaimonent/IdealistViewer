@@ -101,6 +101,11 @@ namespace IdealistViewer
         /// All Meshing gets queued up int this queue.
         /// </summary>
         private static Queue<VObject> objectMeshQueue = new Queue<VObject>();
+
+        /// <summary>
+        /// foliage (trees, grass, etc. are queued in this queue.
+        /// </summary>
+        private static Queue<FoliageObject> foliageObjectQueue = new Queue<FoliageObject>();
         
 
         /// <summary>
@@ -243,6 +248,7 @@ namespace IdealistViewer
         private static Object mesh_synclock = new Object();
 
         private uint primcount = 0;
+        private uint foliageCount = 0;
 
         /// <summary>
         /// Cordinate Switcher Quaternion XYZ space to XZY space.
@@ -739,6 +745,8 @@ namespace IdealistViewer
 
                     // Check for Dirty terrain Update as necessary.
                     UpdateTerrain();
+
+                    doFoliage(3);
 
                     // Set the FPS in the window title.
                     device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
@@ -1700,6 +1708,40 @@ namespace IdealistViewer
             }
         }
 
+        public void doFoliage(uint max)
+        {
+            int i = 0;
+            bool done = false;
+            float scaleScalar = 0.1f;
+            while (!done)
+            {
+                if (foliageObjectQueue.Count > 0)
+                {
+                    FoliageObject foliage = foliageObjectQueue.Dequeue();
+                    Primitive prim = foliage.prim;
+                    Vector3 globalPositionToRez = Util.OffsetGobal(prim.RegionHandle, Vector3.Zero);
+                    Vector3 currentGlobalPosition = Util.OffsetGobal(currentSim.Handle, Vector3.Zero);
+                    Vector3 worldOffsetPosition = globalPositionToRez - currentGlobalPosition;
+                    Vector3 position = prim.Position;
+                    Vector3 scale = prim.Scale;
+
+                    
+
+                    SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                    //tree.Position = new Vector3D(position.X, position.Z, position.Y);
+                    tree.Position = new Vector3D(position.X + worldOffsetPosition.X,
+                        position.Z + worldOffsetPosition.Z,
+                        position.Y + worldOffsetPosition.Y);
+                    tree.Scale = new Vector3D(scale.X * scaleScalar, scale.Z * scaleScalar, scale.Y * scaleScalar);
+                }
+                else
+                    done = true;
+
+                if (++i >= max)
+                    done = true;
+            }
+        }
+
         #endregion
 
        
@@ -1955,6 +1997,7 @@ namespace IdealistViewer
             avatarConnection.OnObjectUpdated += objectUpdatedCallback;
             avatarConnection.OnObjectKilled += objectKilledCallback;
             avatarConnection.OnNewAvatar += newAvatarCallback;
+            avatarConnection.OnNewFoliage += newFoliageCallback;
 
             // Startup the GUI
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
@@ -2140,7 +2183,22 @@ namespace IdealistViewer
         /// Stick the result in queues so we can process them in our own threads later.
         #region LibOMV Callbacks
 
-        
+        public void newFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
+        {
+            foliageCount++;
+            m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
+
+            FoliageObject newFoliageObject = new FoliageObject();
+            
+            // add to the foliage queue
+            newFoliageObject.prim = foliage;
+            lock (foliageObjectQueue)
+            {
+                foliageObjectQueue.Enqueue(newFoliageObject);
+            }
+
+            
+        }
 
         /// <summary>
         /// LibOMV gave us a Full Object Update

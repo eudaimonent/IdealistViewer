@@ -26,6 +26,8 @@ namespace IdealistViewer
         public delegate void ObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation);
         public delegate void SimConnected(Simulator sim);
         public delegate void ImageReceived(AssetTexture tex);
+        public delegate void NewFoliage(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation);
+
 
         public event NewAvatar OnNewAvatar;
         public event Chat OnChat;
@@ -37,6 +39,7 @@ namespace IdealistViewer
         public event ObjectKilled OnObjectKilled;
         public event ObjectUpdated OnObjectUpdated;
         public event ImageReceived OnImageReceived;
+        public event NewFoliage OnNewFoliage;
 
         GridClient m_user;
         public SLProtocol()
@@ -66,10 +69,18 @@ namespace IdealistViewer
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
             m_user.Assets.OnImageReceived += imageReceivedCallback;
+            m_user.Objects.OnNewFoliage += newFoliageCallback;
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
 
         }
+
+        private void newFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
+        {
+            if (OnNewFoliage != null)
+                OnNewFoliage(simulator, foliage, regionHandle, timeDilation);
+        }
+
         public void loginStatusCallback(LoginStatus login, string message)
         {
             if (login == LoginStatus.Failed)
