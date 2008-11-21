@@ -121,7 +121,7 @@ namespace IdealistViewer
             switch (key)
             {
                 case KeyCode.Up:
-                    CAMDISTANCE -= CAMERAZOOMSPEED;
+                    CAMDISTANCE -= (CAMERAZOOMSPEED - ((MAXZOOM - CAMDISTANCE) / CAMDISTANCE));
                     if (CAMDISTANCE < MAXZOOM) CAMDISTANCE = MAXZOOM;
                     if (CAMDISTANCE > MINZOOM) CAMDISTANCE = MINZOOM;
 
@@ -129,7 +129,7 @@ namespace IdealistViewer
                     break;
 
                 case KeyCode.Down:
-                    CAMDISTANCE += CAMERAZOOMSPEED;
+                    CAMDISTANCE += CAMERAZOOMSPEED - ((MAXZOOM - CAMDISTANCE) / CAMDISTANCE);
                     if (CAMDISTANCE < MAXZOOM) CAMDISTANCE = MAXZOOM;
                     if (CAMDISTANCE > MINZOOM) CAMDISTANCE = MINZOOM;
 
@@ -211,9 +211,10 @@ namespace IdealistViewer
         /// <param name="delta"></param>
         public void MouseWheelAction(float delta)
         {
-            CAMDISTANCE += CAMERAZOOMSPEED * -delta;
+            CAMDISTANCE += ((CAMERAZOOMSPEED-4.8f)  + ((CAMDISTANCE / MINZOOM) * 2.5f)) * ((-delta * 2.9f));
+            //System.Console.WriteLine(((CAMERAZOOMSPEED - 4.8f) + ((CAMDISTANCE / MINZOOM) * 4)) * (-delta * 1.9f));
             if (CAMDISTANCE < MAXZOOM) CAMDISTANCE = MAXZOOM;
-            if (CAMDISTANCE > MINZOOM) CAMDISTANCE = MINZOOM;
+            if (CAMDISTANCE >= MINZOOM) CAMDISTANCE = MINZOOM;
 
             UpdateCameraPosition();
         }
