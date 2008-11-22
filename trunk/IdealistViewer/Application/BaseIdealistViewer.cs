@@ -1712,22 +1712,118 @@ namespace IdealistViewer
         {
             int i = 0;
             bool done = false;
-            float scaleScalar = 0.1f;
             while (!done)
             {
+                /*
+                    // Pine 1 -0
+                    // Oak 1 
+                    // Tropical Bush 1 - 2
+                    // Palm 1 -3
+                    // Dogwood - 4    
+                    // Tropical Bush 2 - 5
+                    // Palm 2 - 6
+                    // Cypress 1 - 7
+                    // Cypress 2 - 8
+                    // Pine 2 - 9
+                    // Plumeria - 10
+                    // Winter Pine 1 - 11
+                    // Winter Aspen - 12
+                    // Winter Pine 2 - 13
+                    // Eucalyptus - 14
+                    // Fern - 15
+                    // Eelgrass - 16
+                    // Sea Sword - 17
+                    // Kelp 1 - 18
+                    // Beach Grass 1 - 19
+                    // Kelp 2 - 20
+                 */
+
                 if (foliageObjectQueue.Count > 0)
                 {
                     FoliageObject foliage = foliageObjectQueue.Dequeue();
                     Primitive prim = foliage.prim;
+                    
+                    float scaleScalar = 0.1f;
+
                     Vector3 globalPositionToRez = Util.OffsetGobal(prim.RegionHandle, Vector3.Zero);
                     Vector3 currentGlobalPosition = Util.OffsetGobal(currentSim.Handle, Vector3.Zero);
                     Vector3 worldOffsetPosition = globalPositionToRez - currentGlobalPosition;
                     Vector3 position = prim.Position;
                     Vector3 scale = prim.Scale;
 
+                    SceneNode tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+
+                    int type = foliage.prim.PrimData.State;
+                    //type = 2;
+                    switch (type)
+                    {
+                        case 0: // Pine 1 -0
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                        case 1: // Oak 1
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                            break;
+                        case 2: // Tropical Bush 1 - 2
+                            scaleScalar = 0.025f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                        case 3: // Palm 1 -3
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                            break;
+                        case 4: // Dogwood - 4
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                            break;
+                        case 5: // Tropical Bush 2 - 5
+                            scaleScalar = 0.025f;
+                            tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                            break;
+                        case 6: // Palm 2 - 6
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                        case 7: // Cypress 1 - 7
+                        case 8: // Cypress 2 - 8
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                            break;
+                        case 9: // Pine 2 - 9
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                        case 10: // Plumeria - 10
+                        case 11: // Winter Pine 1 - 11
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                        case 12: // Winter Aspen - 12
+                            scaleScalar = 0.01f;
+                            tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                            break;
+                        case 13: // Winter Pine 2 - 13
+                            scaleScalar = 0.1f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                        case 15: // Fern - 15
+                        case 16: // Eelgrass - 16
+                        case 17: // Sea Sword - 17
+                        case 18: // Kelp 1 - 18
+                        case 19: // Beach Grass 1 - 19
+                        case 20: // Kelp 2 - 20
+                        default:
+                            scaleScalar = 0.01f;
+                            tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                            break;
+                    }
+
                     
 
-                    SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
+                    m_log.Debug("[FOLIAGE]: got foliage, location: " + prim.Position.ToString() + " type: " + type.ToString());
+
+                    //SceneNode tree = smgr.AddTreeSceneNode(foliageFileName, null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
                     //tree.Position = new Vector3D(position.X, position.Z, position.Y);
                     tree.Position = new Vector3D(position.X + worldOffsetPosition.X,
                         position.Z + worldOffsetPosition.Z,
@@ -2186,7 +2282,7 @@ namespace IdealistViewer
         public void newFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
         {
             foliageCount++;
-            m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
+            //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
 
             FoliageObject newFoliageObject = new FoliageObject();
             

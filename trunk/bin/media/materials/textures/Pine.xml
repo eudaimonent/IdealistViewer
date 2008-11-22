@@ -2,9 +2,9 @@
 
 	<branch id="1">
 		
-		<length value="100" />
+		<length min="1" max="5" />
 		
-		<radius value="20" />
+		<radius min="0.5" max="1.5" />
 		
 		<radiusEnd value="0.606" />
 		
@@ -12,8 +12,8 @@
 			
 			<pitch value="0" />
 			
-			<width value="40" />
-			<height value="40" />
+			<width value="2" />
+			<height value="2" />
 			
 			<red min="225" max="255" />
 			<green value="255" />
@@ -39,7 +39,7 @@
 		
 		<child ref="2" level="-1">
 			
-			<levelRange min="1" max="5" />
+			<levelRange min="1" max="12" />
 			
 			<orientation min="40" max="90" />
 			
@@ -47,7 +47,7 @@
 			
 			<lengthScale value="0.406" />
 			
-			<radiusScale value="0.5" />
+			<radiusScale value="0.4" />
 			
 			<count min="10" max="16" />
 			
@@ -59,18 +59,19 @@
 	
 	<branch id="2">
 		
-		<length value="100" />
 		
-		<radius value="20" />
+		<length min="1" max="4" />
 		
-		<radiusEnd value="0.50" />
+		<radius min="0.5" max="1.5" />
+		
+		<radiusEnd value="0.606" />
 		
 		<leaf level="1">
 			
 			<pitch value="0" />
 			
-			<width value="30" />
-			<height value="30" />
+			<width value="1" />
+			<height value="1" />
 			
 			<red min="225" max="255" />
 			<green value="255" />
