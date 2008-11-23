@@ -268,108 +268,6 @@ namespace IdealistViewer
         private static TrianglePickerMapper triPicker = null;
         // experimental mesh code - only here temporarily - up top so it's visible
 
-        public Vector2D convVect2d(UVCoord uv)
-        {
-            return new Vector2D(uv.U, uv.V);
-        }
-
-        public Vector3D convVect3d(Coord c)
-        {// translate coordinates XYZ to XZY
-            return new Vector3D(c.Y, c.Z, c.X);
-        }
-
-        # region PrimTesting
-
-        public Mesh makeSamplePrim()
-        {
-            PrimMesh primMesh = new PrimMesh(24, 0.0f, 1.0f, 0.0f, 24);
-            primMesh.ExtrudeCircular();
-            //primMesh.CalcNormals(); // surface normals for now
-            primMesh.Scale(128.0f, 128.0f, 128.0f);
-
-            Mesh mesh = new Mesh();
-            MeshBuffer mb = new MeshBuffer(VertexType.Standard);
-
-            for (uint index = 0; index < primMesh.coords.Count; index++)
-            {
-                Vertex3D vert = new Vertex3D();
-                vert.Position = convVect3d(primMesh.coords[(int)index]);
-                //vert.Normal = convVect3d(primMesh.normals[(int)index]);
-                vert.Color = new Color(255, 128, 0, 0);
-                mb.SetVertex(index, vert);
-            }
-
-            uint nr = 0;
-            int faceIndex = 0;
-            foreach (Face f in primMesh.faces)
-            {
-
-                Vector3D surfaceNormal = convVect3d(primMesh.SurfaceNormal(faceIndex));
-
-                mb.SetIndex(nr++, (ushort)f.v1);
-                mb.SetIndex(nr++, (ushort)f.v2);
-                mb.SetIndex(nr++, (ushort)f.v3);
-                mb.GetVertex((ushort)f.v1).Normal = surfaceNormal;
-                mb.GetVertex((ushort)f.v2).Normal = surfaceNormal;
-                mb.GetVertex((ushort)f.v3).Normal = surfaceNormal;
-
-                faceIndex++;
-            }
-
-            mesh.AddMeshBuffer(mb);
-            //mb.Dispose();
-            return mesh;
-        }
-
-        public Mesh makeSamplePrimNew()
-        {
-            PrimMesh primMesh = new PrimMesh(24, 0.0f, 1.0f, 0.0f, 24);
-            primMesh.viewerMode = true;
-            primMesh.ExtrudeCircular();
-            primMesh.Scale(128.0f, 128.0f, 128.0f);
-
-            Mesh mesh = new Mesh();
-            MeshBuffer mb = new MeshBuffer(VertexType.Standard);
-
-            Color color = new Color(255, 128, 0, 0);
-            uint index = 0;
-            for (uint vfIndex = 0; vfIndex < primMesh.viewerFaces.Count; vfIndex++)
-            {
-                ViewerFace vf = primMesh.viewerFaces[(int)vfIndex];
-                mb.SetVertexT2(index, new Vertex3DT2(convVect3d(vf.v1), convVect3d(vf.n1), color, convVect2d(vf.uv1), convVect2d(vf.uv1)));
-                mb.SetIndex(vfIndex, (ushort)index++);
-                mb.SetVertexT2(index++, new Vertex3DT2(convVect3d(vf.v2), convVect3d(vf.n2), color, convVect2d(vf.uv2), convVect2d(vf.uv2)));
-                mb.SetIndex(vfIndex, (ushort)index++);
-                mb.SetVertexT2(index++, new Vertex3DT2(convVect3d(vf.v3), convVect3d(vf.n3), color, convVect2d(vf.uv3), convVect2d(vf.uv3)));
-                mb.SetIndex(vfIndex, (ushort)index++);
-            }
-
-            mesh.AddMeshBuffer(mb);
-
-            return mesh;
-        }
-
-        public void generateRandomPrim(int count)
-        {
-
-            Random rnd = new Random(System.Environment.TickCount);
-            // dahlia's sample prim
-            for (int j = 0; j < count; j++)
-            {
-                Mesh samplePrim = makeSamplePrim();
-                if (samplePrim != null)
-                {
-                    SceneNode samplePrimNode = smgr.AddMeshSceneNode(samplePrim, smgr.RootSceneNode, -1);
-                    samplePrimNode.Position = new Vector3D((float)(rnd.NextDouble() * 256), (float)(rnd.NextDouble() * 256), (float)(rnd.NextDouble() * 256));
-                    samplePrimNode.Scale = new Vector3D(0.1f, 0.1f, 0.1f);
-                    samplePrimNode.SetMaterialFlag(MaterialFlag.Lighting, true);
-                }
-                m_log.Debug(j);
-            }
-        }
-
-        #endregion
-
         /// <summary>
         /// Queue of terrain that needs to be updated.  ulong region handle.
         /// </summary>
@@ -479,33 +377,8 @@ namespace IdealistViewer
             */
             ATMOSkySceneNode skynode = new ATMOSkySceneNode(driver.GetTexture("irrlicht2_up.jpg"), null, smgr, 20, -1);
             
-            
-            /*
-            // Test tree
-            SceneNode tree = smgr.AddTreeSceneNode("Oak.xml", null, -1, new Vector3D(128, 40, 128), new Vector3D(0, 0, 0), new Vector3D(0.25f, 0.25f, 0.25f), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
-            tree.Position = new Vector3D(129, 22, 129);
-            //tree.Scale = new Vector3D(0.25f, 0.25f, 0.25f);
-            */
             // Create User's Camera
             cam = new Camera(smgr);
-
-
-
-
-            //AnimatedMesh mesh = smgr.GetMesh("sydney.md2");
-            //AnimatedMeshSceneNode node99 = smgr.AddAnimatedMeshSceneNode(mesh);
-            ///node99.
-
-            //if (node != null)
-            //{
-            //    node.SetMaterialFlag(MaterialFlag.Lighting, false);
-            //    node.SetFrameLoop(0, 310);
-            //    node.SetMaterialTexture(0, driver.GetTexture("sydney.bmp"));
-            //    node.Position = new Vector3D(128, 32, 128);
-            //}
-            //we add the skybox which we already used in lots of Irrlicht examples.
-
-
 
             // Set up Scene Lighting.
             // This light rotates around to highlight prim meshing issues.
@@ -516,39 +389,6 @@ namespace IdealistViewer
 
             // This light simulates the sun
             SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
-
-
-            // dahlia's sample prim
-
-            //Mesh samplePrim = makeSamplePrim();
-            //if (samplePrim != null)
-            //{
-            //    SceneNode samplePrimNode = smgr.AddMeshSceneNode(samplePrim, smgr.RootSceneNode, -1);
-            //    samplePrimNode.Position = new Vector3D(128, 64, 128);
-            //    samplePrimNode.SetMaterialFlag(MaterialFlag.Lighting, true);
-            //}
-
-            // dahlia's sample sculpty
-
-            string sculptFileName = "d:\\sampleSculpty.bmp";
-            try
-            {
-                Mesh samplePrim = null;
-                System.Drawing.Image image = System.Drawing.Bitmap.FromFile(sculptFileName);
-
-                samplePrim = PrimMesherG.SculptIrrMesh((System.Drawing.Bitmap)image);
-                if (samplePrim != null)
-                {
-                    SceneNode samplePrimNode = smgr.AddMeshSceneNode(samplePrim, smgr.RootSceneNode, -1);
-                    samplePrimNode.Position = new Vector3D(128, 32, 128);
-                    samplePrimNode.SetMaterialFlag(MaterialFlag.Lighting, true);
-                    samplePrimNode.SetMaterialTexture(0, driver.GetTexture("d:\\sampleSculptyTexture.bmp"));
-                    }
-            }
-            catch (Exception e)
-            {
-                m_log.Error("Unable to open sample sculpty file: " + sculptFileName, e);
-            }
 
             // Set up the water
             AnimatedMesh mesh = smgr.AddHillPlaneMesh("myHill",
@@ -694,13 +534,6 @@ namespace IdealistViewer
                 }
                 guienv.DrawAll();
 
-                // Test Triangle at 0,0,0 to point out the axis
-                //driver.Draw3DTriangle(new Triangle3D(
-                //    new Vector3D(0, 0, 0),
-                //    new Vector3D(10, 0, 0),
-                //    new Vector3D(0, 10, 0)),
-                //    Color.Red);
-                
                 driver.EndScene();
 
                 mscounter += System.Environment.TickCount - tickcount;
@@ -1622,28 +1455,6 @@ namespace IdealistViewer
                     vobj.mesh = m_MeshFactory.GetMeshInstance(vobj.prim);
                 }
                 else
-                //{
-                //    // Mesh a scupted prim.
-                //    // First we have to resize the texture..    
-                //    float LOD = 32f;
-
-                //    if (sculpttex.DOTNETImage.Width < 32f) LOD = sculpttex.DOTNETImage.Width;
-                //    if (sculpttex.DOTNETImage.Height < 32f && sculpttex.DOTNETImage.Height < LOD) LOD = sculpttex.DOTNETImage.Height;
-                //    if (LOD < 32f && LOD > 16f) LOD = 32;
-                //    if (LOD < 16f && LOD > 8f) LOD = 16;
-                //    if (LOD < 8f && LOD > 4f) LOD = 8;
-                //    if (LOD < 4 && LOD > 2) LOD = 4;
-                //    if (LOD < 2) LOD = 2;
-
-                //    m_log.Warn("[SCULPT]: Resizing Sculptie......");
-                //    SculptMeshLOD smLOD = new SculptMeshLOD(sculpttex.DOTNETImage, LOD);
-                //    m_log.Warn("[SCULPT]: Meshing Sculptie......");
-                //    vobj.mesh = PrimMesherG.SculptIrrMesh(smLOD.ResultBitmap, vobj.prim.Sculpt.Type);
-                //    sculpttex.DOTNETImage.Dispose();
-                //    smLOD.Dispose();
-                //    m_log.Warn("[SCULPT]: Sculptie Meshed");
-                    
-                //}
                 {
                     // Mesh a scupted prim.
                     m_log.Warn("[SCULPT]: Meshing Sculptie......");
@@ -1917,6 +1728,9 @@ namespace IdealistViewer
                 case "help":
                     ShowHelp(cmdparams);
                     Notice("");
+                    break;
+                case "relog":
+                    avatarConnection.BeginLogin(avatarConnection.loginURI, avatarConnection.firstName + " " + avatarConnection.lastName, avatarConnection.password, avatarConnection.startlocation);
                     break;
                 case "say":
                     string message = "";

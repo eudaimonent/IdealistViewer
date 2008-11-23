@@ -41,6 +41,13 @@ namespace IdealistViewer
         public event ImageReceived OnImageReceived;
         public event NewFoliage OnNewFoliage;
 
+        public string loginURI;
+        public string firstName;
+        public string lastName;
+        public string username;
+        public string password;
+        public string startlocation;
+
         GridClient m_user;
         public SLProtocol()
         {
@@ -103,12 +110,34 @@ namespace IdealistViewer
             }
         }
 
+        //public void BeginLogin(string loginURI, string username, string password, string startlocation)
+        //{
+        //    LoginParams loginParams = getLoginParams(loginURI, username, password, startlocation);
+
+        //    m_user.Network.BeginLogin(loginParams);
+        //}
         public void BeginLogin(string loginURI, string username, string password, string startlocation)
         {
+
+            string firstname;
+            string lastname;
+
+            this.loginURI = loginURI;
+            this.username = username;
+            this.password = password;
+            this.startlocation = startlocation;
+
+            Util.separateUsername(username, out firstname, out lastname);
+
+            this.firstName = firstname;
+            this.lastName = lastname;
+
+
             LoginParams loginParams = getLoginParams(loginURI, username, password, startlocation);
 
             m_user.Network.BeginLogin(loginParams);
         }
+
         private void gridConnectedCallback(object sender)
         {
            
