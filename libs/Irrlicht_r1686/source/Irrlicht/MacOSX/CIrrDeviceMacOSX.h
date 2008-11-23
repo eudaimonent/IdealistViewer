@@ -61,6 +61,9 @@ namespace irr
 		//! Sets if the window should be resizeable in windowed mode.
 		virtual void setResizeAble(bool resize);
 
+		//! Activate any joysticks, and generate events for them.
+		virtual bool activateJoysticks(core::array<SJoystickInfo> & joystickInfo);
+
 		//! \return Returns a pointer to a list with all video modes
 		//! supported by the gfx adapter.
 		virtual video::IVideoModeList* getVideoModeList();
@@ -204,6 +207,8 @@ namespace irr
 		int			_screenWidth;
 		int			_screenHeight;
 		bool			_active;
+
+		void pollJoysticks();
 	};
 
 

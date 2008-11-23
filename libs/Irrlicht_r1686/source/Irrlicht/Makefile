@@ -27,7 +27,7 @@ IRRMESHOBJ = $(IRRMESHLOADER) $(IRRMESHWRITER) \
 	CQ3LevelMesh.o CQuake3ShaderSceneNode.o CTreeSceneNode.o \
 	CTreeGenerator.o CBillboardGroupSceneNode.o
 IRROBJ = CBillboardSceneNode.o CCameraSceneNode.o CDummyTransformationSceneNode.o CEmptySceneNode.o CGeometryCreator.o CLightSceneNode.o CMeshManipulator.o CMetaTriangleSelector.o COctTreeSceneNode.o COctTreeTriangleSelector.o CSceneCollisionManager.o CSceneManager.o CShadowVolumeSceneNode.o CSkyBoxSceneNode.o CSkyDomeSceneNode.o CTerrainSceneNode.o CTerrainTriangleSelector.o CVolumeLightSceneNode.o CCubeSceneNode.o CSphereSceneNode.o CTextSceneNode.o CTriangleBBSelector.o CTriangleSelector.o CWaterSurfaceSceneNode.o CMeshCache.o CDefaultSceneNodeAnimatorFactory.o CDefaultSceneNodeFactory.o
-IRRPARTICLEOBJ = CParticleAnimatedMeshSceneNodeEmitter.o CParticleBoxEmitter.o CParticleCylinderEmitter.o CParticleMeshEmitter.o CParticlePointEmitter.o CParticleRingEmitter.o CParticleSphereEmitter.o CParticleAttractionAffector.o CParticleFadeOutAffector.o CParticleGravityAffector.o CParticleRotationAffector.o CParticleSystemSceneNode.o
+IRRPARTICLEOBJ = CParticleAnimatedMeshSceneNodeEmitter.o CParticleBoxEmitter.o CParticleCylinderEmitter.o CParticleMeshEmitter.o CParticlePointEmitter.o CParticleRingEmitter.o CParticleSphereEmitter.o CParticleAttractionAffector.o CParticleFadeOutAffector.o CParticleGravityAffector.o CParticleRotationAffector.o CParticleSystemSceneNode.o CParticleScaleAffector.o
 IRRANIMOBJ = CSceneNodeAnimatorCameraFPS.o CSceneNodeAnimatorCameraMaya.o CSceneNodeAnimatorCollisionResponse.o CSceneNodeAnimatorDelete.o CSceneNodeAnimatorFlyCircle.o CSceneNodeAnimatorFlyStraight.o CSceneNodeAnimatorFollowSpline.o CSceneNodeAnimatorRotation.o CSceneNodeAnimatorTexture.o
 IRRDRVROBJ = CNullDriver.o COpenGLDriver.o COpenGLNormalMapRenderer.o COpenGLParallaxMapRenderer.o COpenGLShaderMaterialRenderer.o COpenGLTexture.o COpenGLSLMaterialRenderer.o COpenGLExtensionHandler.o CD3D8Driver.o CD3D8NormalMapRenderer.o CD3D8ParallaxMapRenderer.o CD3D8ShaderMaterialRenderer.o CD3D8Texture.o CD3D9Driver.o CD3D9HLSLMaterialRenderer.o CD3D9NormalMapRenderer.o CD3D9ParallaxMapRenderer.o CD3D9ShaderMaterialRenderer.o CD3D9Texture.o
 IRRIMAGEOBJ = CColorConverter.o CImage.o CImageLoaderBMP.o CImageLoaderJPG.o CImageLoaderPCX.o CImageLoaderPNG.o CImageLoaderPSD.o CImageLoaderTGA.o CImageLoaderPPM.o CImageLoaderWAL.o \
@@ -50,7 +50,7 @@ LINKOBJ := $(IRRMESHOBJ) $(IRROBJ) $(IRRPARTICLEOBJ) $(IRRANIMOBJ) \
 #Compiler flags
 CXXINCS = -I../../include -Izlib -Ijpeglib -Ilibpng
 CPPFLAGS = $(CXXINCS) -DIRRLICHT_EXPORTS=1
-CXXFLAGS = -Wall
+CXXFLAGS = -Wall -pipe
 ifndef NDEBUG
 CXXFLAGS += -g -D_DEBUG
 else
@@ -61,8 +61,8 @@ CXXFLAGS += -pg
 endif
 CFLAGS := -fexpensive-optimizations -O3 -DPNG_THREAD_UNSAFE_OK -DPNG_NO_MMX_CODE -DPNG_NO_MNG_FEATURES
 
-sharedlib : CXXFLAGS += -fpic
-sharedlib : CFLAGS += -fpic
+sharedlib sharedlib_osx: CXXFLAGS += -fpic
+sharedlib sharedlib_osx: CFLAGS += -fpic
 
 #multilib handling
 ifeq ($(HOSTTYPE), x86_64)
@@ -71,14 +71,16 @@ endif
 
 #Linux specific options
 STATIC_LIB = libIrrlicht.a
-SHARED_LIB = libIrrlicht.so
 IRRLICHT_DLL := ../../bin/Win32-gcc/Irrlicht.dll
 LIB_PATH = ../../lib/$(SYSTEM)
 INSTALL_DIR = /usr/local/lib
 staticlib sharedlib install: SYSTEM = Linux
-staticlib sharedlib : LDFLAGS = --no-export-all-symbols --add-stdcall-alias
-sharedlib : LDFLAGS += -L/usr/X11R6/lib$(LIBSELECT) -lGL -lXxf86vm
-staticlib sharedlib : CXXINCS += -I/usr/X11R6/include
+staticlib_osx sharedlib_osx install_osx: SYSTEM = MacOSX
+sharedlib: SHARED_LIB = libIrrlicht.so
+sharedlib_osx: SHARED_LIB = libIrrlicht.dylib
+staticlib sharedlib staticlib_osx sharedlib_osx: LDFLAGS = --no-export-all-symbols --add-stdcall-alias
+sharedlib sharedlib_osx: LDFLAGS += -L/usr/X11R6/lib$(LIBSELECT) -lGL -lXxf86vm
+staticlib sharedlib staticlib_osx sharedlib_osx: CXXINCS += -I/usr/X11R6/include
 
 #Windows specific options
 sharedlib_win32 staticlib_win32: SYSTEM = Win32-gcc
@@ -100,7 +102,7 @@ $(STATIC_LIB): $(LINKOBJ)
 	$(AR) rs $@ $^
 
 # Copies static lib into /lib/Linux
-staticlib: $(STATIC_LIB)
+staticlib staticlib_osx: $(STATIC_LIB)
 	cp $^ $(LIB_PATH)
 
 # Builds Irrlicht as dll (Irrlicht.dll) into ../../bin/Win32-gcc
@@ -112,17 +114,32 @@ sharedlib_win32: $(IRRLICHT_DLL)
 staticlib_win32: $(STATIC_LIB)
 	cp $^ $(LIB_PATH)
 
+# Builds Irrlicht as shared lib (libIrrlicht.so.versionNumber) and copies it into /lib/Linux
+sharedlib_osx: $(LINKOBJ)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -dynamiclib -Wl,-install_name,$(SHARED_LIB).1 -fPIC -o $(SHARED_LIB).$(VERSION) $^ $(LDFLAGS)
+	cp $(SHARED_LIB).$(VERSION) $(LIB_PATH)
+
 # Installs Irrlicht if it was created as shared lib
 install:
 	cp $(LIB_PATH)/$(SHARED_LIB).$(VERSION) $(INSTALL_DIR)
 	cd $(INSTALL_DIR) && ln -s libIrrlicht.so.$(VERSION) $(SHARED_LIB)
 	ldconfig -n $(INSTALL_DIR)
 
+install_osx:
+	cp $(LIB_PATH)/$(SHARED_LIB).$(VERSION) $(INSTALL_DIR)
+	cd $(INSTALL_DIR) && ln -s libIrrlicht.dylib.$(VERSION) $(SHARED_LIB)
+	ldconfig -n $(INSTALL_DIR)
+
+TAGS:
+	ctags *.cpp ../../include/*.h *.h
+
 # Create dependency files for automatic recompilation
 %.d:%.cpp
 	$(CXX) $(CPPFLAGS) -MM -MF $@ $<
 
+ifneq ($(MAKECMDGOALS),clean)
 -include $(LINKOBJ:.o=.d)
+endif
 
 help:
 	@echo "Available targets for Irrlicht"

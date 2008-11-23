@@ -67,6 +67,9 @@ namespace irr
 		//! Sets if the window should be resizeable in windowed mode.
 		virtual void setResizeAble(bool resize=false);
 
+		//! Activate any joysticks, and generate events for them.
+		virtual bool activateJoysticks(core::array<SJoystickInfo> & joystickInfo);
+
 		//! Implementation of the linux cursor control
 		class CCursorControl : public gui::ICursorControl
 		{
@@ -169,6 +172,9 @@ namespace irr
 
 		SDL_Surface* Screen;
 		int SDL_Flags;
+#if defined(_IRR_COMPILE_WITH_JOYSTICK_EVENTS_)
+		core::array<SDL_Joystick*> Joysticks;
+#endif
 
 		s32 MouseX, MouseY;
 		

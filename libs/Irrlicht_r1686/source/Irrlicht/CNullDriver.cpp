@@ -1511,7 +1511,7 @@ void CNullDriver::fillMaterialStructureFromAttributes(video::SMaterial& outMater
 	outMaterial.GouraudShading = attr->getAttributeAsBool("GouraudShading");
 	outMaterial.Lighting = attr->getAttributeAsBool("Lighting");
 	outMaterial.ZWriteEnable = attr->getAttributeAsBool("ZWriteEnable");
-	outMaterial.ZBuffer = attr->getAttributeAsInt("ZBuffer");
+	outMaterial.ZBuffer = (char)attr->getAttributeAsInt("ZBuffer");
 	outMaterial.BackfaceCulling = attr->getAttributeAsBool("BackfaceCulling");
 	outMaterial.FrontfaceCulling = attr->getAttributeAsBool("FrontfaceCulling");
 	outMaterial.FogEnable = attr->getAttributeAsBool("FogEnable");
@@ -1904,7 +1904,7 @@ void CNullDriver::enableClipPlane(u32 index, bool enable)
 ITexture* CNullDriver::createRenderTargetTexture(const core::dimension2d<s32>& size,
 		const c8* name)
 {
-	os::Printer::log("createRenderTargetTexture is deprecated, use addRenderTargetTexture istead");
+	os::Printer::log("createRenderTargetTexture is deprecated, use addRenderTargetTexture instead");
 	ITexture* tex = addRenderTargetTexture(size, name);
 	tex->grab();
 	return tex;

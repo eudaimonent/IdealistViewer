@@ -2,19 +2,25 @@
 
 This Tutorial shows how to move and animate SceneNodes. The
 basic concept of SceneNodeAnimators is shown as well as manual
-movement of nodes using the keyboard.
+movement of nodes using the keyboard.  We'll demonstrate framerate
+independent movement, which means moving by an amount dependent
+on the duration of the last run of the Irrlicht loop.
+
+Example 19.MouseAndJoystick shows how to handle those kinds of input.
 
 As always, I include the header files, use the irr namespace,
 and tell the linker to link with the .lib file.
 */
+#ifdef _MSC_VER
+// We'll also define this to stop MSVC complaining about sprintf().
+#define _CRT_SECURE_NO_WARNINGS
+#pragma comment(lib, "Irrlicht.lib")
+#endif
+
 #include <irrlicht.h>
 #include <iostream>
 
 using namespace irr;
-
-#ifdef _MSC_VER
-#pragma comment(lib, "Irrlicht.lib")
-#endif
 
 /*
 To receive events like mouse and keyboard input, or GUI events like "the OK
@@ -42,7 +48,7 @@ public:
 	{
 		return KeyIsDown[keyCode];
 	}
-
+	
 	MyEventReceiver()
 	{
 		for (u32 i=0; i<KEY_KEY_CODES_COUNT; ++i)
@@ -100,7 +106,7 @@ int main()
 	scene::ISceneManager* smgr = device->getSceneManager();
 
 	/*
-	Create the node which will be moved with the 'W' and 'S' key. We create a
+	Create the node which will be moved with the WSAD keys. We create a
 	sphere node, which is a built-in geometry primitive. We place the node
 	at (0,0,30) and assign a texture to it to let it look a little bit more
 	interesting. Because we have no dynamic lights in this scene we disable
@@ -184,7 +190,7 @@ int main()
 	To be able to look at and move around in this scene, we create a first
 	person shooter style camera and make the mouse cursor invisible.
 	*/
-	scene::ICameraSceneNode * cam = smgr->addCameraSceneNodeFPS(0, 100.0f, 100.0f);
+	smgr->addCameraSceneNodeFPS(0, 100.0f, 100.0f);
 	device->getCursorControl()->setVisible(false);
 
 	/*
@@ -192,7 +198,11 @@ int main()
 	*/
 	device->getGUIEnvironment()->addImage(
 		driver->getTexture("../../media/irrlichtlogoalpha2.tga"),
-		core::position2d<s32>(10,10));
+		core::position2d<s32>(10,20));
+
+	gui::IGUIStaticText* diagnostics = device->getGUIEnvironment()->addStaticText(
+		L"", core::rect<s32>(10, 10, 400, 20));
+	diagnostics->setOverrideColor(video::SColor(255, 255, 255, 0));
 
 	/*
 	We have done everything, so lets draw it. We also write the current
@@ -201,23 +211,35 @@ int main()
 	*/
 	int lastFPS = -1;
 
+	// In order to do framerate independent movement, we have to know
+	// how long it was since the last frame
+	u32 then = device->getTimer()->getTime();
+
+	// This is the movemen speed in units per second.
+	const f32 MOVEMENT_SPEED = 5.f;
+
 	while(device->run())
 	{
-		/* Check if key W or key S is being held down, and move the
-		sphere node up or down respectively.
-		*/
+		// Work out a frame delta time.
+		const u32 now = device->getTimer()->getTime();
+		const f32 frameDeltaTime = (f32)(now - then) / 1000.f; // Time in seconds
+		then = now;
+
+		/* Check if keys W, S, A or D are being held down, and move the
+		sphere node around respectively. */
+		core::vector3df nodePosition = node->getPosition();
+
 		if(receiver.IsKeyDown(irr::KEY_KEY_W))
-		{
-			core::vector3df v = node->getPosition();
-			v.Y += 0.02f;
-			node->setPosition(v);
-		}
+			nodePosition.Y += MOVEMENT_SPEED * frameDeltaTime;
 		else if(receiver.IsKeyDown(irr::KEY_KEY_S))
-		{
-			core::vector3df v = node->getPosition();
-			v.Y -= 0.02f;
-			node->setPosition(v);
-		}
+			nodePosition.Y -= MOVEMENT_SPEED * frameDeltaTime;
+
+		if(receiver.IsKeyDown(irr::KEY_KEY_A))
+			nodePosition.X -= MOVEMENT_SPEED * frameDeltaTime;
+		else if(receiver.IsKeyDown(irr::KEY_KEY_D))
+			nodePosition.X += MOVEMENT_SPEED * frameDeltaTime;
+
+		node->setPosition(nodePosition);
 
 		driver->beginScene(true, true, video::SColor(255,113,113,133));
 

@@ -18,7 +18,6 @@
 #include <winuser.h>
 #include "irrlicht.h"
 
-
 namespace irr
 {
 	namespace video
@@ -36,9 +35,7 @@ namespace irr
 		#endif
 
 		#ifdef _IRR_COMPILE_WITH_OPENGL_
-		IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window,
-			u32 bits, bool stencilBuffer, io::IFileSystem* io,
-			bool vsync, bool antiAlias);
+		IVideoDriver* createOpenGLDriver(const irr::SIrrlichtCreationParameters& params, io::IFileSystem* io);
 		#endif
 	}
 } // end namespace irr
@@ -294,7 +291,6 @@ CIrrDeviceWin32::CIrrDeviceWin32(const SIrrlichtCreationParameters& params)
 	IsNonNTWindows(false), Resized(false),
 	ExternalWindow(false), Win32CursorControl(0)
 {
-
 	#ifdef _DEBUG
 	setDebugName("CIrrDeviceWin32");
 	#endif
@@ -364,6 +360,7 @@ CIrrDeviceWin32::CIrrDeviceWin32(const SIrrlichtCreationParameters& params)
 
 		HWnd = CreateWindow( ClassName, "", style, windowLeft, windowTop,
 					realWidth, realHeight, NULL, NULL, hInstance, NULL);
+		CreationParams.WindowId = HWnd;
 
 		ShowWindow(HWnd, SW_SHOW);
 		UpdateWindow(HWnd);
@@ -371,10 +368,9 @@ CIrrDeviceWin32::CIrrDeviceWin32(const SIrrlichtCreationParameters& params)
 		// fix ugly ATI driver bugs. Thanks to ariaci
 		MoveWindow(HWnd, windowLeft, windowTop, realWidth, realHeight, TRUE);
 	}
-
-	// attach external window
-	if (CreationParams.WindowId)
+	else if (CreationParams.WindowId)
 	{
+		// attach external window
 		HWnd = static_cast<HWND>(CreationParams.WindowId);
 		RECT r;
 		GetWindowRect(HWnd, &r);
@@ -477,9 +473,7 @@ void CIrrDeviceWin32::createDriver()
 		if (CreationParams.Fullscreen)
 			switchToFullScreen(CreationParams.WindowSize.Width, CreationParams.WindowSize.Height, CreationParams.Bits);
 
-		VideoDriver = video::createOpenGLDriver(CreationParams.WindowSize, HWnd, CreationParams.Bits, 
-			CreationParams.Stencilbuffer, FileSystem,
-			CreationParams.Vsync, CreationParams.AntiAlias);
+		VideoDriver = video::createOpenGLDriver(CreationParams, FileSystem);
 		if (!VideoDriver)
 		{
 			os::Printer::log("Could not create OpenGL driver.", ELL_ERROR);
@@ -549,6 +543,9 @@ bool CIrrDeviceWin32::run()
 
 	if (!quit)
 		resizeIfNecessary();
+
+	if(!quit)
+		pollJoysticks();
 
 	_IRR_IMPLEMENT_MANAGED_MARSHALLING_BUGFIX;
 	return !quit;
@@ -639,7 +636,7 @@ bool CIrrDeviceWin32::present(video::IImage* image, void* windowId, core::rect<s
 		BITMAPV4HEADER bi;
 		ZeroMemory (&bi, sizeof(bi));
 		bi.bV4Size          = sizeof(BITMAPINFOHEADER);
-		bi.bV4BitCount      = image->getBitsPerPixel();
+		bi.bV4BitCount      = (WORD)image->getBitsPerPixel();
 		bi.bV4Planes        = 1;
 		bi.bV4Width         = image->getDimension().Width;
 		bi.bV4Height        = -image->getDimension().Height;
@@ -806,7 +803,8 @@ void CIrrDeviceWin32::getWindowsVersion(core::stringc& out)
 	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-	if (!(bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi)))
+	bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO*) &osvi);
+	if (!bOsVersionInfoEx)
 	{
 		osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 		if (! GetVersionEx((OSVERSIONINFO *) &osvi))
@@ -964,6 +962,125 @@ void CIrrDeviceWin32::setResizeAble(bool resize)
 		SWP_FRAMECHANGED | SWP_NOMOVE | SWP_SHOWWINDOW);
 }
 
+
+bool CIrrDeviceWin32::activateJoysticks(core::array<SJoystickInfo> & joystickInfo)
+{
+#if defined _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+	joystickInfo.clear();
+	ActiveJoysticks.clear();
+
+	const u32 numberOfJoysticks = ::joyGetNumDevs();
+	JOYINFOEX info;
+	info.dwSize = sizeof(info);
+	info.dwFlags = JOY_RETURNALL;
+
+	JoystickInfo activeJoystick;
+	SJoystickInfo returnInfo;
+
+	joystickInfo.reallocate(numberOfJoysticks);
+	ActiveJoysticks.reallocate(numberOfJoysticks);
+
+	u32 joystick = 0;
+	for(; joystick < numberOfJoysticks; ++joystick)
+	{
+		if(JOYERR_NOERROR == joyGetPosEx(joystick, &info)
+			&&
+			JOYERR_NOERROR == joyGetDevCaps(joystick, 
+											&activeJoystick.Caps,
+											sizeof(activeJoystick.Caps)))
+		{
+			activeJoystick.Index = joystick;
+			ActiveJoysticks.push_back(activeJoystick);
+
+			returnInfo.Joystick = (u8)joystick;
+			returnInfo.Axes = activeJoystick.Caps.wNumAxes;
+			returnInfo.Buttons = activeJoystick.Caps.wNumButtons;
+			returnInfo.Name = activeJoystick.Caps.szPname;
+			returnInfo.PovHat = ((activeJoystick.Caps.wCaps & JOYCAPS_HASPOV) == JOYCAPS_HASPOV)
+								? SJoystickInfo::POV_HAT_PRESENT : SJoystickInfo::POV_HAT_ABSENT;
+
+			joystickInfo.push_back(returnInfo);
+		}
+	}
+
+	for(joystick = 0; joystick < joystickInfo.size(); ++joystick)
+	{
+		char logString[256];
+		(void)sprintf(logString, "Found joystick %d, %d axes, %d buttons '%s'",
+			joystick, joystickInfo[joystick].Axes, 
+			joystickInfo[joystick].Buttons, joystickInfo[joystick].Name.c_str());
+		os::Printer::log(logString, ELL_INFORMATION);
+	}
+
+	return true;
+#else
+	return false;
+#endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+}
+
+void CIrrDeviceWin32::pollJoysticks()
+{
+#if defined _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+	if(0 == ActiveJoysticks.size())
+		return;
+
+	u32 joystick;
+	JOYINFOEX info;
+	info.dwSize = sizeof(info);
+	info.dwFlags = JOY_RETURNALL;
+
+	for(joystick = 0; joystick < ActiveJoysticks.size(); ++joystick)
+	{
+		if(JOYERR_NOERROR == joyGetPosEx(ActiveJoysticks[joystick].Index, &info))
+		{
+			SEvent event;
+			const JOYCAPS & caps = ActiveJoysticks[joystick].Caps;
+
+			event.EventType = irr::EET_JOYSTICK_INPUT_EVENT;
+			event.JoystickEvent.Joystick = (u8)joystick;
+
+			event.JoystickEvent.POV = (u16)info.dwPOV;
+			if(event.JoystickEvent.POV > 35900)
+				event.JoystickEvent.POV = 65535;
+
+			for(int axis = 0; axis < SEvent::SJoystickEvent::NUMBER_OF_AXES; ++axis)
+				event.JoystickEvent.Axis[axis] = 0;
+
+			switch(caps.wNumAxes)
+			{
+			default:
+			case 6:
+				event.JoystickEvent.Axis[SEvent::SJoystickEvent::AXIS_V] = 
+					(s16)((65535 * (info.dwVpos - caps.wVmin)) / (caps.wVmax - caps.wVmin) - 32768);
+
+			case 5:
+				event.JoystickEvent.Axis[SEvent::SJoystickEvent::AXIS_U] = 
+					(s16)((65535 * (info.dwUpos - caps.wUmin)) / (caps.wUmax - caps.wUmin) - 32768);
+
+			case 4:
+				event.JoystickEvent.Axis[SEvent::SJoystickEvent::AXIS_R] =
+					(s16)((65535 * (info.dwRpos - caps.wRmin)) / (caps.wRmax - caps.wRmin) - 32768);
+
+			case 3:
+				event.JoystickEvent.Axis[SEvent::SJoystickEvent::AXIS_Z] = 
+					(s16)((65535 * (info.dwZpos - caps.wZmin)) / (caps.wZmax - caps.wZmin) - 32768);
+			
+			case 2:
+				event.JoystickEvent.Axis[SEvent::SJoystickEvent::AXIS_Y] =
+					(s16)((65535 * (info.dwYpos - caps.wYmin)) / (caps.wYmax - caps.wYmin) - 32768);
+
+			case 1:
+				event.JoystickEvent.Axis[SEvent::SJoystickEvent::AXIS_X] = 
+					(s16)((65535 * (info.dwXpos - caps.wXmin)) / (caps.wXmax - caps.wXmin) - 32768);
+			}
+			
+			event.JoystickEvent.ButtonStates = info.dwButtons;
+
+			(void)postEventFromUser(event);
+		}
+	}
+#endif // _IRR_COMPILE_WITH_JOYSTICK_EVENTS_
+} 
 
 IRRLICHT_API IrrlichtDevice* IRRCALLCONV createDeviceEx(
 	const SIrrlichtCreationParameters& parameters)

@@ -248,6 +248,10 @@ namespace scene
 		{
 			if (child && (child != this))
 			{
+				// Change scene manager?
+				if (SceneManager != child->SceneManager)
+					child->setSceneManager(SceneManager);
+
 				child->grab();
 				child->remove(); // remove from old parent
 				Children.push_back(child);
@@ -484,8 +488,8 @@ namespace scene
 
 
 		//! Sets if debug data like bounding boxes should be drawn.
-		/** A bitwise OR of the types is supported.
-		Please note that not all scene nodes support this feature.
+		/** A bitwise OR of the types from @ref irr::scene::E_DEBUG_SCENE_TYPE. 
+		Please note that not all scene nodes support all debug data types.
 		\param state The debug data visibility state to be used. */
 		virtual void setDebugDataVisible(s32 state)
 		{
@@ -493,7 +497,8 @@ namespace scene
 		}
 
 		//! Returns if debug data like bounding boxes are drawn.
-		/** \return A bitwise OR of the debug data values currently visible. */
+		/** \return A bitwise OR of the debug data values from 
+		@ref irr::scene::E_DEBUG_SCENE_TYPE that are currently visible. */
 		s32 isDebugDataVisible() const
 		{
 			return DebugDataVisible;
@@ -715,6 +720,17 @@ namespace scene
 					anim->drop();
 				}
 			}
+		}
+
+		//! Sets the new scene manager for this node and all children.
+		//! Called by addChild when moving nodes between scene managers
+		void setSceneManager(ISceneManager* newManager)
+		{
+			SceneManager = newManager;
+
+			core::list<ISceneNode*>::Iterator it = Children.begin();
+			for (; it != Children.end(); ++it)
+				(*it)->setSceneManager(newManager);
 		}
 
 		//! Name of the scene node.

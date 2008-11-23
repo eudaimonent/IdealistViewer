@@ -32,7 +32,7 @@ CD3D9Driver::CD3D9Driver(const core::dimension2d<s32>& screenSize, HWND window,
 	D3DLibrary(0), pID3D(0), pID3DDevice(0), PrevRenderTarget(0),
 	WindowId(0), SceneSourceRect(0),
 	LastVertexType((video::E_VERTEX_TYPE)-1), MaxTextureUnits(0), MaxUserClipPlanes(0),
-	MaxLightDistance(sqrtf(FLT_MAX)), LastSetLight(-1), DeviceLost(false),
+	MaxLightDistance(sqrtf(FLT_MAX)), LastSetLight(-1), ColorFormat(ECF_A8R8G8B8), DeviceLost(false),
 	Fullscreen(fullscreen), DriverWasReset(true)
 {
 	#ifdef _DEBUG
@@ -69,6 +69,9 @@ CD3D9Driver::CD3D9Driver(const core::dimension2d<s32>& screenSize, HWND window,
 CD3D9Driver::~CD3D9Driver()
 {
 	deleteMaterialRenders();
+
+	// drop the main depth buffer
+	DepthBuffers[0]->drop();
 
 	// drop d3d9
 
@@ -280,9 +283,9 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize,
 				D3DMULTISAMPLE_4_SAMPLES, &qualityLevels)))
 		{
 			// enable multi sampling
-			present.MultiSampleType    = D3DMULTISAMPLE_4_SAMPLES;
+			present.MultiSampleType	= D3DMULTISAMPLE_4_SAMPLES;
 			present.MultiSampleQuality = qualityLevels-1;
-			present.SwapEffect         = D3DSWAPEFFECT_DISCARD;
+			present.SwapEffect		 = D3DSWAPEFFECT_DISCARD;
 		}
 		else
 		if (SUCCEEDED(pID3D->CheckDeviceMultiSampleType(adapter,
@@ -290,9 +293,9 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize,
 				D3DMULTISAMPLE_2_SAMPLES, &qualityLevels)))
 		{
 			// enable multi sampling
-			present.MultiSampleType    = D3DMULTISAMPLE_2_SAMPLES;
+			present.MultiSampleType	= D3DMULTISAMPLE_2_SAMPLES;
 			present.MultiSampleQuality = qualityLevels-1;
-			present.SwapEffect         = D3DSWAPEFFECT_DISCARD;
+			present.SwapEffect		 = D3DSWAPEFFECT_DISCARD;
 		}
 		else
 		if (SUCCEEDED(pID3D->CheckDeviceMultiSampleType(adapter,
@@ -300,8 +303,8 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize,
 					D3DMULTISAMPLE_NONMASKABLE, &qualityLevels)))
 		{
 			// enable non maskable multi sampling
-			present.SwapEffect         = D3DSWAPEFFECT_DISCARD;
-			present.MultiSampleType    = D3DMULTISAMPLE_NONMASKABLE;
+			present.SwapEffect		 = D3DSWAPEFFECT_DISCARD;
+			present.MultiSampleType	= D3DMULTISAMPLE_NONMASKABLE;
 			present.MultiSampleQuality = qualityLevels-1;
 		}
 		else
@@ -445,6 +448,26 @@ bool CD3D9Driver::initDriver(const core::dimension2d<s32>& screenSize,
 	pID3DDevice->SetSamplerState(1, D3DSAMP_MAXANISOTROPY, min(16ul, Caps.MaxAnisotropy));
 	pID3DDevice->SetSamplerState(2, D3DSAMP_MAXANISOTROPY, min(16ul, Caps.MaxAnisotropy));
 	pID3DDevice->SetSamplerState(3, D3DSAMP_MAXANISOTROPY, min(16ul, Caps.MaxAnisotropy));
+
+	// store the screen's depth buffer
+	DepthBuffers.push_back(new SDepthSurface());
+	pID3DDevice->GetDepthStencilSurface(&(DepthBuffers[0]->Surface));
+	DepthBuffers[0]->Size=ScreenSize;
+
+	D3DColorFormat = D3DFMT_A8R8G8B8;
+	IDirect3DSurface9* bb=0;
+	if (SUCCEEDED(pID3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb)))
+	{
+		D3DSURFACE_DESC desc;
+		bb->GetDesc(&desc);
+		D3DColorFormat = desc.Format;
+
+		if (D3DColorFormat == D3DFMT_X8R8G8B8)
+			D3DColorFormat = D3DFMT_A8R8G8B8;
+
+		bb->Release();
+	}
+	ColorFormat = getColorFormatFromD3DFormat(D3DColorFormat);
 
 	// so far so good.
 	return true;
@@ -724,13 +747,6 @@ bool CD3D9Driver::setRenderTarget(video::ITexture* texture,
 
 	CD3D9Texture* tex = static_cast<CD3D9Texture*>(texture);
 
-	if (texture && (tex->getSize().Width > CurrentDepthBufferSize.Width ||
-		tex->getSize().Height > CurrentDepthBufferSize.Height))
-	{
-		os::Printer::log("Error: Tried to set a render target texture which is bigger than the depth buffer.", ELL_ERROR);
-		return false;
-	}
-
 	// check if we should set the previous RT back
 
 	bool ret = true;
@@ -743,6 +759,10 @@ bool CD3D9Driver::setRenderTarget(video::ITexture* texture,
 			{
 				os::Printer::log("Error: Could not set back to previous render target.", ELL_ERROR);
 				ret = false;
+			}
+			if (FAILED(pID3DDevice->SetDepthStencilSurface(DepthBuffers[0]->Surface)))
+			{
+				os::Printer::log("Error: Could not set main depth buffer.", ELL_ERROR);
 			}
 
 			CurrentRendertargetSize = core::dimension2d<s32>(0,0);
@@ -772,8 +792,12 @@ bool CD3D9Driver::setRenderTarget(video::ITexture* texture,
 			os::Printer::log("Error: Could not set render target.", ELL_ERROR);
 			return false;
 		}
-
 		CurrentRendertargetSize = tex->getSize();
+
+		if (FAILED(pID3DDevice->SetDepthStencilSurface(tex->DepthSurface->Surface)))
+		{
+			os::Printer::log("Error: Could not set new depth buffer.", ELL_ERROR);
+		}
 	}
 
 	if (clearBackBuffer || clearZBuffer)
@@ -2292,10 +2316,34 @@ bool CD3D9Driver::reset()
 				tex->Release();
 		}
 	}
+	for (i=0; i<DepthBuffers.size(); ++i)
+	{
+		if(DepthBuffers[i]->Surface)
+			DepthBuffers[i]->Surface->Release();
+	}
+
 	DriverWasReset=true;
 
 	HRESULT hr = pID3DDevice->Reset(&present);
 
+	// restore screen depthbuffer
+	pID3DDevice->GetDepthStencilSurface(&(DepthBuffers[0]->Surface));
+	D3DSURFACE_DESC desc;
+	DepthBuffers[0]->Surface->GetDesc(&desc);
+	// restore other depth buffers
+	for (i=1; i<DepthBuffers.size(); ++i)
+	{
+		HRESULT hr=pID3DDevice->CreateDepthStencilSurface(DepthBuffers[i]->Size.Width,
+				DepthBuffers[i]->Size.Height,
+				desc.Format,
+				desc.MultiSampleType,
+				desc.MultiSampleQuality,
+				TRUE,
+				&(DepthBuffers[i]->Surface),
+				NULL); 
+	}
+
+	// restore RTTs
 	for (i=0; i<Textures.size(); ++i)
 	{
 		if (Textures[i].Surface->isRenderTarget())
@@ -2487,14 +2535,19 @@ IVideoDriver* CD3D9Driver::getVideoDriver()
 
 
 //! Creates a render target texture.
-ITexture* CD3D9Driver::addRenderTargetTexture(const core::dimension2d<s32>& size,
+ITexture* CD3D9Driver::addRenderTargetTexture(
+		const core::dimension2d<s32>& size,
 		const c8* name)
 {
 	if (!name)
 		name="rt";
 	ITexture* tex = new CD3D9Texture(this, size, name);
-	addTexture(tex);
-	tex->drop();
+	if (tex)
+	{
+		checkDepthBuffer(tex);
+		addTexture(tex);
+		tex->drop();
+	}
 	return tex;
 }
 
@@ -2539,7 +2592,7 @@ IImage* CD3D9Driver::createScreenShot()
 		ClientToScreen((HWND)getExposedVideoData().D3D9.HWnd, &clientPoint);
 
 		clientRect.left   = clientPoint.x;
-		clientRect.top    = clientPoint.y;
+		clientRect.top	= clientPoint.y;
 		clientRect.right  = clientRect.left + ScreenSize.Width;
 		clientRect.bottom = clientRect.top  + ScreenSize.Height;
 	}
@@ -2600,6 +2653,20 @@ IImage* CD3D9Driver::createScreenShot()
 }
 
 
+//! returns color format
+ECOLOR_FORMAT CD3D9Driver::getColorFormat() const
+{
+	return ColorFormat;
+}
+
+
+//! returns color format
+D3DFORMAT CD3D9Driver::getD3DColorFormat() const
+{
+	return D3DColorFormat;
+}
+
+
 // returns the current size of the screen or rendertarget
 const core::dimension2d<s32>& CD3D9Driver::getCurrentRenderTargetSize() const
 {
@@ -2634,6 +2701,121 @@ void CD3D9Driver::enableClipPlane(u32 index, bool enable)
 	else
 		renderstate &= ~(1 << index);
 	pID3DDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, renderstate);
+}
+
+
+D3DFORMAT CD3D9Driver::getD3DFormatFromColorFormat(ECOLOR_FORMAT format) const
+{
+	switch(format)
+	{
+		case ECF_A1R5G5B5:
+			return D3DFMT_A1R5G5B5;
+		case ECF_R5G6B5:
+			return D3DFMT_R5G6B5;
+		case ECF_R8G8B8:
+			return D3DFMT_R8G8B8;
+		case ECF_A8R8G8B8:
+			return D3DFMT_A8R8G8B8;
+	}
+	return D3DFMT_UNKNOWN;
+}
+
+
+ECOLOR_FORMAT CD3D9Driver::getColorFormatFromD3DFormat(D3DFORMAT format) const
+{
+	switch(format)
+	{
+	case D3DFMT_X1R5G5B5:
+	case D3DFMT_A1R5G5B5:
+		return ECF_A1R5G5B5;
+	case D3DFMT_A8B8G8R8:
+	case D3DFMT_A8R8G8B8:
+	case D3DFMT_X8R8G8B8:
+		return ECF_A8R8G8B8;
+	case D3DFMT_R5G6B5:
+		return ECF_R5G6B5;
+	case D3DFMT_R8G8B8:
+		return ECF_R8G8B8;
+	default:
+		return (ECOLOR_FORMAT)0;
+	};
+}
+
+
+void CD3D9Driver::checkDepthBuffer(ITexture* tex)
+{
+	if (!tex)
+		return;
+	const core::dimension2di optSize = tex->getSize().getOptimalSize(
+			!queryFeature(EVDF_TEXTURE_NPOT),
+			!queryFeature(EVDF_TEXTURE_NSQUARE), true);
+	SDepthSurface* depth=0;
+	core::dimension2di destSize=DepthBuffers[0]->Size;
+	if ((destSize.Width>=optSize.Width) && (destSize.Height>=optSize.Height))
+		depth=DepthBuffers[0];
+	for (u32 i=1; i<DepthBuffers.size(); ++i)
+	{
+		if ((DepthBuffers[i]->Size.Width>=optSize.Width) &&
+			(DepthBuffers[i]->Size.Height>=optSize.Height))
+		{
+			if ((DepthBuffers[i]->Size.Width<destSize.Width) &&
+				(DepthBuffers[i]->Size.Height<destSize.Height))
+			{
+				depth = DepthBuffers[i];
+				destSize=DepthBuffers[i]->Size;
+			}
+		}
+	}
+	if (!depth)
+	{
+		D3DSURFACE_DESC desc;
+		DepthBuffers[0]->Surface->GetDesc(&desc);
+		DepthBuffers.push_back(new SDepthSurface());
+		HRESULT hr=pID3DDevice->CreateDepthStencilSurface(optSize.Width,
+				optSize.Height,
+				desc.Format,
+				desc.MultiSampleType,
+				desc.MultiSampleQuality,
+				TRUE,
+				&(DepthBuffers.getLast()->Surface),
+				NULL); 
+		if (SUCCEEDED(hr))
+		{
+			depth=DepthBuffers.getLast();
+			depth->Size=optSize;
+		}
+		else
+		{
+			if (hr == D3DERR_OUTOFVIDEOMEMORY)
+				os::Printer::log("Could not create DepthBuffer","out of video memory",ELL_ERROR);
+			else if( hr == E_OUTOFMEMORY )
+				os::Printer::log("Could not create DepthBuffer","out of memory",ELL_ERROR);
+			else
+			{
+				char buffer[128];
+				sprintf(buffer,"Could not create DepthBuffer of %ix%i",destSize.Width,destSize.Height);
+				os::Printer::log(buffer,ELL_ERROR);
+			} 
+			DepthBuffers.erase(DepthBuffers.size()-1);
+		}
+	}
+	else
+		depth->grab();
+
+	static_cast<CD3D9Texture*>(tex)->DepthSurface=depth;
+}
+
+
+void CD3D9Driver::removeDepthSurface(SDepthSurface* depth)
+{
+	for (u32 i=0; i<DepthBuffers.size(); ++i)
+	{
+		if (DepthBuffers[i]==depth)
+		{
+			DepthBuffers.erase(i);
+			return;
+		}
+	}
 }
 
 

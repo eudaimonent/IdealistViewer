@@ -15,16 +15,18 @@
 	#include "CIrrDeviceMacOSX.h"
 #endif
 
+#include "SIrrCreationParameters.h"
+
 #ifdef _IRR_COMPILE_WITH_OPENGL_
 
 #include "CNullDriver.h"
 #include "IMaterialRendererServices.h"
 #include "COpenGLExtensionHandler.h"
-#include "SIrrCreationParameters.h"
 
 #if defined(_IRR_WINDOWS_API_)
 	#include <GL/gl.h>
 	#include "glext.h"
+	#include "wglext.h"
 #ifdef _MSC_VER
 	#pragma comment(lib, "OpenGL32.lib")
 	#pragma comment(lib, "GLu32.lib")
@@ -75,23 +77,18 @@ namespace video
 	{
 	public:
 
-		#ifdef _IRR_WINDOWS_API_
-		//! win32 constructor
-		COpenGLDriver(const core::dimension2d<s32>& screenSize, HWND window,
-			bool stencilBuffer, io::IFileSystem* io, bool antiAlias);
-
-		//! inits the windows specific parts of the open gl driver
-		bool initDriver(const core::dimension2d<s32>& screenSize, HWND window,
-			u32 bits, bool vsync, bool stencilBuffer);
-		#endif
-
-		#if defined(_IRR_USE_LINUX_DEVICE_) || defined(_IRR_USE_SDL_DEVICE_)
+		#if defined(_IRR_WINDOWS_API_) || defined(_IRR_USE_LINUX_DEVICE_) || defined(_IRR_USE_SDL_DEVICE_)
 		COpenGLDriver(const SIrrlichtCreationParameters& params, io::IFileSystem* io);
 		#endif
 
 		#ifdef _IRR_USE_OSX_DEVICE_
 		COpenGLDriver(const SIrrlichtCreationParameters& params,
 				io::IFileSystem* io, CIrrDeviceMacOSX *device);
+		#endif
+
+		#ifdef _IRR_WINDOWS_API_
+		//! inits the windows specific parts of the open gl driver
+		bool initDriver(SIrrlichtCreationParameters params);
 		#endif
 
 		//! destructor
@@ -341,7 +338,7 @@ namespace video
 		//! Returns the graphics card vendor name.
 		virtual core::stringc getVendorInfo() {return vendorName;}
 
-		ITexture* getDepthTexture(ITexture* texture, bool shared=true);
+		ITexture* createDepthTexture(ITexture* texture, bool shared=true);
 		void removeDepthTexture(ITexture* texture);
 
 	private:

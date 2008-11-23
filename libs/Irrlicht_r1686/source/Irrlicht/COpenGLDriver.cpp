@@ -31,14 +31,13 @@ namespace video
 // -----------------------------------------------------------------------
 #ifdef _IRR_USE_WINDOWS_DEVICE_
 //! Windows constructor and init code
-COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize,
-		HWND window, bool stencilBuffer,
-		io::IFileSystem* io, bool antiAlias)
-: CNullDriver(io, screenSize), COpenGLExtensionHandler(),
+COpenGLDriver::COpenGLDriver(const irr::SIrrlichtCreationParameters& params,
+		io::IFileSystem* io)
+: CNullDriver(io, params.WindowSize), COpenGLExtensionHandler(),
 	CurrentRenderMode(ERM_NONE), ResetRenderStates(true), Transformation3DChanged(true),
-	AntiAlias(antiAlias), RenderTargetTexture(0), LastSetLight(-1),
+	AntiAlias(params.AntiAlias), RenderTargetTexture(0), LastSetLight(-1),
 	CurrentRendertargetSize(0,0),
-	HDc(0), Window(window), HRc(0)
+	HDc(0), Window(static_cast<HWND>(params.WindowId)), HRc(0)
 {
 	#ifdef _DEBUG
 	setDebugName("COpenGLDriver");
@@ -46,9 +45,9 @@ COpenGLDriver::COpenGLDriver(const core::dimension2d<s32>& screenSize,
 }
 
 //! inits the open gl driver
-bool COpenGLDriver::initDriver(const core::dimension2d<s32>& screenSize,
-				HWND window, u32 bits, bool vsync, bool stencilBuffer)
+bool COpenGLDriver::initDriver(irr::SIrrlichtCreationParameters params)
 {
+	// Set up ixel format descriptor with desired parameters
 	PIXELFORMATDESCRIPTOR pfd = {
 		sizeof(PIXELFORMATDESCRIPTOR),	// Size Of This Pixel Format Descriptor
 		1,				// Version Number
@@ -56,111 +55,279 @@ bool COpenGLDriver::initDriver(const core::dimension2d<s32>& screenSize,
 		PFD_SUPPORT_OPENGL |		// Format Must Support OpenGL
 		PFD_DOUBLEBUFFER,		// Must Support Double Buffering
 		PFD_TYPE_RGBA,			// Request An RGBA Format
-		bits,				// Select Our Color Depth
+		params.Bits,				// Select Our Color Depth
 		0, 0, 0, 0, 0, 0,		// Color Bits Ignored
 		0,				// No Alpha Buffer
 		0,				// Shift Bit Ignored
 		0,				// No Accumulation Buffer
 		0, 0, 0, 0,			// Accumulation Bits Ignored
 		24,				// Z-Buffer (Depth Buffer)
-		stencilBuffer ? 1 : 0,		// Stencil Buffer Depth
+		params.Stencilbuffer ? 1 : 0,	// Stencil Buffer Depth
 		0,				// No Auxiliary Buffer
 		PFD_MAIN_PLANE,			// Main Drawing Layer
 		0,				// Reserved
 		0, 0, 0				// Layer Masks Ignored
 	};
 
+	GLuint PixelFormat;
+
+	if (AntiAlias)
+	{
+		// Create a window to test antialiasing support
+		const c8* ClassName = "GLCIrrDeviceWin32";
+		HINSTANCE lhInstance = GetModuleHandle(0);
+
+		// Register Class
+		WNDCLASSEX wcex;
+		wcex.cbSize          = sizeof(WNDCLASSEX);
+		wcex.style          = CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc   = (WNDPROC)DefWindowProc;
+		wcex.cbClsExtra      = 0;
+		wcex.cbWndExtra      = 0;
+		wcex.hInstance      = lhInstance;
+		wcex.hIcon          = NULL;
+		wcex.hCursor      = LoadCursor(NULL, IDC_ARROW);
+		wcex.hbrBackground   = (HBRUSH)(COLOR_WINDOW+1);
+		wcex.lpszMenuName   = 0;
+		wcex.lpszClassName   = ClassName;
+		wcex.hIconSm      = 0;
+		wcex.hIcon          = 0;
+
+		RegisterClassEx(&wcex);
+		RECT clientSize;
+		clientSize.top = 0;
+		clientSize.left = 0;
+		clientSize.right = params.WindowSize.Width;
+		clientSize.bottom = params.WindowSize.Height;
+
+		DWORD style = WS_POPUP;
+
+		if (!params.Fullscreen)
+			style = WS_SYSMENU | WS_BORDER | WS_CAPTION | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+		AdjustWindowRect(&clientSize, style, FALSE);
+
+		const s32 realWidth = clientSize.right - clientSize.left;
+		const s32 realHeight = clientSize.bottom - clientSize.top;
+
+		const s32 windowLeft = (GetSystemMetrics(SM_CXSCREEN) - realWidth) / 2;
+		const s32 windowTop = (GetSystemMetrics(SM_CYSCREEN) - realHeight) / 2;
+
+		HWND temporary_wnd=CreateWindow(ClassName, "", style, windowLeft, windowTop,
+			realWidth, realHeight,   NULL, NULL, lhInstance, NULL);
+
+		if(!temporary_wnd)
+		{
+			os::Printer::log("Cannot create a temporary window.", ELL_ERROR);
+			return false;
+		}
+
+		HDc = GetDC(temporary_wnd);
+		for (u32 i=0; i<5; ++i)
+		{
+			if (i == 1)
+			{
+				if (params.Stencilbuffer)
+				{
+					os::Printer::log("Cannot create a GL device with stencil buffer, disabling stencil shadows.", ELL_WARNING);
+					params.Stencilbuffer = false;
+					pfd.cStencilBits = 0;
+				}
+				else
+					continue;
+			}
+			else
+			if (i == 2)
+			{
+				pfd.cDepthBits = 24;
+			}
+			if (i == 3)
+			{
+				if (params.Bits!=16)
+					pfd.cDepthBits = 16;
+				else
+					continue;
+			}
+			else
+			if (i == 4)
+			{
+				os::Printer::log("Cannot create a GL device context", "No suitable format for temporary window.", ELL_ERROR);
+				ReleaseDC(temporary_wnd, HDc);
+				DestroyWindow(temporary_wnd);
+				return false;
+			}
+
+			// choose pixelformat
+			PixelFormat = ChoosePixelFormat(HDc, &pfd);
+			if (PixelFormat)
+				break;
+		}
+
+		SetPixelFormat(HDc, PixelFormat, &pfd);
+		HRc=wglCreateContext(HDc);
+		if(!HRc)
+		{
+			os::Printer::log("Cannot create a temporary GL rendering context.", ELL_ERROR);
+			ReleaseDC(temporary_wnd, HDc);
+			DestroyWindow(temporary_wnd);
+			return false;
+		}
+
+		if(!wglMakeCurrent(HDc, HRc))
+		{
+			os::Printer::log("Cannot activate a temporary GL rendering context.", ELL_ERROR);
+			wglDeleteContext(HRc);
+			ReleaseDC(temporary_wnd, HDc);
+			DestroyWindow(temporary_wnd);
+			return false;
+		}
+
+		PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormat_ARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
+		if(wglChoosePixelFormat_ARB)
+		{
+			// This value determines the number of samples used for antialiasing
+			// valid numbers are 2, 4, 8.  My experience is that 8 does not
+			// show a big improvement over 4, but 4 shows a big improvement over
+			// 2.
+			const s32 numSamples = 4;
+			f32 fAttributes[] =
+			{
+				0.0, 0.0
+			};
+
+			s32 iAttributes[] =
+			{
+				WGL_DRAW_TO_WINDOW_ARB,GL_TRUE,
+				WGL_SUPPORT_OPENGL_ARB,GL_TRUE,
+				WGL_ACCELERATION_ARB,WGL_FULL_ACCELERATION_ARB,
+				WGL_COLOR_BITS_ARB,(params.Bits==32) ? 24 : 15,
+				WGL_ALPHA_BITS_ARB,(params.Bits==32) ? 8 : 1,
+				WGL_DEPTH_BITS_ARB,params.ZBufferBits,
+				WGL_STENCIL_BITS_ARB,(params.Stencilbuffer) ? 1 : 0,
+				WGL_DOUBLE_BUFFER_ARB,GL_TRUE,
+				WGL_SAMPLE_BUFFERS_ARB,GL_TRUE,
+				WGL_SAMPLES_ARB,numSamples,
+				0,0
+			};
+			s32 rv=0;
+
+			// Try to get an acceptable pixel format
+			while(rv==0 && iAttributes[19]>1)
+			{
+				s32 pixelFormat=0;
+				u32 numFormats=0;
+				const s32 valid = wglChoosePixelFormat_ARB(HDc,iAttributes,fAttributes,1,&pixelFormat,&numFormats);
+
+				if(valid && numFormats>0)
+					rv = pixelFormat;
+				else
+					iAttributes[19] >>= 1;
+			}
+			if(rv)
+				PixelFormat=rv;
+		}
+
+		wglMakeCurrent(HDc, NULL);
+		wglDeleteContext(HRc);
+		ReleaseDC(temporary_wnd, HDc);
+		DestroyWindow(temporary_wnd);
+	}
+
 	// get hdc
-	if (!(HDc=GetDC(window)))
+	HDc=GetDC(Window);
+	if (!HDc)
 	{
 		os::Printer::log("Cannot create a GL device context.", ELL_ERROR);
 		return false;
 	}
 
-	GLuint PixelFormat;
-
-	for (u32 i=0; i<5; ++i)
+	// search for pixel format the simple way
+	if (!AntiAlias)
 	{
-		if (i == 1)
+		for (u32 i=0; i<5; ++i)
 		{
-			if (stencilBuffer)
+			if (i == 1)
 			{
-				os::Printer::log("Cannot create a GL device with stencil buffer, disabling stencil shadows.", ELL_WARNING);
-				stencilBuffer = false;
-				pfd.cStencilBits = 0;
+				if (params.Stencilbuffer)
+				{
+					os::Printer::log("Cannot create a GL device with stencil buffer, disabling stencil shadows.", ELL_WARNING);
+					params.Stencilbuffer = false;
+					pfd.cStencilBits = 0;
+				}
+				else
+					continue;
 			}
 			else
-				continue;
-		}
-		else
-		if (i == 2)
-		{
-			pfd.cDepthBits = 24;
-		}
-		if (i == 3)
-		{
-			if (bits!=16)
-				pfd.cDepthBits = 16;
+			if (i == 2)
+			{
+				pfd.cDepthBits = 24;
+			}
+			if (i == 3)
+			{
+				if (params.Bits!=16)
+					pfd.cDepthBits = 16;
+				else
+					continue;
+			}
 			else
-				continue;
-		}
-		else
-		if (i == 4)
-		{
-			os::Printer::log("Cannot create a GL device context.", ELL_ERROR);
-			return false;
-		}
+			if (i == 4)
+			{
+				os::Printer::log("Cannot create a GL device context", "No suitable format.", ELL_ERROR);
+				return false;
+			}
 
-		// choose pixelformat
-		if ((PixelFormat = ChoosePixelFormat(HDc, &pfd)))
-			break;
-		else
-			os::Printer::log("Cannot find a suitable pixelformat.", ELL_ERROR);
+			// choose pixelformat
+			PixelFormat = ChoosePixelFormat(HDc, &pfd);
+			if (PixelFormat)
+				break;
 		}
+	}
 
-		// set pixel format
-		if(!SetPixelFormat(HDc, PixelFormat, &pfd))
-		{
-			os::Printer::log("Cannot set the pixel format.", ELL_ERROR);
+	// set pixel format
+	if(!SetPixelFormat(HDc, PixelFormat, &pfd))
+	{
+		os::Printer::log("Cannot set the pixel format.", ELL_ERROR);
 		return false;
-		}
+	}
 
-		// create rendering context
-		if (!(HRc=wglCreateContext(HDc)))
-		{
-			os::Printer::log("Cannot create a GL rendering context.", ELL_ERROR);
+	// create rendering context
+	HRc=wglCreateContext(HDc);
+	if (!HRc)
+	{
+		os::Printer::log("Cannot create a GL rendering context.", ELL_ERROR);
 		return false;
-		}
+	}
 
-		// activate rendering context
-		if(!wglMakeCurrent(HDc, HRc))
-		{
-			os::Printer::log("Cannot activate GL rendering context", ELL_ERROR);
+	// activate rendering context
+	if(!wglMakeCurrent(HDc, HRc))
+	{
+		os::Printer::log("Cannot activate GL rendering context", ELL_ERROR);
+		wglDeleteContext(HRc);
 		return false;
-		}
+	}
 
-		int pf = GetPixelFormat(HDc);
-		DescribePixelFormat(HDc, pf, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-		if (pfd.cAlphaBits != 0)
-		{
-			if (pfd.cRedBits == 8)
-				ColorFormat = ECF_A8R8G8B8;
-			else
-				ColorFormat = ECF_A1R5G5B5;
-		}
+	int pf = GetPixelFormat(HDc);
+	DescribePixelFormat(HDc, pf, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+	if (pfd.cAlphaBits != 0)
+	{
+		if (pfd.cRedBits == 8)
+			ColorFormat = ECF_A8R8G8B8;
 		else
-		{
-			if (pfd.cRedBits == 8)
-				ColorFormat = ECF_R8G8B8;
-			else
-				ColorFormat = ECF_R5G6B5;
-		}
+			ColorFormat = ECF_A1R5G5B5;
+	}
+	else
+	{
+		if (pfd.cRedBits == 8)
+			ColorFormat = ECF_R8G8B8;
+		else
+			ColorFormat = ECF_R5G6B5;
+	}
 
-	genericDriverInit(screenSize, stencilBuffer);
+	genericDriverInit(params.WindowSize, params.Stencilbuffer);
 
 	// set vsync
 	if (wglSwapIntervalEXT)
-		wglSwapIntervalEXT(vsync ? 1 : 0);
+		wglSwapIntervalEXT(params.Vsync ? 1 : 0);
 
 	// set exposed data
 	ExposedData.OpenGLWin32.HDc = HDc;
@@ -2451,6 +2618,7 @@ void COpenGLDriver::OnResize(const core::dimension2d<s32>& size)
 {
 	CNullDriver::OnResize(size);
 	glViewport(0, 0, size.Width, size.Height);
+	Transformation3DChanged = true;
 }
 
 
@@ -2573,9 +2741,12 @@ ITexture* COpenGLDriver::addRenderTargetTexture(const core::dimension2d<s32>& si
 		if (rtt)
 		{
 			addTexture(rtt);
-			ITexture* tex = getDepthTexture(rtt);
+			ITexture* tex = createDepthTexture(rtt);
 			if (tex)
+			{
 				static_cast<video::COpenGLFBODepthTexture*>(tex)->attach(rtt);
+				tex->drop();
+			}
 			rtt->drop();
 		}
 	}
@@ -2583,14 +2754,12 @@ ITexture* COpenGLDriver::addRenderTargetTexture(const core::dimension2d<s32>& si
 #endif
 	{
 		// the simple texture is only possible for size <= screensize
-		// TODO: Needs to be checked on setRenderTarget instead, in
-		// order to cope with screen size changes
-		if ((size.Width <= ScreenSize.Width) &&
-				(size.Height<= ScreenSize.Height))
-			rtt = addTexture(size, name, ECF_A8R8G8B8);
+		// we try to find an optimal size with the original constraints
+		core::dimension2di destSize(core::min_(size.Width,ScreenSize.Width), core::min_(size.Height,ScreenSize.Height));
+		destSize = destSize.getOptimalSize((size==size.getOptimalSize()), false, false);
+		rtt = addTexture(destSize, name, ECF_A8R8G8B8);
 		if (rtt)
 		{
-			rtt->grab();
 			static_cast<video::COpenGLTexture*>(rtt)->setIsRenderTarget(true);
 		}
 	}
@@ -2749,7 +2918,7 @@ IImage* COpenGLDriver::createScreenShot()
 
 
 //! get depth texture for the given render target texture
-ITexture* COpenGLDriver::getDepthTexture(ITexture* texture, bool shared)
+ITexture* COpenGLDriver::createDepthTexture(ITexture* texture, bool shared)
 {
 	if ((texture->getDriverType() != EDT_OPENGL) || (!texture->isRenderTarget()))
 		return 0;
@@ -2847,12 +3016,12 @@ namespace video
 // WINDOWS VERSION
 // -----------------------------------
 #ifdef _IRR_USE_WINDOWS_DEVICE_
-IVideoDriver* createOpenGLDriver(const core::dimension2d<s32>& screenSize,
-	HWND window, u32 bits, bool stencilBuffer, io::IFileSystem* io, bool vsync, bool antiAlias)
+IVideoDriver* createOpenGLDriver(const irr::SIrrlichtCreationParameters& params,
+	io::IFileSystem* io)
 {
 #ifdef _IRR_COMPILE_WITH_OPENGL_
-	COpenGLDriver* ogl =  new COpenGLDriver(screenSize, window, stencilBuffer, io, antiAlias);
-	if (!ogl->initDriver(screenSize, window, bits, vsync, stencilBuffer))
+	COpenGLDriver* ogl =  new COpenGLDriver(params, io);
+	if (!ogl->initDriver(params))
 	{
 		ogl->drop();
 		ogl = 0;
