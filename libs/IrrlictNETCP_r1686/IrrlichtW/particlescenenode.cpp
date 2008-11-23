@@ -157,13 +157,13 @@ class Emitter : public IParticleEmitter
 		return MinStartSize;
 	}
 
-	virtual void setMaxStartSize(const core::dimension2df& size)
+	virtual void setMaxStartSize(const irr::core::dimension2df & newSize)
 	{
-		MaxStartSize = size;
+		MaxStartSize = newSize;
 	}
-	virtual void SetMinStartSize(const core::dimension2df& size)
+	virtual void setMinStartSize(const irr::core::dimension2df & newSize)
 	{
-		MinStartSize = size;
+		MinStartSize = newSize;
 	}
 
 	E_PARTICLE_EMITTER_TYPE getType() const
