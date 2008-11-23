@@ -18,10 +18,15 @@ namespace core
 {
 
 //! Very simple string class with some useful features.
-/** string<c8> and string<wchar_t> work both with unicode AND ascii,
-so you can assign unicode to string<c8> and ascii to string<wchar_t>
-(and the other way round) if your ever would want to.
-Note that the conversation between both is not done using an encoding.
+/** string<c8> and string<wchar_t> both accept Unicode AND ASCII/Latin-1,
+so you can assign Unicode to string<c8> and ASCII/Latin-1 to string<wchar_t>
+(and the other way round) if you want to.
+
+However, note that the conversation between both is not done using any encoding.
+This means that c8 strings are treated as ASCII/Latin-1, not UTF-8, and 
+are simply expanded to the equivalent wchar_t, while Unicode/wchar_t 
+characters are truncated to 8-bit ASCII/Latin-1 characters, discarding all
+other information in the wchar_t.
 
 Known bugs:
 Special characters like umlauts are ignored in the
@@ -552,7 +557,7 @@ public:
 
 	//! finds first occurrence of character in string
 	/** \param c: Character to search for.
-	\return Returns position where the character has been found,
+	\return Position where the character has been found,
 	or -1 if not found. */
 	s32 findFirst(T c) const
 	{
@@ -568,7 +573,7 @@ public:
 	should find the first occurrence of 'a' or 'b', this parameter should be "ab".
 	\param count: Amount of characters in the list. Usually,
 	this should be strlen(c)
-	\return Returns position where one of the characters has been found,
+	\return Position where one of the characters has been found,
 	or -1 if not found. */
 	s32 findFirstChar(const T* const c, u32 count) const
 	{
@@ -589,7 +594,7 @@ public:
 	should find the first occurrence of a character not 'a' or 'b', this parameter should be "ab".
 	\param count: Amount of characters in the list. Usually,
 	this should be strlen(c)
-	\return Returns position where the character has been found,
+	\return Position where the character has been found,
 	or -1 if not found. */
 	template <class B>
 	s32 findFirstCharNotInList(const B* const c, u32 count) const
@@ -613,7 +618,7 @@ public:
 	should find the first occurrence of a character not 'a' or 'b', this parameter should be "ab".
 	\param count: Amount of characters in the list. Usually,
 	this should be strlen(c)
-	\return Returns position where the character has been found,
+	\return Position where the character has been found,
 	or -1 if not found. */
 	template <class B>
 	s32 findLastCharNotInList(const B* const c, u32 count) const
@@ -635,7 +640,7 @@ public:
 	//! finds next occurrence of character in string
 	/** \param c: Character to search for.
 	\param startPos: Position in string to start searching.
-	\return Returns position where the character has been found,
+	\return Position where the character has been found,
 	or -1 if not found. */
 	s32 findNext(T c, u32 startPos) const
 	{
@@ -648,10 +653,10 @@ public:
 
 
 	//! finds last occurrence of character in string
-	//! \param c: Character to search for.
-	//! \param start: start to search reverse ( default = -1, on end )
-	//! \return Returns position where the character has been found,
-	//! or -1 if not found.
+	/** \param c: Character to search for.
+	\param start: start to search reverse ( default = -1, on end )
+	\return Position where the character has been found,
+	or -1 if not found. */
 	s32 findLast(T c, s32 start = -1) const
 	{
 		start = core::clamp ( start < 0 ? (s32)(used) - 1 : start, 0, (s32)(used) - 1 );
@@ -667,7 +672,7 @@ public:
 	should find the last occurrence of 'a' or 'b', this parameter should be "ab".
 	\param count: Amount of characters in the list. Usually,
 	this should be strlen(c)
-	\return Returns position where one of the characters has been found,
+	\return Position where one of the characters has been found,
 	or -1 if not found. */
 	s32 findLastChar(const T* const c, u32 count) const
 	{
@@ -684,9 +689,9 @@ public:
 
 
 	//! finds another string in this string
-	//! \param str: Another string
-	//! \return Returns positions where the string has been found,
-	//! or -1 if not found.
+	/** \param str: Another string
+	\return Positions where the string has been found,
+	or -1 if not found. */
 	template <class B>
 	s32 find(const B* const str) const
 	{
@@ -717,8 +722,8 @@ public:
 
 
 	//! Returns a substring
-	//! \param begin: Start of substring.
-	//! \param length: Length of substring.
+	/** \param begin: Start of substring.
+	\param length: Length of substring. */
 	string<T> subString(u32 begin, s32 length) const
 	{
 		// if start after string
@@ -821,18 +826,16 @@ public:
 
 
 	//! trims the string.
-	/** Removes whitespace from begin and end of the string. */
-	string<T>& trim()
+	/** Removes the specified characters (by default, Latin-1 whitespace) 
+	from the begining and the end of the string. */
+	string<T>& trim(const string<T> & whitespace = " \t\n\r")
 	{
-		const c8 whitespace[] = " \t\n\r";
-		const u32 whitespacecount = 4;
-
-		// find start and end of real string without whitespace
-		const s32 begin = findFirstCharNotInList(whitespace, whitespacecount);
+		// find start and end of the substring without the specified characters
+		const s32 begin = findFirstCharNotInList(whitespace.c_str(), whitespace.used);
 		if (begin == -1)
 			return (*this="");
 
-		const s32 end = findLastCharNotInList(whitespace, whitespacecount);
+		const s32 end = findLastCharNotInList(whitespace.c_str(), whitespace.used);
 
 		return (*this = subString(begin, (end +1) - begin));
 	}

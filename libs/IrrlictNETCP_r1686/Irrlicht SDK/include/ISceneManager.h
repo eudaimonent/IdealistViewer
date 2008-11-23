@@ -109,6 +109,7 @@ namespace scene
 	class IMetaTriangleSelector;
 	class IMeshManipulator;
 	class ITextSceneNode;
+	class IBillboardTextSceneNode;
 	class IVolumeLightSceneNode;
 	class ISceneNodeFactory;
 	class ISceneNodeAnimatorFactory;
@@ -540,9 +541,13 @@ namespace scene
 			f32 rotateSpeed = -1500.0f, f32 zoomSpeed = 200.0f,
 			f32 translationSpeed = 1500.0f, s32 id=-1) = 0;
 
-		//! Adds a camera scene node with an animator which provides mouse and keyboard control like in most first person shooters (FPS).
-		/** Look with the mouse, move with cursor keys. If you do not like the default
-		 key layout, you may want to specify your own. For example to make the camera
+		//! Adds a camera scene node with an animator which provides mouse and keyboard control appropriate for first person shooters (FPS).
+		/** This FPS camera is intended to provide a demonstration of a camera that behaves
+		 like a typical First Person Shooter.  It is useful for simple demos and prototyping but is not 
+		 intended to provide a full solution for a production quality game. It binds the camera scene node 
+		 rotation to the look-at target; @see ICameraSceneNode::bindTargetAndRotation().
+		 With this camera, you look with the mouse, and move with cursor keys. If you want to 
+		 change the key layout, you can specify your own keymap. For example to make the camera
 		 be controlled by the cursor keys AND the keys W,A,S, and D, do something
 		 like this:
 		 \code
@@ -620,14 +625,14 @@ namespace scene
 		 \param size: Size of the billboard. This size is 2 dimensional because a billboard only has
 		 width and height.
 		 \param id: An id of the node. This id can be used to identify the node.
-		 \param shade_top: vertex color top
-		 \param shade_down: vertex color down
+		 \param colorTop: The color of the vertices at the top of the billboard (default: white).
+		 \param colorBottom: The color of the vertices at the bottom of the billboard (default: white).
 		 \return Returns pointer to the billboard if successful, otherwise NULL.
 		 This pointer should not be dropped. See IReferenceCounted::drop() for more information. */
 		virtual IBillboardSceneNode* addBillboardSceneNode(ISceneNode* parent = 0,
 			const core::dimension2d<f32>& size = core::dimension2d<f32>(10.0f, 10.0f),
 			const core::vector3df& position = core::vector3df(0,0,0), s32 id=-1,
-			video::SColor shade_top = 0xFFFFFFFF, video::SColor shade_down = 0xFFFFFFFF) = 0;
+			video::SColor colorTop = 0xFFFFFFFF, video::SColor colorBottom = 0xFFFFFFFF) = 0;
 
 		//! Adds a skybox scene node to the scene graph.
 		/** A skybox is a big cube with 6 textures on it and
@@ -792,7 +797,6 @@ namespace scene
 			s32 maxLOD=5, E_TERRAIN_PATCH_SIZE patchSize=ETPS_17, s32 smoothFactor=0,
 			bool addAlsoIfHeightmapEmpty = false) = 0;
 
-
 		//! Adds a quake3 scene node to the scene graph.
 		/** A Quake3 Scene renders multiple meshes for a specific HighLanguage Shader (Quake3 Style )
 		 \return Returns a pointer to the quake3 scene node if successful, otherwise NULL.
@@ -801,18 +805,6 @@ namespace scene
 												ISceneNode* parent=0, s32 id=-1
 												) = 0;
 
-
-
-		virtual CTreeSceneNode* addTreeSceneNode(
-			const c8* treeXMLFileName,
-			ISceneNode* parent=0, s32 id=-1,
-			const core::vector3df& position = core::vector3df(0.0f,0.0f,0.0f),
-			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
-			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
-			irr::video::ITexture* TreeTexture = 0,
-			irr::video::ITexture* LeafTexture = 0,
-			irr::video::ITexture* BillTexture = 0
-			) = 0;
 
 		//! Adds an empty scene node to the scene graph.
 		/** Can be used for doing advanced transformations
@@ -837,12 +829,32 @@ namespace scene
 			ISceneNode* parent = 0, const core::vector3df& position = core::vector3df(0,0,0),
 			s32 id=-1) = 0;
 
-		//! Adds a text scene node, which uses billboards
-		virtual ITextSceneNode* addBillboardTextSceneNode( gui::IGUIFont* font, const wchar_t* text,
+		virtual CTreeSceneNode* addTreeSceneNode(
+			const c8* treeXMLFileName,
+			ISceneNode* parent=0, s32 id=-1,
+			const core::vector3df& position = core::vector3df(0.0f,0.0f,0.0f),
+			const core::vector3df& rotation = core::vector3df(0.0f,0.0f,0.0f),
+			const core::vector3df& scale = core::vector3df(1.0f,1.0f,1.0f),
+			irr::video::ITexture* TreeTexture = 0,
+			irr::video::ITexture* LeafTexture = 0,
+			irr::video::ITexture* BillTexture = 0
+			) = 0;
+		//! Adds a text scene node, which uses billboards.  The node, and the text on it, will scale with distance.
+		/**
+		\param font The font to use on the billboard. Pass 0 to use the GUI environment's default font.
+		\param text The text to display on the billboard.
+		\param parent The billboard's parent.  Pass 0 to use the root scene node.
+		\param size The billboard's width and height.
+		\param position The billboards position relative to its parent.
+		\param colorTop: The color of the vertices at the top of the billboard (default: white).
+		\param colorBottom: The color of the vertices at the bottom of the billboard (default: white).
+		\return Returns pointer to the billboard if successful, otherwise NULL.
+		This pointer should not be dropped. See IReferenceCounted::drop() for more information. */
+		virtual IBillboardTextSceneNode* addBillboardTextSceneNode( gui::IGUIFont* font, const wchar_t* text,
 			ISceneNode* parent = 0,
 			const core::dimension2d<f32>& size = core::dimension2d<f32>(10.0f, 10.0f),
 			const core::vector3df& position = core::vector3df(0,0,0), s32 id=-1,
-			video::SColor shade_top = 0xFFFFFFFF, video::SColor shade_down = 0xFFFFFFFF) = 0;
+			video::SColor colorTop = 0xFFFFFFFF, video::SColor colorBottom = 0xFFFFFFFF) = 0;
 
 		//! Adds a Hill Plane mesh to the mesh pool.
 		/** The mesh is generated on the fly

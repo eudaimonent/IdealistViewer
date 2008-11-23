@@ -147,6 +147,25 @@ class Emitter : public IParticleEmitter
 	    MinStartColor = newMinStartColor;
 	}
 
+	virtual const core::dimension2df& getMaxStartSize() const
+	{
+		return MaxStartSize;
+	}
+
+	virtual const core::dimension2df& getMinStartSize() const
+	{
+		return MinStartSize;
+	}
+
+	virtual void setMaxStartSize(const core::dimension2df& size)
+	{
+		MaxStartSize = size;
+	}
+	virtual void SetMinStartSize(const core::dimension2df& size)
+	{
+		MinStartSize = size;
+	}
+
 	E_PARTICLE_EMITTER_TYPE getType() const
 	{
 		return EPET_POINT;
@@ -159,7 +178,7 @@ class Emitter : public IParticleEmitter
     irr::core::vector3df Direction;
 	irr::u32 MinParticlesPerSecond, MaxParticlesPerSecond;
 	video::SColor MinStartColor, MaxStartColor;
-
+	irr::core::dimension2df MinStartSize, MaxStartSize;
 
 };
 
