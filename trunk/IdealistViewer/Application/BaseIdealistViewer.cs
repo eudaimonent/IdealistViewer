@@ -1562,10 +1562,10 @@ namespace IdealistViewer
                     Vector3 position = prim.Position;
                     Vector3 scale = prim.Scale;
 
-                    SceneNode tree = smgr.AddTreeSceneNode("Pine.xml", null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("PineBark.png"), driver.GetTexture("PineLeaf.png"), driver.GetTexture("PineBillboard.png"));
+                    SceneNode tree;
 
                     int type = foliage.prim.PrimData.State;
-                    //type = 2;
+                    
                     switch (type)
                     {
                         case 0: // Pine 1 -0
@@ -1634,8 +1634,6 @@ namespace IdealistViewer
 
                     m_log.Debug("[FOLIAGE]: got foliage, location: " + prim.Position.ToString() + " type: " + type.ToString());
 
-                    //SceneNode tree = smgr.AddTreeSceneNode(foliageFileName, null, -1, new Vector3D(position.X, position.Z, position.Y), new Vector3D(0, 0, 0), new Vector3D(scale.X, scale.Z, scale.Y), driver.GetTexture("OakBark.png"), driver.GetTexture("OakLeaf.png"), driver.GetTexture("OakBillboard.png"));
-                    //tree.Position = new Vector3D(position.X, position.Z, position.Y);
                     tree.Position = new Vector3D(position.X + worldOffsetPosition.X,
                         position.Z + worldOffsetPosition.Z,
                         position.Y + worldOffsetPosition.Y);
