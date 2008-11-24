@@ -1630,14 +1630,28 @@ namespace IdealistViewer
                             break;
                     }
 
-                    
+                    if (tree == null)
+                    {
+                        m_log.Warn("[FOLIAGE]: Couldn't make tree, shaders not supported by hardware");
+                    }
 
-                    m_log.Debug("[FOLIAGE]: got foliage, location: " + prim.Position.ToString() + " type: " + type.ToString());
+                    if (tree != null)
+                    {
 
-                    tree.Position = new Vector3D(position.X + worldOffsetPosition.X,
-                        position.Z + worldOffsetPosition.Z,
-                        position.Y + worldOffsetPosition.Y);
-                    tree.Scale = new Vector3D(scale.X * scaleScalar, scale.Z * scaleScalar, scale.Y * scaleScalar);
+                       
+
+                        m_log.Debug("[FOLIAGE]: got foliage, location: " + prim.Position.ToString() + " type: " + type.ToString());
+
+                        tree.Position = new Vector3D(position.X + worldOffsetPosition.X,
+                            position.Z + worldOffsetPosition.Z,
+                            position.Y + worldOffsetPosition.Y);
+                        tree.Scale = new Vector3D(scale.X * scaleScalar, scale.Z * scaleScalar, scale.Y * scaleScalar);
+
+                    }
+                    else
+                    {
+                        m_log.Warn("[FOLIAGE]: Couldn't make tree, shaders not supported by hardware");
+                    }
                 }
                 else
                     done = true;
