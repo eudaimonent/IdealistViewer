@@ -246,6 +246,37 @@ void SceneNode_UpdateAbsolutePosition(IntPtr scenenode)
 }
 
 //Other scene nodes
+
+void MeshSceneNode_SetMesh(IntPtr meshnode, IntPtr mesh)
+{
+	((IMeshSceneNode*)meshnode)->setMesh((IMesh *)mesh);
+}
+
+IntPtr MeshSceneNode_GetMesh(IntPtr meshnode)
+{
+	return ((IMeshSceneNode*)meshnode)->getMesh();
+}
+
+void MeshSceneNode_SetReadOnlyMaterials(IntPtr meshnode, bool readonly)
+{
+	((IMeshSceneNode*)meshnode)->setReadOnlyMaterials(readonly);
+	((IMeshSceneNode*)meshnode)->clone();
+}
+
+bool MeshSceneNode_IsReadOnlyMaterials(IntPtr meshnode)
+{
+	_FIX_BOOL_MARSHAL_BUG(((IMeshSceneNode*)meshnode)->isReadOnlyMaterials());
+}
+
+void MeshSceneNode_DropAllMeshBuffers(IntPtr meshnode)
+{
+	int mbcount = ((IMeshSceneNode*)meshnode)->getMesh()->getMeshBufferCount();
+	for (int i=0;i<mbcount;i++)
+	{
+		((IMeshSceneNode*)meshnode)->getMesh()->getMeshBuffer((uint)mbcount)->drop();
+	}
+}
+
 void BillboardSceneNode_GetSize(IntPtr billboard, M_DIM2DF dim)
 {
     UM_DIM2DF(((IBillboardSceneNode*)billboard)->getSize(), dim);
