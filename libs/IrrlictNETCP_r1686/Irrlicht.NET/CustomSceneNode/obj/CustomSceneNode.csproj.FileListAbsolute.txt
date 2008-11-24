@@ -1,6 +1,0 @@
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\CustomSceneNode.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\CustomSceneNode\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\CustomSceneNode\obj\Release\CustomSceneNode.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\CustomSceneNode\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\bin\Release\CustomSceneNode.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\CustomSceneNode\obj\Release\CustomSceneNode.exe

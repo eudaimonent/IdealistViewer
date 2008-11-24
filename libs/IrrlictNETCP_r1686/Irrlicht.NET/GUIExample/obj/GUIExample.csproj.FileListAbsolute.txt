@@ -1,6 +1,0 @@
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\GUIExample.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\GUIExample\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\GUIExample\obj\Release\GUIExample.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\GUIExample\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\bin\Release\GUIExample.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\GUIExample\obj\Release\GUIExample.exe

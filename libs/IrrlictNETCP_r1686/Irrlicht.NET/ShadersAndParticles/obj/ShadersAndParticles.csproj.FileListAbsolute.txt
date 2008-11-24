@@ -1,6 +1,0 @@
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\bin\Release\ShadersAndParticles.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\ShadersAndParticles\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IRRNetCP\trunk\Irrlicht.NET\ShadersAndParticles\obj\Release\ShadersAndParticles.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\bin\Release\ShadersAndParticles.exe
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\ShadersAndParticles\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\DCOLIVE\Desktop\IrrlictNETCP_r1686\Irrlicht.NET\ShadersAndParticles\obj\Release\ShadersAndParticles.exe
