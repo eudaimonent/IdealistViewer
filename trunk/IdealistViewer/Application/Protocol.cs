@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Text;
 using OpenMetaverse;
 using OpenMetaverse.Rendering;
+using OpenMetaverse.Packets;
 using log4net;
 
 
@@ -48,6 +49,9 @@ namespace IdealistViewer
         public string password;
         public string startlocation;
 
+        // received animations are stored here before being processed in the main frame loop
+        public Dictionary<UUID, List<UUID>> AvatarAnimations = new Dictionary<UUID,List<UUID>>();
+
         GridClient m_user;
         public SLProtocol()
         {
@@ -79,8 +83,33 @@ namespace IdealistViewer
             m_user.Objects.OnNewFoliage += newFoliageCallback;
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
+            
+            m_user.Network.RegisterCallback(OpenMetaverse.Packets.PacketType.AvatarAnimation, AvatarAnimationHandler);
 
         }
+
+        public void AvatarAnimationHandler(OpenMetaverse.Packets.Packet packet, Simulator sim)
+        {
+            // When animations for any avatar are received put them in the AvatarAnimations dictionary
+            // in this module. They should be processed and deleted inbetween frames in the main frame loop
+            // or deleted when an avatar is deleted from the scene.
+            AvatarAnimationPacket animation = (AvatarAnimationPacket)packet;
+
+            UUID avatarID = animation.Sender.ID;
+            List<UUID> currentAnims = new List<UUID>();
+
+            for (int i = 0; i < animation.AnimationList.Length; i++)
+                currentAnims.Add(animation.AnimationList[i].AnimID);
+
+            lock (AvatarAnimations)
+            {
+                if (AvatarAnimations.ContainsKey(avatarID))
+                    AvatarAnimations[avatarID] = currentAnims;
+                else
+                    AvatarAnimations.Add(avatarID, currentAnims);
+            }
+        }
+        
 
         private void newFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
         {
@@ -110,12 +139,6 @@ namespace IdealistViewer
             }
         }
 
-        //public void BeginLogin(string loginURI, string username, string password, string startlocation)
-        //{
-        //    LoginParams loginParams = getLoginParams(loginURI, username, password, startlocation);
-
-        //    m_user.Network.BeginLogin(loginParams);
-        //}
         public void BeginLogin(string loginURI, string username, string password, string startlocation)
         {
 

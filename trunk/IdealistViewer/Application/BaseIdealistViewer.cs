@@ -563,6 +563,9 @@ namespace IdealistViewer
               
                 if ((framecounter % objectmods) == 0)
                 {
+                    // process avatar animation changes
+                    doAnimationFrame();
+
                     // Process Mesh Queue.  Parameter is 'Items'
                     doProcessMesh(20);
 
@@ -935,6 +938,12 @@ namespace IdealistViewer
                             
                             // Light avatar
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
+
+                            if (node is AnimatedMeshSceneNode)
+                            {
+                                ((AnimatedMeshSceneNode) node).SetFrameLoop(0, 6);
+                                // cast and do extra cool stuff 
+                            }
 #if DebugObjectPipeline
                             m_log.DebugFormat("[OBJ]: Added Interpolation Target for Avatar ID: {0}", vObj.prim.ID);
 #endif
@@ -1274,7 +1283,8 @@ namespace IdealistViewer
                             if (vObj.prim is Avatar)
                             {
                                 
-                                AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
+                                //AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
+                                AnimatedMesh avmesh = smgr.GetMesh(avatarMesh);
 
                                 AnimatedMeshSceneNode node2 = smgr.AddAnimatedMeshSceneNode(avmesh);
                                 node = node2;
@@ -1497,8 +1507,15 @@ namespace IdealistViewer
             }
         }
 
+        // for animation debugging...
+        //public int myStartFrame = 0;
+        //public int myStopFrame = 90;
+        //public bool myFramesDirty = true;
+
         /// <summary>
-        /// Future animation method..   does nothing now
+        /// Animations that are received are stored in a dictionary in the protocol module and associated
+        /// with an avatar. They are removed from that dictionary here and applied to the proper avatars
+        /// in the scene.
         /// </summary>
         public void doAnimationFrame()
         {
@@ -1507,12 +1524,101 @@ namespace IdealistViewer
                 foreach (UUID avatarID in Avatars.Keys)
                 {
                     VObject avobj = Avatars[avatarID];
-                    
-                    if (avobj.prim.ID.ToString().Contains("dead"))
-                        continue;
-
-                    if (avobj.mesh != null)
+                    if (avobj != null)
                     {
+                        if (avobj.prim != null)
+                            if (avobj.prim.ID.ToString().Contains("dead"))
+                                continue;
+
+
+                        if (avobj.mesh != null)
+                        {
+                        }
+
+
+                        if (avobj.node != null) // this is the scenenode for an animated mesh
+                        {
+                            List<UUID> newAnims = null;
+                            lock (avatarConnection.AvatarAnimations)
+                            {
+                                // fetch any pending animations from the dictionary and then
+                                // delete them from the dictionary
+                                if (avatarConnection.AvatarAnimations.ContainsKey(avatarID))
+                                {
+                                    newAnims = avatarConnection.AvatarAnimations[avatarID];
+                                    avatarConnection.AvatarAnimations.Remove(avatarID);
+                                }
+                            }
+                            if (newAnims != null)
+                            {
+                                MD2Animation md2Anim = MD2Animation.Stand;
+                                foreach (UUID animID in newAnims)
+                                {
+                                    //m_log.Debug("[ANIMATION] - got animID: " + animID.ToString());
+
+                                    if (animID == Animations.STAND
+                                        || animID == Animations.STAND_1
+                                        || animID == Animations.STAND_2
+                                        || animID == Animations.STAND_3
+                                        || animID == Animations.STAND_4)
+                                    {
+                                        m_log.Debug("[ANIMAION] - standing");
+                                        md2Anim = MD2Animation.Stand;
+
+                                    }
+                                    if (animID == Animations.CROUCHWALK)
+                                    {
+                                        m_log.Debug("[ANIMAION] - crouchwalk");
+                                        md2Anim = MD2Animation.CrouchWalk;
+                                    }
+                                    if (animID == Animations.WALK
+                                        || animID == Animations.CROUCHWALK
+                                        || animID == Animations.FEMALE_WALK)
+                                    {
+                                        m_log.Debug("[ANIMAION] - walking");
+                                        md2Anim = MD2Animation.Run;
+                                    }
+                                    if (animID == Animations.SIT
+                                        || animID == Animations.SIT_FEMALE
+                                        || animID == Animations.SIT_GENERIC
+                                        || animID == Animations.SIT_GROUND
+                                        || animID == Animations.SIT_GROUND_staticRAINED
+                                        || animID == Animations.SIT_TO_STAND)
+                                    {
+                                        m_log.Debug("[ANIMAION] - sitting");
+                                        md2Anim = MD2Animation.Pain3;
+                                    }
+                                    if (animID == Animations.FLY
+                                        || animID == Animations.FLYSLOW)
+                                    {
+                                        m_log.Debug("[ANIMAION] - flying");
+                                        md2Anim = MD2Animation.Jump;
+                                    }
+                                    if (animID == Animations.CROUCH)
+                                    {
+                                        m_log.Debug("[ANIMAION] - crouching");
+                                        md2Anim = MD2Animation.CrouchPain;
+                                    }
+                                    else md2Anim = MD2Animation.Stand;
+                                }
+                                if (avobj.node is AnimatedMeshSceneNode)
+                                {
+                                    ((AnimatedMeshSceneNode)avobj.node).SetMD2Animation(md2Anim);
+                                }
+                            }
+
+
+                            //if (avatarID == avatarConnection.GetSelfUUID && myFramesDirty)
+                            //{
+                            //    if (avobj.node is AnimatedMeshSceneNode)
+                            //    {
+                            //        myFramesDirty = false;
+                            //        ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(myStartFrame, myStopFrame);
+                            //        m_log.Debug("setting frames to " + myStartFrame.ToString() + " " + myStopFrame.ToString());
+                            //    }
+                            //}
+
+                        }
 
                     }
                 }
@@ -1719,6 +1825,18 @@ namespace IdealistViewer
         {
             switch (command)
             {
+                //case "a":  // experimental for animation debugging
+                //    try
+                //    {
+                //        int.TryParse(cmdparams[0], out myStartFrame);
+                //        int.TryParse(cmdparams[1], out myStopFrame);
+                //        myFramesDirty = true;
+                //    }
+                //    catch
+                //    {
+                //        m_log.Warn("usage: a <startFrame> <endFrame> - where startFrame and endFrame are integers");
+                //    }
+                //    break;
                 case "goto":
                     float x = 128f;
                     float y = 128f;
@@ -2544,6 +2662,12 @@ namespace IdealistViewer
                             Avatars.Remove(obj.prim.ID);
                         }
                     }
+                    // remove any pending animations for the avatar
+                    lock (avatarConnection.AvatarAnimations)
+                    {
+                        if (avatarConnection.AvatarAnimations.ContainsKey(obj.prim.ID))
+                            avatarConnection.AvatarAnimations.Remove(obj.prim.ID);
+                    }
                     if (obj.prim.ID == avatarConnection.GetSelfUUID)
                     {
                         UserAvatar = null;
@@ -2564,17 +2688,6 @@ namespace IdealistViewer
         {
             VObject avob = null; 
             
-            lock (Avatars)
-            {
-                if (Avatars.ContainsKey(avatar.ID))
-                {
-                    Avatars[avatar.ID] = avob;
-                }
-                else
-                {
-                    Avatars.Add(avatar.ID, avob);
-                }
-            }
             lock (Entities)
             {
                 // If we've got an entitiy for this avatar, then this is a full object update
@@ -2602,6 +2715,18 @@ namespace IdealistViewer
             {
                 avob.updateFullYN = true;
                 objectModQueue.Enqueue(avob);
+            }
+
+            lock (Avatars)
+            {
+                if (Avatars.ContainsKey(avatar.ID))
+                {
+                    Avatars[avatar.ID] = avob;
+                }
+                else
+                {
+                    Avatars.Add(avatar.ID, avob);
+                }
             }
         }
 
