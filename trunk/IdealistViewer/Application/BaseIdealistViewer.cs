@@ -297,6 +297,8 @@ namespace IdealistViewer
 
         private float TimeDilation = 0;
 
+        private float[,] RegionHFArray = new float[256,256];
+
         public BaseIdealistViewer(IConfigSource iconfig)
         {
 
@@ -676,14 +678,41 @@ namespace IdealistViewer
                                 }
                             }
                         }
-                        Vector3D pos = new Vector3D(obj.node.Position.X, obj.node.Position.Y, obj.node.Position.Z);
-                        if (obj.prim is Avatar)
+
+                        bool againstground = false;
+                        if (obj.prim != null && UserAvatar != null && UserAvatar.prim != null && currentSim != null)
                         {
-                            Avatar av = (Avatar)obj.prim;
-                            if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
-                                obj.prim.Velocity.Z = 0;
+                            if (UserAvatar.prim.ID == obj.prim.ID)
+                            {
+                                if (obj.prim.Position.Z >= 0)
+                                //terrainBitmap lower then avatar byte 2.3
+                                if (RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))] + 1.5f >= obj.prim.Position.Z)
+                                {
+                                    
+                                    againstground = true;
+                                }
+                                //m_log.InfoFormat("[INTERPOLATION]: TerrainHeight:{0}-{1}-{2}-<{3},{4},{5}>", RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)),(int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))], obj.prim.Position.Z, (int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255) * 256 + Util.Clamp<float>(obj.prim.Position.X, 0, 255)), obj.prim.Position.X, obj.prim.Position.Y, obj.prim.Position.Z);
+                            }
                         }
-                        obj.node.Position = pos + ((new Vector3D(obj.prim.Velocity.X, obj.prim.Velocity.Z, obj.prim.Velocity.Y) * 0.073f) * TimeDilation);
+                        if (againstground)
+                        {
+                            obj.prim.Velocity.Z = 0;
+                        }
+                        Vector3D pos = new Vector3D(obj.node.Position.X, (againstground ? RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))] + 0.9f : obj.node.Position.Y), obj.node.Position.Z);
+                        Vector3D interpolatedpos = ((new Vector3D(obj.prim.Velocity.X, obj.prim.Velocity.Z, obj.prim.Velocity.Y) * 0.073f) * TimeDilation);
+                        if (againstground)
+                        {
+                            interpolatedpos.Y = 0;
+                        }
+
+                        //if (obj.prim is Avatar)
+                        //{
+                            //Avatar av = (Avatar)obj.prim;
+                            //if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
+                            //    obj.prim.Velocity.Z = 0;
+                       // }
+                        obj.node.Position = pos + interpolatedpos;
+                        
                     }
                     catch (AccessViolationException)
                     {
@@ -1073,7 +1102,13 @@ namespace IdealistViewer
                     if (vObj.prim is Avatar)
                     {
                         // TODO: FIXME - This is dependant on the avatar mesh loaded. a good candidate for a config option.
-                        vObj.prim.Position.Z -= 0.2f;
+                        //vObj.prim.Position.Z -= 0.2f;
+                        if (vObj.prim.Position.Z >=0)
+                            if (RegionHFArray[(int)(Util.Clamp<float>(vObj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(vObj.prim.Position.X, 0, 255))] + 2.5f >= vObj.prim.Position.Z)
+                            {
+                                vObj.prim.Position.Z = RegionHFArray[(int)(Util.Clamp<float>(vObj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(vObj.prim.Position.X, 0, 255))] + 0.9f;
+                            }
+                    
                     }
                     else
                     {
@@ -2491,6 +2526,15 @@ namespace IdealistViewer
                         if (col > 1000f || col < 0)
                             col = 0f;
                         //col *= 0.00388f;
+
+                        if (currentSim != null)
+                        {
+                            if (currentSim.Handle == simhandle)
+                            {
+                                RegionHFArray[bitmapy,bitmapx] = col;
+                            }
+                        }
+
                         col *= 0.00397f;  // looks a little closer by eyeball
                         
                         

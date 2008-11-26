@@ -57,7 +57,7 @@ namespace IdealistViewer
         {
             m_user = new GridClient();
             //m_user.Settings.STORE_LAND_PATCHES = true;
-            m_user.Settings.MULTIPLE_SIMS = true;
+            m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
@@ -178,7 +178,7 @@ namespace IdealistViewer
             m_user.Throttle.Total = 600000;
             m_user.Throttle.Land = 80000;
             m_user.Throttle.Task = 200000;
-            m_user.Throttle.Texture = 150000;
+            m_user.Throttle.Texture = 100000;
             m_user.Throttle.Wind = 10000;
             m_user.Throttle.Resend = 100000;
             m_user.Throttle.Asset = 100000;
