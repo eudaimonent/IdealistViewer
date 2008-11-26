@@ -23,6 +23,7 @@ namespace IdealistViewer
         public float loMouseOffsetTHETA = 0;
         public float CamRotationAnglePHI = 0f;
         public float CamRotationAngleTHETA = 0f;
+        public Vector3D FollowCamTargetOffset = new Vector3D(0, 1f, 0);
 
         private float zDirection, direction = 0;
         
@@ -97,14 +98,15 @@ namespace IdealistViewer
 
                         //transform1.RotationDegrees = new Vector3D(0, SNCamera.Rotation.Y - currentTargetRot.Y - 0, 0);
                         //transform1.TransformVect(ref Delta1);
-                        newpos = Delta1 + new Vector3D(0, 0.2f * CAMDISTANCE, 0);
-                        SNCamera.Position = currentTargetPos + newpos;
-                        SNCamera.Target = SNtarget.Position;
+                        newpos = Delta1 + new Vector3D(0, 0.5f * CAMDISTANCE, 0);
+                        SNCamera.Position = currentTargetPos + newpos + (FollowCamTargetOffset * 0.5f);
+                        SNCamera.Target = SNtarget.Position + FollowCamTargetOffset;
 
 
                     }
 
                     break;
+
 
             }
             //m_log.WarnFormat("[CameraPos]: <{0},{1},{2}>", camr.Position.X, camr.Position.Y, camr.Position.Z);
