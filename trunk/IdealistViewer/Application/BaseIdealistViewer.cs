@@ -161,6 +161,7 @@ namespace IdealistViewer
 
         private const int modAVUpdates = 10;
 
+
         /// <summary>
         /// Held Controls
         /// </summary>
@@ -293,6 +294,8 @@ namespace IdealistViewer
         private VObject UserAvatar = null;
 
         private Texture GreenGrassTexture = null;
+
+        private float TimeDilation = 0;
 
         public BaseIdealistViewer(IConfigSource iconfig)
         {
@@ -680,7 +683,7 @@ namespace IdealistViewer
                             if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
                                 obj.prim.Velocity.Z = 0;
                         }
-                        obj.node.Position = pos + new Vector3D(obj.prim.Velocity.X * 0.055f, obj.prim.Velocity.Z * 0.055f, obj.prim.Velocity.Y * 0.055f);
+                        obj.node.Position = pos + ((new Vector3D(obj.prim.Velocity.X, obj.prim.Velocity.Z, obj.prim.Velocity.Y) * 0.073f) * TimeDilation);
                     }
                     catch (AccessViolationException)
                     {
@@ -2260,6 +2263,7 @@ namespace IdealistViewer
 
         public void newFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
         {
+            TimeDilation = (float)(timeDilation / ushort.MaxValue);
             foliageCount++;
             //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
 
@@ -2285,6 +2289,7 @@ namespace IdealistViewer
         public void newPrimCallback(Simulator sim, Primitive prim, ulong regionHandle,
                                       ushort timeDilation)
         {
+            TimeDilation = (float)(timeDilation / ushort.MaxValue);
             //System.Console.WriteLine(prim.ToString());
             //return;
             primcount++;
@@ -2576,6 +2581,8 @@ namespace IdealistViewer
         private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle, 
             ushort timeDilation)
         {
+            TimeDilation = (float)(timeDilation / ushort.MaxValue);
+            
             VObject obj = null;
             //if (!update.Avatar)
             //{
@@ -2721,6 +2728,7 @@ namespace IdealistViewer
         private void newAvatarCallback(Simulator sim, Avatar avatar, ulong regionHandle,
                                        ushort timeDilation)
         {
+            TimeDilation = (float)(timeDilation / ushort.MaxValue);
             VObject avob = null; 
             
             lock (Entities)
