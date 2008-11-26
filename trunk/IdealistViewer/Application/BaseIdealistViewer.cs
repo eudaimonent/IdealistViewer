@@ -415,9 +415,9 @@ namespace IdealistViewer
                             //water.WaveLength *= 1;
                             //water.WaveRepetition = 1;
             */
-            //GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
-            //gcontext.Text = "Some Text";
-            //gcontext.AddItem("SomeCooItem", 93, true, true);
+            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
+            gcontext.Text = "Some Text";
+            gcontext.AddItem("SomeCooItem", 93, true, true);
 
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
@@ -661,6 +661,18 @@ namespace IdealistViewer
                     // Interpolate
                     try
                     {
+                        if (UserAvatar != null && UserAvatar.prim != null)
+                        {
+                            if (obj.prim.ID != UserAvatar.prim.ID)
+                            {
+                                // If this is our avatar and the update came less then 5 seconds 
+                                // after we last rotated, it'll just confuse the user
+                                if (System.Environment.TickCount - AVControl.userRotated < 5000)
+                                {
+                                    continue;
+                                }
+                            }
+                        }
                         Vector3D pos = new Vector3D(obj.node.Position.X, obj.node.Position.Y, obj.node.Position.Z);
                         if (obj.prim is Avatar)
                         {
@@ -1151,25 +1163,6 @@ namespace IdealistViewer
 
                     }
 
-                    //m_log.Warn(vObj.prim.Rotation.ToString());
-                    
-                    // Convert Cordinate space
-                    IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
-                    
-                    iqu.makeInverse();
-
-                    IrrlichtNETCP.Quaternion finalpos = iqu;
-                    if (vObj.prim.ParentID != 0)
-                    {
-                        //IrrlichtNETCP.Quaternion parentrot = new IrrlichtNETCP.Quaternion(parentObj.node.Rotation.X, parentObj.node.Rotation.Y, parentObj.node.Rotation.Z);
-                        //parentrot.makeInverse();
-                        //parentrot = Cordinate_XYZ_XZY * parentrot;
-
-                        //finalpos = parentrot * iqu;
-                    }
-                    finalpos = Cordinate_XYZ_XZY * finalpos;
-
-
                     if (node.Raw == IntPtr.Zero)
                     {
 #if DebugObjectPipeline
@@ -1177,10 +1170,40 @@ namespace IdealistViewer
 #endif
                         continue;
                     }
-                    
-                    // Quaternion to Euler
-                    node.Rotation  = finalpos.Matrix.RotationDegrees;
 
+                    bool ApplyRotationYN = true;
+
+                    if (vObj.prim is Avatar)
+                    {
+                        if (UserAvatar != null && UserAvatar.prim != null && AVControl != null)
+                        {
+                            if (vObj.prim.ID == UserAvatar.prim.ID)
+                            {
+                                // If this is our avatar and the update came less then 5 seconds 
+                                // after we last rotated, it'll just confuse the user
+                                if (System.Environment.TickCount - AVControl.userRotated < 5000)
+                                {
+                                    ApplyRotationYN = false;
+                                }
+                            }
+                        }
+                    }
+
+                    //m_log.Warn(vObj.prim.Rotation.ToString());
+                    if (ApplyRotationYN)
+                    {
+                        // Convert Cordinate space
+                        IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
+
+                        iqu.makeInverse();
+
+                        IrrlichtNETCP.Quaternion finalpos = iqu;
+
+                        finalpos = Cordinate_XYZ_XZY * finalpos;
+                        node.Rotation = finalpos.Matrix.RotationDegrees;
+                    }
+
+                    
                     if (creatednode)
                     {   
                         // If we created this node, then we need to add it to the 

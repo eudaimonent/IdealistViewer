@@ -77,9 +77,7 @@
             <fileset basedir="${project::get-base-directory()}/${build.dir}/" >
                 <include name="*.dll"/>
                 <include name="*.exe"/>
-                <if test="${build.debug=='true'}">
-                  <include name="*.mdb"/>
-                </if>
+                <include name="*.mdb" if='${build.debug}'/>
             </fileset>
         </copy>
     </target>

@@ -17,6 +17,8 @@ namespace IdealistViewer
 
         private SLProtocol avatarConnection = null;
         private SceneNode av = null;
+
+        public volatile int userRotated = 0;
         
         public AvatarController(SLProtocol pAvatarConnection, SceneNode pAVNode)
         {
@@ -38,10 +40,12 @@ namespace IdealistViewer
                 if (turning_left)
                 {
                     heading = normalizeHeading(heading + turn_increment * ticks);
+                    userRotated = System.Environment.TickCount;
                 }
                 else if (turning_right)
                 {
                     heading = normalizeHeading(heading - turn_increment * ticks);
+                    userRotated = System.Environment.TickCount;
                 }
                 UpdateLocal();
                 
