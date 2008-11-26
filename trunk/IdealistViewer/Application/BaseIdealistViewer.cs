@@ -404,8 +404,17 @@ namespace IdealistViewer
             SNGlobalwater.SetMaterialType(MaterialType.TransparentReflection2Layer);
             SNGlobalwater.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
             SNGlobalwater.Position = new Vector3D(0, 0, 0);
-
             
+            /*
+            WaterSceneNode water = new WaterSceneNode(null, smgr, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
+                            water.Position = new Vector3D(0, 30, 0);
+                            //water.WaveDisplacement /= 1.0f;
+                            water.WaveHeight *= .5f;
+                            //water.WaveSpeed *= 1;
+                            water.RefractionFactor = 0.21f;
+                            //water.WaveLength *= 1;
+                            //water.WaveRepetition = 1;
+            */
             //GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
             //gcontext.Text = "Some Text";
             //gcontext.AddItem("SomeCooItem", 93, true, true);
@@ -1659,11 +1668,14 @@ namespace IdealistViewer
                 {
                     FoliageObject foliage = foliageObjectQueue.Dequeue();
                     Primitive prim = foliage.prim;
-                    
+                    ulong handle = 0;
                     float scaleScalar = 0.1f;
-
+                    if (currentSim != null)
+                    {
+                        handle = currentSim.Handle;
+                    }
                     Vector3 globalPositionToRez = Util.OffsetGobal(prim.RegionHandle, Vector3.Zero);
-                    Vector3 currentGlobalPosition = Util.OffsetGobal(currentSim.Handle, Vector3.Zero);
+                    Vector3 currentGlobalPosition = Util.OffsetGobal(handle, Vector3.Zero);
                     Vector3 worldOffsetPosition = globalPositionToRez - currentGlobalPosition;
                     Vector3 position = prim.Position;
                     Vector3 scale = prim.Scale;
