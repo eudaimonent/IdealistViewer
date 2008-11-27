@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Xml;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -30,7 +31,7 @@ namespace IdealistViewer
         /// <summary>
         /// Irrlicht Instance.  A handle to the Irrlicht device
         /// </summary>
-        private IrrlichtDevice device = null;
+        static IrrlichtDevice device;
 
         /// <summary>
         /// Irrlicht Video Driver.  A handle to the video driver being used
@@ -156,6 +157,12 @@ namespace IdealistViewer
         /// </summary>
         private static Dictionary<UUID, VObject> Avatars = new Dictionary<UUID, VObject>();
 
+        /// <summary>
+        /// This is read in from about.xml and is our mini-instruction manual
+        /// </summary>
+        static string AboutText = string.Empty;
+        static string AboutCaption = string.Empty;
+        static string StartUpModelFile = string.Empty;
 
         private static AvatarController AVControl = null;
 
@@ -369,7 +376,25 @@ namespace IdealistViewer
 
             // Fog is on by default, this line disables it.
             smgr.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
-            
+
+            XmlReader xml = XmlReader.Create(
+                new StreamReader("../../../media/config.xml"));
+            while (xml != null && xml.Read())
+            {
+                switch (xml.NodeType)
+                {
+                    case XmlNodeType.Text:
+                        AboutText = xml.ReadContentAsString();
+                        break;
+                    case XmlNodeType.Element:
+                        if (xml.Name.Equals("startUpModel"))
+                            StartUpModelFile = xml.GetAttribute("file");
+                        else if (xml.Name.Equals("messageText"))
+                            AboutCaption = xml.GetAttribute("caption");
+                        break;
+                }
+            }
+
             // Create the Skybox
             /*
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, false);
@@ -3112,6 +3137,18 @@ namespace IdealistViewer
         }
 
         #endregion
+
+
+        /*This function displays a messagebox with messageText that has been 
+         * previously read with the xmlreader earlier.
+         */
+        static void showAboutText()
+        {
+            // create modal message box with the text
+            // loaded from the xml file.
+            device.GUIEnvironment.AddMessageBox(
+                AboutCaption, AboutText, true, MessageBoxFlag.OK, device.GUIEnvironment.RootElement, 0);
+        }
 
 
         /// <summary>
