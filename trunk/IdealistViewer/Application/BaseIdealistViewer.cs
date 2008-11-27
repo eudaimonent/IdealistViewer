@@ -420,9 +420,12 @@ namespace IdealistViewer
                             //water.WaveLength *= 1;
                             //water.WaveRepetition = 1;
             */
-            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, 90);
+            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, -1);
             gcontext.Text = "Some Text";
-            gcontext.AddItem("SomeCooItem", 93, true, true);
+            gcontext.AddItem("SomeCooItem", -1, true, true);
+            GUIContextMenu submenu;
+            submenu = gcontext.GetSubMenu(0);
+            submenu.AddItem("Weird!", 100, true, false);
 
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
@@ -3086,8 +3089,8 @@ namespace IdealistViewer
         /// <returns></returns>
         public bool device_OnEvent(Event p_event)
         {
-            
 
+            
             // !Mouse event  (we do this so that we don't process the rest of this each mouse move
             if (p_event.Type != EventType.MouseInputEvent)
             {
@@ -3153,7 +3156,7 @@ namespace IdealistViewer
                 return MouseEventProcessor(p_event);
             }
 
-            return true;
+            return false;
         }
         #region Mouse Handler
         public bool MouseEventProcessor(Event p_event)
@@ -3286,7 +3289,7 @@ namespace IdealistViewer
                 OldMouseY = p_event.MousePosition.Y;
 
             }
-            return true;
+            return false;
 
         }
 
