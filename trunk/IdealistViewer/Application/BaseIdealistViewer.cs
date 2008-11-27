@@ -26,7 +26,7 @@ namespace IdealistViewer
         public IdealistViewerConfigSource m_config = null;
         public static Dictionary<string, UUID> waitingSculptQueue = new Dictionary<string, UUID>();
         public static bool backFaceCulling = true;
-
+        public GUIFont defaultfont = null;
         /// <summary>
         /// Irrlicht Instance.  A handle to the Irrlicht device
         /// </summary>
@@ -340,7 +340,9 @@ namespace IdealistViewer
             GreenGrassTexture = driver.GetTexture("Green_Grass_Detailed.tga");
             
             guienv = device.GUIEnvironment;
-
+            defaultfont = guienv.GetFont("defaultfont.png");
+            GUISkin skin = guienv.Skin;
+            skin.Font = defaultfont;
             // Set up event handler for the GUI window events.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
@@ -430,12 +432,13 @@ namespace IdealistViewer
 //            submenu.AddItem("Weird!", 100, true, false);
 
             // create menu toplevel and submenu items. No event handlers yet - ckrinke
+
             GUIContextMenu menu = guienv.AddMenu(guienv.RootElement, -1);
             menu.AddItem("File", -1, true, true);
             menu.AddItem("View", -1, true, true);
             menu.AddItem("Other", -1, true, true);
             menu.AddItem("Help", -1, true, true);
-
+            
             GUIContextMenu submenu;
             submenu = menu.GetSubMenu(0);
             submenu.AddItem("Open File...", 100, true, false);
@@ -912,7 +915,7 @@ namespace IdealistViewer
                 if (vObj.prim != null)
                 {
 
-
+                    
 
                     ulong simhandle = vObj.prim.RegionHandle;
 
