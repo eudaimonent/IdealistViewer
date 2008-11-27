@@ -466,24 +466,22 @@ namespace IdealistViewer
             
             GUIContextMenu submenu;
             submenu = menu.GetSubMenu(0);
-            submenu.AddItem("Open File...", 100, true, false);
+            submenu.AddItem("Open File...", (int)MenuID.FileOpen, true, false);
             submenu.AddSeparator();
-            submenu.AddItem("Quit", 200, true, false);
+            submenu.AddItem("Quit", (int)MenuID.FileQuit, true, false);
 
             submenu = menu.GetSubMenu(1);
-            submenu.AddItem("toggle sky box visibility", 300, true, false);
-            submenu.AddItem("toggle debug information", 400, true, false);
+            submenu.AddItem("toggle sky box visibility", (int)MenuID.ViewVisibility, true, false);
+            submenu.AddItem("toggle debug information", (int)MenuID.ViewDebug, true, false);
             submenu.AddItem("toggle mode", -1, true, true);
 
             submenu = submenu.GetSubMenu(2);
-            submenu.AddItem("Solid", 610, true, false);
-            submenu.AddItem("Transparent", 620, true, false);
-            submenu.AddItem("Reflection", 630, true, false);
+            submenu.AddItem("Solid", (int)MenuID.ViewModeOne, true, false);
+            submenu.AddItem("Transparent", (int)MenuID.ViewModeTwo, true, false);
+            submenu.AddItem("Reflection", (int)MenuID.ViewModeThree, true, false);
 
             submenu = menu.GetSubMenu(3);
-            submenu.AddItem("About", 500, true, false);
-
-
+            submenu.AddItem("About", (int)MenuID.About, true, false);
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
             //gtb.Text = "Hi";
@@ -3424,7 +3422,21 @@ namespace IdealistViewer
         }
 
     }
-    
+
+    /// <summary>
+    /// Various MenuID constants to tie menus to events.
+    /// </summary>
+    public enum MenuID
+    {
+        FileOpen = 10,
+        FileQuit = 99,
+        ViewVisibility = 101,
+        ViewDebug = 102,
+        ViewModeOne = 111,
+        ViewModeTwo = 112,
+        ViewModeThree = 113,
+        About = 999
+    }
     /// <summary>
     /// embedded struct for texture complete object.
     /// </summary>
