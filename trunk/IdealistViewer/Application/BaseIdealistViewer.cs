@@ -344,6 +344,8 @@ namespace IdealistViewer
             // Set up event handler for the GUI window events.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
+            device.Resizeable = true;
+
             m_MeshFactory = new MeshFactory(smgr.MeshManipulator, device);
 
             // Set up the picker.
@@ -431,6 +433,7 @@ namespace IdealistViewer
             GUIContextMenu menu = guienv.AddMenu(guienv.RootElement, -1);
             menu.AddItem("File", -1, true, true);
             menu.AddItem("View", -1, true, true);
+            menu.AddItem("Other", -1, true, true);
             menu.AddItem("Help", -1, true, true);
 
             GUIContextMenu submenu;
@@ -449,7 +452,7 @@ namespace IdealistViewer
             submenu.AddItem("Transparent", 620, true, false);
             submenu.AddItem("Reflection", 630, true, false);
 
-            submenu = menu.GetSubMenu(2);
+            submenu = menu.GetSubMenu(3);
             submenu.AddItem("About", 500, true, false);
 
 

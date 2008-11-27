@@ -7,3 +7,4 @@ Currently the following projects have contributed to IdealistViewer
 Primary Developers (alpha order)
 * Dahlia Trimble
 * Teravus Ousley
+* Charles Krinke aka 'ckrinke'
