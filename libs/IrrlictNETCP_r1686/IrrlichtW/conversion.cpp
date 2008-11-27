@@ -91,10 +91,18 @@ M_STRING UM_STRING(const wchar_t* base)
     return str;
 }
 
+
 M_STRING UM_STRING(const M_STRING base)
 {
 	return const_cast<M_STRING>(base);
 }
+/*
+M_STRING UM_STRING(const M_STRING base) 
+{ 
+   std::string* newstr = new std::string(base); 
+   return const_cast<M_STRING>(newstr->c_str()); 
+}
+*/
 
 void UM_DIM2DS(irr::core::dimension2d<int> base, M_DIM2DS t)
 {

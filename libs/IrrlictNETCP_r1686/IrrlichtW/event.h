@@ -13,7 +13,7 @@ extern "C"
     EXPORT bool Event_GetKeyShift(IntPtr event);
     EXPORT bool Event_GetKeyControl(IntPtr event);
     EXPORT char Event_GetKeyChar(IntPtr event);
-    EXPORT M_STRING Event_GetLogString(IntPtr event);
+    EXPORT void Event_GetLogString(IntPtr event, char* str);
     EXPORT IntPtr Event_GetCaller(IntPtr event);
     
     EXPORT int Event_GetUserDataI (IntPtr event, unsigned int num);

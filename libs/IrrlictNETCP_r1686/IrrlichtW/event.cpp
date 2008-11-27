@@ -57,9 +57,12 @@ char Event_GetKeyChar(IntPtr event)
     return (char)GetEventFromIntPtr(event)->KeyInput.Char;
 }
 
-M_STRING Event_GetLogString(IntPtr event)
-{
-    return UM_STRING(MU_WCHAR(GetEventFromIntPtr(event)->LogEvent.Text));
+void Event_GetLogString(IntPtr ev, char* str) 
+{ 
+   M_STRING sr = UM_STRING(GetEventFromIntPtr(ev)->LogEvent.Text); 
+   std::string s(sr); 
+   for(int i = 0; i < s.length(); i ++) 
+      str[i] = sr[i]; 
 }
 
 IntPtr Event_GetCaller(IntPtr event)

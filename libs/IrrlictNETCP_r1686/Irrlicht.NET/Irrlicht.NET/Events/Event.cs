@@ -101,12 +101,20 @@ namespace IrrlichtNETCP
 		}
 		
 		public string LogText
-		{
-			get
-			{
-				return Event_GetLogString(_raw);
-			}
-		}
+        {
+            get
+            {
+                byte[] str = new byte[1024];
+                Event_GetLogString(_raw, str);
+                string tor = string.Empty;
+                for (int i = 0; i < 1024; i++)
+                    if (str[i] == 0)
+                        break;
+                    else
+                        tor += (char)(str[i]);
+                return tor;
+            }
+        }
 		
 		public GUIElement Caller
 		{
@@ -184,9 +192,9 @@ namespace IrrlichtNETCP
 		
 		 [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
 		static extern char Event_GetKeyChar(IntPtr ev);
-		
-		 [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
-		static extern string Event_GetLogString(IntPtr ev);
+
+        [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
+        static extern void Event_GetLogString(IntPtr ev, [MarshalAs(UnmanagedType.LPArray)] byte[] cs);
 		
 		 [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
 		static extern IntPtr Event_GetCaller(IntPtr ev);
