@@ -420,12 +420,38 @@ namespace IdealistViewer
                             //water.WaveLength *= 1;
                             //water.WaveRepetition = 1;
             */
-            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, -1);
-            gcontext.Text = "Some Text";
-            gcontext.AddItem("SomeCooItem", -1, true, true);
+//            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, -1);
+//            gcontext.Text = "Some Text";
+//            gcontext.AddItem("SomeCooItem", -1, true, true);
+//            GUIContextMenu submenu;
+//            submenu = gcontext.GetSubMenu(0);
+//            submenu.AddItem("Weird!", 100, true, false);
+
+            // create menu toplevel and submenu items. No event handlers yet - ckrinke
+            GUIContextMenu menu = guienv.AddMenu(guienv.RootElement, -1);
+            menu.AddItem("File", -1, true, true);
+            menu.AddItem("View", -1, true, true);
+            menu.AddItem("Help", -1, true, true);
+
             GUIContextMenu submenu;
-            submenu = gcontext.GetSubMenu(0);
-            submenu.AddItem("Weird!", 100, true, false);
+            submenu = menu.GetSubMenu(0);
+            submenu.AddItem("Open File...", 100, true, false);
+            submenu.AddSeparator();
+            submenu.AddItem("Quit", 200, true, false);
+
+            submenu = menu.GetSubMenu(1);
+            submenu.AddItem("toggle sky box visibility", 300, true, false);
+            submenu.AddItem("toggle debug information", 400, true, false);
+            submenu.AddItem("toggle mode", -1, true, true);
+
+            submenu = submenu.GetSubMenu(2);
+            submenu.AddItem("Solid", 610, true, false);
+            submenu.AddItem("Transparent", 620, true, false);
+            submenu.AddItem("Reflection", 630, true, false);
+
+            submenu = menu.GetSubMenu(2);
+            submenu.AddItem("About", 500, true, false);
+
 
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
