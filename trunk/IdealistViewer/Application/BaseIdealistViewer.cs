@@ -3159,7 +3159,25 @@ namespace IdealistViewer
         public bool device_OnEvent(Event p_event)
         {
 
-            
+            //m_log.Warn(p_event.Type.ToString());
+            if (p_event.Type == EventType.LogTextEvent)
+            {
+                if (p_event.LogText.Contains("Resizing window"))
+                {
+                    int pos = p_event.LogText.IndexOf('(');
+                    int pos2 = p_event.LogText.IndexOf(')');
+                    //
+                    string resizeto = p_event.LogText.Substring(pos+1,pos2-(pos+1));
+                    string[] xy = resizeto.Split(' ');
+
+
+                    WindowWidth = Convert.ToInt32(xy[0]);
+                    WindowHeight = Convert.ToInt32(xy[1]);
+                    WindowWidth_DIV2 = WindowWidth * 0.5f;
+                    WindowHeight_DIV2 = WindowHeight * 0.5f;
+                    aspect = (float)WindowWidth / WindowHeight;
+                }
+            }
             // !Mouse event  (we do this so that we don't process the rest of this each mouse move
             if (p_event.Type != EventType.MouseInputEvent)
             {
