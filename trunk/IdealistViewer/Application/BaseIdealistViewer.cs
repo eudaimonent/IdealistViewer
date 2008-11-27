@@ -3162,12 +3162,13 @@ namespace IdealistViewer
             //m_log.Warn(p_event.Type.ToString());
             if (p_event.Type == EventType.LogTextEvent)
             {
-                if (p_event.LogText.Contains("Resizing window"))
+                string eventype = p_event.LogText;
+                if (eventype.Contains("Resizing window"))
                 {
-                    int pos = p_event.LogText.IndexOf('(');
-                    int pos2 = p_event.LogText.IndexOf(')');
+                    int pos = eventype.IndexOf('(');
+                    int pos2 = eventype.IndexOf(')');
                     //
-                    string resizeto = p_event.LogText.Substring(pos+1,pos2-(pos+1));
+                    string resizeto = eventype.Substring(pos + 1, pos2 - (pos + 1));
                     string[] xy = resizeto.Split(' ');
 
 
