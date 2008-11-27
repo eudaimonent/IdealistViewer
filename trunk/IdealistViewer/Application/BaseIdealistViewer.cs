@@ -1052,11 +1052,11 @@ namespace IdealistViewer
                             // Light avatar
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
 
-                            if (node is AnimatedMeshSceneNode)
-                            {
-                                ((AnimatedMeshSceneNode) node).SetFrameLoop(0, 6);
-                                // cast and do extra cool stuff 
-                            }
+                            //if (node is AnimatedMeshSceneNode)
+                            //{
+                            //    ((AnimatedMeshSceneNode) node).SetFrameLoop(0, 6);
+                            //    // cast and do extra cool stuff 
+                            //}
 #if DebugObjectPipeline
                             m_log.DebugFormat("[OBJ]: Added Interpolation Target for Avatar ID: {0}", vObj.prim.ID);
 #endif
@@ -1637,10 +1637,10 @@ namespace IdealistViewer
             }
         }
 
-        // for animation debugging...
-        //public int myStartFrame = 0;
-        //public int myStopFrame = 90;
-        //public bool myFramesDirty = true;
+         //for animation debugging...
+        public int myStartFrame = 0;
+        public int myStopFrame = 90;
+        public bool myFramesDirty = false;
 
         /// <summary>
         /// Animations that are received are stored in a dictionary in the protocol module and associated
@@ -1681,6 +1681,8 @@ namespace IdealistViewer
                             }
                             if (newAnims != null)
                             {
+                                int startFrame = 0;
+                                int endFrame = 39;
                                 MD2Animation md2Anim = MD2Animation.Stand;
                                 foreach (UUID animID in newAnims)
                                 {
@@ -1692,21 +1694,29 @@ namespace IdealistViewer
                                         || animID == Animations.STAND_3
                                         || animID == Animations.STAND_4)
                                     {
-                                        m_log.Debug("[ANIMAION] - standing");
+                                        m_log.Debug("[ANIMATION] - standing");
                                         md2Anim = MD2Animation.Stand;
+                                        startFrame = 0;
+                                        endFrame = 39;
+                                        //startFrame = 31;
+                                        //endFrame = 53;
 
                                     }
                                     if (animID == Animations.CROUCHWALK)
                                     {
-                                        m_log.Debug("[ANIMAION] - crouchwalk");
+                                        m_log.Debug("[ANIMATION] - crouchwalk");
                                         md2Anim = MD2Animation.CrouchWalk;
                                     }
                                     if (animID == Animations.WALK
                                         || animID == Animations.CROUCHWALK
                                         || animID == Animations.FEMALE_WALK)
                                     {
-                                        m_log.Debug("[ANIMAION] - walking");
+                                        m_log.Debug("[ANIMATION] - walking");
                                         md2Anim = MD2Animation.Run;
+                                        startFrame = 40;
+                                        endFrame = 45;
+                                        //startFrame = 0;
+                                        //endFrame = 22;
                                     }
                                     if (animID == Animations.SIT
                                         || animID == Animations.SIT_FEMALE
@@ -1715,18 +1725,18 @@ namespace IdealistViewer
                                         || animID == Animations.SIT_GROUND_staticRAINED
                                         || animID == Animations.SIT_TO_STAND)
                                     {
-                                        m_log.Debug("[ANIMAION] - sitting");
+                                        m_log.Debug("[ANIMATION] - sitting");
                                         md2Anim = MD2Animation.Pain3;
                                     }
                                     if (animID == Animations.FLY
                                         || animID == Animations.FLYSLOW)
                                     {
-                                        m_log.Debug("[ANIMAION] - flying");
+                                        m_log.Debug("[ANIMATION] - flying");
                                         md2Anim = MD2Animation.Jump;
                                     }
                                     if (animID == Animations.CROUCH)
                                     {
-                                        m_log.Debug("[ANIMAION] - crouching");
+                                        m_log.Debug("[ANIMATION] - crouching");
                                         md2Anim = MD2Animation.CrouchPain;
                                     }
                                     else md2Anim = MD2Animation.Stand;
@@ -1734,19 +1744,21 @@ namespace IdealistViewer
                                 if (avobj.node is AnimatedMeshSceneNode)
                                 {
                                     ((AnimatedMeshSceneNode)avobj.node).SetMD2Animation(md2Anim);
+                                    //((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(startFrame, endFrame);
+                                    
                                 }
                             }
 
 
-                            //if (avatarID == avatarConnection.GetSelfUUID && myFramesDirty)
-                            //{
-                            //    if (avobj.node is AnimatedMeshSceneNode)
-                            //    {
-                            //        myFramesDirty = false;
-                            //        ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(myStartFrame, myStopFrame);
-                            //        m_log.Debug("setting frames to " + myStartFrame.ToString() + " " + myStopFrame.ToString());
-                            //    }
-                            //}
+                            if (avatarID == avatarConnection.GetSelfUUID && myFramesDirty)
+                            {
+                                if (avobj.node is AnimatedMeshSceneNode)
+                                {
+                                    myFramesDirty = false;
+                                    ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(myStartFrame, myStopFrame);
+                                    m_log.Debug("setting frames to " + myStartFrame.ToString() + " " + myStopFrame.ToString());
+                                }
+                            }
 
                         }
 
@@ -1757,6 +1769,9 @@ namespace IdealistViewer
 
         public void doFoliage(uint max)
         {
+            if (currentSim == null)
+                return;
+
             int i = 0;
             bool done = false;
             while (!done)
@@ -1791,6 +1806,7 @@ namespace IdealistViewer
                     Primitive prim = foliage.prim;
                     ulong handle = 0;
                     float scaleScalar = 0.1f;
+
                     if (currentSim != null)
                     {
                         handle = currentSim.Handle;
@@ -1958,18 +1974,18 @@ namespace IdealistViewer
         {
             switch (command)
             {
-                //case "a":  // experimental for animation debugging
-                //    try
-                //    {
-                //        int.TryParse(cmdparams[0], out myStartFrame);
-                //        int.TryParse(cmdparams[1], out myStopFrame);
-                //        myFramesDirty = true;
-                //    }
-                //    catch
-                //    {
-                //        m_log.Warn("usage: a <startFrame> <endFrame> - where startFrame and endFrame are integers");
-                //    }
-                //    break;
+                case "a":  // experimental for animation debugging
+                    try
+                    {
+                        int.TryParse(cmdparams[0], out myStartFrame);
+                        int.TryParse(cmdparams[1], out myStopFrame);
+                        myFramesDirty = true;
+                    }
+                    catch
+                    {
+                        m_log.Warn("usage: a <startFrame> <endFrame> - where startFrame and endFrame are integers");
+                    }
+                    break;
                 case "goto":
                     float x = 128f;
                     float y = 128f;
