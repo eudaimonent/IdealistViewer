@@ -10,9 +10,25 @@
   LeftArrow = Left, RightArrow = Right
   MouseScrollBar zooms the view in and out
   
+  * Charles Krinke aka 'ckrinke'
   * Dahlia Trimble
   * Teravus Ousley
-  * Charles Krinke aka 'ckrinke'
+  
+  This software is based in part on the 
+  work of the Independent JPEG Group.
+
+  This software is based in part on the 
+  Irrlicht Engine and the IrrlichtNETCP 
+  bindings
+  
+  Irrlicht engine Copyright (c)
+  2002-2008 Nikolaus Gebhardt
+  
+  IrrlichtNETCP Copyright (c)
+  2006-2007 Emmanuel 'DeusXL' 
+  Bossiere and 
+  Copyright (c) 2007-2008 
+  Yevgen 'Lester' Yashchenko
   
 </messageText>
 </config>
