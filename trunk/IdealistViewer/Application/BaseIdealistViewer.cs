@@ -1683,8 +1683,8 @@ namespace IdealistViewer
                             if (newAnims != null)
                             {
                                 int startFrame = 0;
-                                int endFrame = 39;
-                                MD2Animation md2Anim = MD2Animation.Stand;
+                                int endFrame = 40 * 4 - 1;
+                                //MD2Animation md2Anim = MD2Animation.Stand;
                                 foreach (UUID animID in newAnims)
                                 {
                                     //m_log.Debug("[ANIMATION] - got animID: " + animID.ToString());
@@ -1696,28 +1696,28 @@ namespace IdealistViewer
                                         || animID == Animations.STAND_4)
                                     {
                                         m_log.Debug("[ANIMATION] - standing");
-                                        md2Anim = MD2Animation.Stand;
+                                        //md2Anim = MD2Animation.Stand;
                                         startFrame = 0;
-                                        endFrame = 39;
-                                        //startFrame = 31;
-                                        //endFrame = 53;
+                                        endFrame = 40 * 4 - 1;
 
                                     }
                                     if (animID == Animations.CROUCHWALK)
                                     {
                                         m_log.Debug("[ANIMATION] - crouchwalk");
-                                        md2Anim = MD2Animation.CrouchWalk;
+                                        //md2Anim = MD2Animation.CrouchWalk;
+                                        // 154-159
+                                        startFrame = 154 * 4;
+                                        endFrame = 159 * 4 - 1;
+
+
                                     }
                                     if (animID == Animations.WALK
-                                        || animID == Animations.CROUCHWALK
                                         || animID == Animations.FEMALE_WALK)
                                     {
                                         m_log.Debug("[ANIMATION] - walking");
-                                        md2Anim = MD2Animation.Run;
-                                        startFrame = 40;
-                                        endFrame = 45;
-                                        //startFrame = 0;
-                                        //endFrame = 22;
+                                        //md2Anim = MD2Animation.Run;
+                                        startFrame = 160;
+                                        endFrame = 180;
                                     }
                                     if (animID == Animations.SIT
                                         || animID == Animations.SIT_FEMALE
@@ -1727,25 +1727,32 @@ namespace IdealistViewer
                                         || animID == Animations.SIT_TO_STAND)
                                     {
                                         m_log.Debug("[ANIMATION] - sitting");
-                                        md2Anim = MD2Animation.Pain3;
+                                        //md2Anim = MD2Animation.Pain3;
+                                        startFrame = 169 * 4;
+                                        endFrame = 169 * 4;
                                     }
                                     if (animID == Animations.FLY
                                         || animID == Animations.FLYSLOW)
                                     {
                                         m_log.Debug("[ANIMATION] - flying");
-                                        md2Anim = MD2Animation.Jump;
+                                        //md2Anim = MD2Animation.Jump;
+                                        startFrame = 195 * 4;
+                                        endFrame = 197 * 4 - 1;
                                     }
                                     if (animID == Animations.CROUCH)
                                     {
                                         m_log.Debug("[ANIMATION] - crouching");
-                                        md2Anim = MD2Animation.CrouchPain;
+                                        //md2Anim = MD2Animation.CrouchPain;
+                                        // 135-153
+                                        startFrame = 135 * 4;
+                                        endFrame = 153 * 4 - 1;
                                     }
-                                    else md2Anim = MD2Animation.Stand;
+                                    //else md2Anim = MD2Animation.Stand;
                                 }
                                 if (avobj.node is AnimatedMeshSceneNode)
                                 {
-                                    ((AnimatedMeshSceneNode)avobj.node).SetMD2Animation(md2Anim);
-                                    //((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(startFrame, endFrame);
+                                    //((AnimatedMeshSceneNode)avobj.node).SetMD2Animation(md2Anim);
+                                    ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(startFrame, endFrame);
                                     
                                 }
                             }
