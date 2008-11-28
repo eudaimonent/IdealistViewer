@@ -41,8 +41,15 @@ namespace IdealistViewer
         {
             Color color = new Color(255, 255, 0, 50);
 
-            Mesh mesh = new Mesh();
-
+            Mesh mesh;
+            try
+            {
+                mesh = new Mesh();
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
+            }
             int numViewerFaces = viewerFaces.Count;
 
             MeshBuffer[] mb = new MeshBuffer[numPrimFaces];
@@ -69,6 +76,10 @@ namespace IdealistViewer
 
                     }
                     catch (OutOfMemoryException)
+                    {
+                        return null;
+                    }
+                    catch (IndexOutOfRangeException)
                     {
                         return null;
                     }

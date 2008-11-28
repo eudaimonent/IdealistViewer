@@ -2450,17 +2450,17 @@ namespace IdealistViewer
 
                     for (uint i = 0; i < newObject.node.MaterialCount; i++)
                     {
-                        IrrlichtNETCP.Material objmaterial = newObject.node.GetMaterial((int)i);
+                        //IrrlichtNETCP.Material objmaterial = newObject.node.GetMaterial((int)i);
                         //objmaterial.Texture1.Dispose();
-                        if (objmaterial.Layer1 != null)
-                        {
-                            if (objmaterial.Layer1.Texture != null)
-                            {
-                                objmaterial.Layer1.Texture.Dispose();
-                            }
-                            objmaterial.Layer1.Dispose();
-                        }
-                        objmaterial.Dispose();
+                        //if (objmaterial.Layer1 != null)
+                        //{
+                        //    if (objmaterial.Layer1.Texture != null)
+                        //    {
+                       //         objmaterial.Layer1.Texture.Dispose();
+                       //     }
+                       //     objmaterial.Layer1.Dispose();
+                       // }
+                        //objmaterial.Dispose();
                     }
 
                     smgr.AddToDeletionQueue(newObject.node);
