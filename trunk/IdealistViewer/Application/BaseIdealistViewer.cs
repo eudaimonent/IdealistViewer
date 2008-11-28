@@ -3208,7 +3208,7 @@ namespace IdealistViewer
                 int id = p_event.Caller.ID;
                 GUIEnvironment env = device.GUIEnvironment;
 
-                //cfk m_log.InfoFormat("{0} {1} {2} {3}", p_event.Type, p_event.Caller, p_event.GUIEvent, p_event.Caller.ID);
+                //m_log.InfoFormat("{0} {1} {2} {3}", p_event.Type, p_event.Caller, p_event.GUIEvent, p_event.Caller.ID);
                 switch (p_event.GUIEvent)
                 {
                     case GUIEventType.MenuItemSelected:
@@ -3221,7 +3221,7 @@ namespace IdealistViewer
                                 env.AddFileOpenDialog("Please select a model file to open", false, device.GUIEnvironment.RootElement, 0);
                                 break;
                             case (int)MenuID.FileQuit: // File -> Quit
-                                running = false;
+                                Shutdown();
                                 break;
                             case (int)MenuID.ViewVisibility: // View -> Skybox
                                 //CFK nothing yet, circa Thanksgiving eve 08
