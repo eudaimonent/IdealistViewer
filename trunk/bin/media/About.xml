@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config>
+<!--This is a about file for IdealistViewer-->
+<startUpModel file="dwarf.x" />
+<messageText caption="IdealistViewer About and Help File">
+  Welcome to IdealistViewer.
+
+  Ctrl-LeftMouse tilts and pans the camera
+  UpArrow = Forward, DnArrow = Reverse
+  LeftArrow = Left, RightArrow = Right
+  MouseScrollBar zooms the view in and out
+  
+  * Dahlia Trimble
+  * Teravus Ousley
+  * Charles Krinke aka 'ckrinke'
+  
+</messageText>
+</config>

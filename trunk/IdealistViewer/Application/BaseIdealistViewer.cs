@@ -168,6 +168,10 @@ namespace IdealistViewer
 
         private const int modAVUpdates = 10;
 
+        /// <summary>
+        /// Flag to allow viewer to run. Set to false with File->Quit
+        /// </summary>
+        bool running = true;
 
         /// <summary>
         /// Held Controls
@@ -378,7 +382,7 @@ namespace IdealistViewer
             smgr.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
 
             XmlReader xml = XmlReader.Create(
-                new StreamReader("../../../media/config.xml"));
+                new StreamReader("../../../media/About.xml"));
             while (xml != null && xml.Read())
             {
                 switch (xml.NodeType)
@@ -456,8 +460,8 @@ namespace IdealistViewer
 //            submenu = gcontext.GetSubMenu(0);
 //            submenu.AddItem("Weird!", 100, true, false);
 
-            // create menu toplevel and submenu items. No event handlers yet - ckrinke
-
+            // create menu toplevel and submenu items. 
+            // device_OnEvent handles these menu items - ckrinke
             GUIContextMenu menu = guienv.AddMenu(guienv.RootElement, -1);
             menu.AddItem("File", -1, true, true);
             menu.AddItem("View", -1, true, true);
@@ -557,7 +561,6 @@ namespace IdealistViewer
             */
             // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
-            bool running = true;
             while (running)
             {
                 try
@@ -3185,7 +3188,6 @@ namespace IdealistViewer
                     string resizeto = eventype.Substring(pos + 1, pos2 - (pos + 1));
                     string[] xy = resizeto.Split(' ');
 
-
                     WindowWidth = Convert.ToInt32(xy[0]);
                     WindowHeight = Convert.ToInt32(xy[1]);
                     WindowWidth_DIV2 = WindowWidth * 0.5f;
@@ -3193,6 +3195,68 @@ namespace IdealistViewer
                     aspect = (float)WindowWidth / WindowHeight;
                 }
             }
+
+            if (p_event.Type == EventType.GUIEvent)
+            {
+                int id = p_event.Caller.ID;
+                GUIEnvironment env = device.GUIEnvironment;
+
+                //cfk m_log.InfoFormat("{0} {1} {2} {3}", p_event.Type, p_event.Caller, p_event.GUIEvent, p_event.Caller.ID);
+                switch (p_event.GUIEvent)
+                {
+                    case GUIEventType.MenuItemSelected:
+                        // a menu item was clicked
+                        GUIContextMenu menu = ((GUIContextMenu)p_event.Caller);
+                        id = menu.GetItemCommandID(menu.SelectedItem);
+                        switch (id)
+                        {
+                            case (int)MenuID.FileOpen:
+                                env.AddFileOpenDialog("Please select a model file to open", false, device.GUIEnvironment.RootElement, 0);
+                                break;
+                            case (int)MenuID.FileQuit: // File -> Quit
+                                running = false;
+                                break;
+                            case (int)MenuID.ViewVisibility: // View -> Skybox
+                                //CFK nothing yet, circa Thanksgiving eve 08
+                                //CFK                                SkyBox.Visible = SkyBox.Visible ? false : true;
+                                break;
+                            case (int)MenuID.ViewDebug: // View -> Debug Information
+                                //CFK nothing yet, circa Thanksgiving eve 08
+                                //CFK                                if (Model != null)
+                                //CFK                                    Model.DebugDataVisible = Model.DebugDataVisible ? false : true; ;
+                                break;
+                            case (int)MenuID.About: // Help->About
+                                showAboutText();
+                                break;
+                            case (int)MenuID.ViewModeOne: // View -> Material -> Solid
+                                //CFK nothing yet, circa Thanksgiving eve 08
+                                //CFK                                if (Model != null)
+                                //CFK                                    Model.SetMaterialType(MaterialType.Solid);
+                                break;
+                            case (int)MenuID.ViewModeTwo: // View -> Material -> Transparent
+                                //CFK nothing yet, circa Thanksgiving eve 08
+                                //CFK                                if (Model != null)
+                                //CFK                                    Model.SetMaterialType(MaterialType.TransparentAddColor);
+                                break;
+                            case (int)MenuID.ViewModeThree: // View -> Material -> Reflection
+                                //CFK nothing yet, circa Thanksgiving eve 08
+                                //CFK                                if (Model != null)
+                                //CFK                                    Model.SetMaterialType(MaterialType.SphereMap);
+                                break;
+                        }
+                        break;//case GUIEventType.MenuItemSelected:
+
+                    case GUIEventType.FileSelected:
+                        //CFK nothing yet, circa Thanksgiving eve 08
+                        // load the model file, selected in the file open dialog
+                        //CFK GUIFileOpenDialog dialog = ((GUIFileOpenDialog)p_event.Caller);
+                        //CFK                        loadModel(dialog.Filename);
+                        break;
+
+                }
+            }
+
+
             // !Mouse event  (we do this so that we don't process the rest of this each mouse move
             if (p_event.Type != EventType.MouseInputEvent)
             {
@@ -3206,7 +3270,7 @@ namespace IdealistViewer
                             ctrlHeld = p_event.KeyPressedDown;
                             if (ctrlHeld)
                             {
-                                
+          
                                 cam.ResetMouseOffsets();
                             }
                             else
@@ -3260,6 +3324,9 @@ namespace IdealistViewer
 
             return false;
         }
+
+        
+        
         #region Mouse Handler
         public bool MouseEventProcessor(Event p_event)
         {
