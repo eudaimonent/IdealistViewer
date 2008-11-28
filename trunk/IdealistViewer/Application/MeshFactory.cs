@@ -58,27 +58,33 @@ namespace IdealistViewer
             
             
             bool identicalcandidate = true;
-            foreach (Primitive.TextureEntryFace face in prim.Textures.FaceTextures)
+            if (prim.Textures != null)
             {
-                if (face != null)
-                    identicalcandidate = false;
+                foreach (Primitive.TextureEntryFace face in prim.Textures.FaceTextures)
+                {
+                    if (face != null)
+                        identicalcandidate = false;
+                }
             }
 
             StringBuilder sbIdenticalMesh = new StringBuilder();
             sbIdenticalMesh.Append(storedmeshcode);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.TextureID);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Bump);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Fullbright);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Glow);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.MediaFlags);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.OffsetU);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.OffsetV);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RepeatU);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RepeatV);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RGBA.ToRGBString());
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Rotation);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Shiny);
-            sbIdenticalMesh.Append(prim.Textures.DefaultTexture.TexMapType.ToString());
+            if (prim.Textures != null)
+            {
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.TextureID);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Bump);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Fullbright);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Glow);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.MediaFlags);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.OffsetU);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.OffsetV);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RepeatU);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RepeatV);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.RGBA.ToRGBString());
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Rotation);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.Shiny);
+                sbIdenticalMesh.Append(prim.Textures.DefaultTexture.TexMapType.ToString());
+            }
 
             string identicalmeshcode = sbIdenticalMesh.ToString();
 
