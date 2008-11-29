@@ -123,11 +123,11 @@ namespace Tutorial08
             anim.Dispose();
 
             // attach billboard to light
-            node = smgr.AddBillboardSceneNode(node, new Dimension2Df(50, 50), -1);
-            node.SetMaterialFlag(MaterialFlag.Lighting, false);
-            node.SetMaterialType(MaterialType.TransparentAddColor);
-            node.SetMaterialTexture(0,
-                driver.GetTexture("particlewhite.bmp"));
+            //node = smgr.AddBillboardSceneNode(node, new Dimension2Df(50, 50), -1);
+            ///node.SetMaterialFlag(MaterialFlag.Lighting, false);
+           // node.SetMaterialType(MaterialType.TransparentAddColor);
+           // node.SetMaterialTexture(0,
+            //    driver.GetTexture("particlewhite.bmp"));
 
             /* The next special effect is a lot more interesting: A particle system. The
                particle system in the Irrlicht Engine is quit modular and extensible and

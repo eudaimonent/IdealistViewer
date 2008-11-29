@@ -182,8 +182,8 @@ room.*/
                 room.SetMaterialTexture(0, colorMap);
                 room.SetMaterialTexture(1, normalMap);
                 room.GetMaterial(0).EmissiveColor.Set(0, 0, 0, 0);
-                room.SetMaterialFlag(MaterialFlag.FogEnable, true);
-                room.SetMaterialFlag(MaterialFlag.Lighting, false);
+                //room.SetMaterialFlag(MaterialFlag.FogEnable, true);
+                //room.SetMaterialFlag(MaterialFlag.Lighting, false);
                 room.SetMaterialType(MaterialType.ParallaxMapSolid);
                 room.GetMaterial(0).MaterialTypeParam=0.02f;// adjust height for parallax effect
                 // drop mesh because we created it with a create.. call.
@@ -251,12 +251,12 @@ room.*/
             light1.AddAnimator(anim2);
 
             // attach billboard to the light
-            SceneNode bill =
-                smgr.AddBillboardSceneNode(light1, new Dimension2Df(60, 60), 0);
+            //SceneNode bill =
+            //    smgr.AddBillboardSceneNode(light1, new Dimension2Df(60, 60), 0);
 
-            bill.SetMaterialFlag(MaterialFlag.Lighting, false);
-            bill.SetMaterialType(MaterialType.TransparentAddColor);
-            bill.SetMaterialTexture(0, driver.GetTexture("particlered.bmp"));
+            //bill.SetMaterialFlag(MaterialFlag.Lighting, false);
+            //bill.SetMaterialType(MaterialType.TransparentAddColor);
+            //bill.SetMaterialTexture(0, driver.GetTexture("particlered.bmp"));
 
             /*Now the same again, with the second light. The difference is that we add a particle
              * system to it too. And because the light moves, the particles of the particlesystem
@@ -277,10 +277,10 @@ room.*/
             light2.AddAnimator(anim2);
 
             // attach billboard to light
-            bill = smgr.AddBillboardSceneNode(light2, new Dimension2Df(120, 120), 0);
-            bill.SetMaterialFlag(MaterialFlag.Lighting, false);
-            bill.SetMaterialType(MaterialType.TransparentAddColor);
-            bill.SetMaterialTexture(0, driver.GetTexture("particlewhite.bmp"));
+            //bill = smgr.AddBillboardSceneNode(light2, new Dimension2Df(120, 120), 0);
+            //bill.SetMaterialFlag(MaterialFlag.Lighting, false);
+            //bill.SetMaterialType(MaterialType.TransparentAddColor);
+            //bill.SetMaterialTexture(0, driver.GetTexture("particlewhite.bmp"));
 
             // add particle system
             ParticleSystemSceneNode ps =

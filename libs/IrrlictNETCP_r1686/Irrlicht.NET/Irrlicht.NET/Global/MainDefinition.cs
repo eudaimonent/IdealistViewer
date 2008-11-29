@@ -5,7 +5,7 @@ using System;
  	public class Native
  	{
 #if DEBUG
-        public const string Dll = @"IrrlichtWd";
+        public const string Dll = @"IrrlichtW";
 #else
 		public const string Dll = @"IrrlichtW";
 #endif
