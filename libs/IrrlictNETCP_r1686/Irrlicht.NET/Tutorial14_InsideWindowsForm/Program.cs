@@ -34,7 +34,7 @@ namespace Tutorial14
         {
             //device = new IrrlichtDevice(DriverType.Direct3D9,
             //    new Dimension2D(640, 480), 32, false, true, true, true, this.myPanel.Handle);
-            device.FileSystem.WorkingDirectory = "../../media"; //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = "../../medias"; //We set Irrlicht's current directory to %application directory%/media
             device.OnEvent += new OnEventDelegate(device_OnEvent); //We had a simple delegate that will handle every event
 
             // setup a simple 3d scene

@@ -70,7 +70,7 @@ device->getSceneManager().
             SceneManager smgr = device.SceneManager;
             VideoDriver driver = device.VideoDriver;
 
-            device.FileSystem.AddZipFileArchive("../../media/map-20kdm2.pk3",true,true);
+            device.FileSystem.AddZipFileArchive("../../medias/map-20kdm2.pk3",true,true);
 
             AnimatedMesh q3levelmesh = smgr.GetMesh("20kdm2.bsp");
             SceneNode q3node = null;
@@ -149,18 +149,18 @@ device->getSceneManager().
                 smgr.RootSceneNode, new Dimension2Df(20, 20), -1);
             bill.SetMaterialType(MaterialType.TransparentAddColor);
             bill.SetMaterialTexture(0, driver.GetTexture(
-                "../../media/particle.bmp"));
+                "../../medias/particle.bmp"));
             bill.SetMaterialFlag(MaterialFlag.Lighting, false);
             bill.SetMaterialFlag(MaterialFlag.ZBuffer, false);
 
             Material material = new Material();
             material.Texture1 = driver.GetTexture(
-                "../../media/faerie2.bmp");
+                "../../medias/faerie2.bmp");
             material.Lighting = true;
 
             AnimatedMeshSceneNode node = null;
             AnimatedMesh faerie = smgr.GetMesh(
-                "../../media/faerie.md2");
+                "../../medias/faerie.md2");
             if (faerie != null)
             {
                 node = smgr.AddAnimatedMeshSceneNode(faerie);

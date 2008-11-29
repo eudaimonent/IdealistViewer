@@ -30,7 +30,7 @@ windowed mode.
 wide character strings when displaying text.
             */
             device.WindowCaption = "Hello World! - Irrlicht Engine Demo";
-            device.FileSystem.WorkingDirectory = "../../media"; //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = "../../medias"; //We set Irrlicht's current directory to %application directory%/media
 
             //
             VideoDriver driver = device.VideoDriver;

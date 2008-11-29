@@ -83,7 +83,7 @@ namespace Tutorial09
             SceneNode sceneRoot = smgr.RootSceneNode;
 
             XmlReader xml = XmlReader.Create(
-                new StreamReader("../../media/config.xml"));
+                new StreamReader("../../medias/config.xml"));
             while (xml != null && xml.Read())
             {
                 switch (xml.NodeType)
@@ -105,7 +105,7 @@ namespace Tutorial09
             skin = env.CreateSkin(GUISkinTypes.WindowsMetallic);
 
             // set a nicer font
-            GUIFont font = env.GetFont("../../media/fonthaettenschweiler.bmp");
+            GUIFont font = env.GetFont("../../medias/fonthaettenschweiler.bmp");
             //if (font) skin.Font=(font;
 
             // create menu
@@ -137,9 +137,9 @@ namespace Tutorial09
 
             // create toolbar
             GUIToolBar bar = env.AddToolBar(guiRoot, -1);
-            bar.AddButton(1102, "", "", driver.GetTexture("../../media/open.bmp"), null, false, false);
-            bar.AddButton(1103, "", "", driver.GetTexture("../../media/help.bmp"), null, false, false);
-            bar.AddButton(1104, "", "", driver.GetTexture("../../media/tools.bmp"), null, false, false);
+            bar.AddButton(1102, "", "", driver.GetTexture("../../medias/open.bmp"), null, false, false);
+            bar.AddButton(1103, "", "", driver.GetTexture("../../medias/help.bmp"), null, false, false);
+            bar.AddButton(1104, "", "", driver.GetTexture("../../medias/tools.bmp"), null, false, false);
 
             // create a combobox with some senseless texts
             GUIComboBox box = env.AddComboBox(new Rect(new Position2D(100, 5), new Position2D(200, 25)), bar, -1);
@@ -163,7 +163,7 @@ namespace Tutorial09
             }*/
             // add the irrlicht engine logo
             GUIImage img = env.AddImage(new Rect(new Position2D(22, 429), new Position2D(108, 460)), guiRoot, 666, "");
-            img.Image = driver.GetTexture("../../media/irrlichtlogoaligned.jpg");
+            img.Image = driver.GetTexture("../../medias/irrlichtlogoaligned.jpg");
 
             // add a tabcontrol
             createToolBox();
@@ -181,12 +181,12 @@ namespace Tutorial09
             // add skybox
             SkyBox = smgr.AddSkyBoxSceneNode(sceneRoot,
                 new Texture[] {
-                driver.GetTexture("../../media/irrlicht2_up.jpg"),
-                driver.GetTexture("../../media/irrlicht2_dn.jpg"),
-                driver.GetTexture("../../media/irrlicht2_lf.jpg"),
-                driver.GetTexture("../../media/irrlicht2_rt.jpg"),
-                driver.GetTexture("../../media/irrlicht2_ft.jpg"),
-                driver.GetTexture("../../media/irrlicht2_bk.jpg")
+                driver.GetTexture("../../medias/irrlicht2_up.jpg"),
+                driver.GetTexture("../../medias/irrlicht2_dn.jpg"),
+                driver.GetTexture("../../medias/irrlicht2_lf.jpg"),
+                driver.GetTexture("../../medias/irrlicht2_rt.jpg"),
+                driver.GetTexture("../../medias/irrlicht2_ft.jpg"),
+                driver.GetTexture("../../medias/irrlicht2_bk.jpg")
                 }, -1);
 
             // add a camera scene node

@@ -85,7 +85,7 @@ namespace Tutorial06
               driver->makeColorKeyTexture(images, video::SColor(0,0,0,0))
               to make e.g. all black pixels transparent. Please note, that
               makeColorKeyTexture just creates an alpha channel based on the color.*/
-            Texture images = driver.GetTexture("../../media/2ddemo.bmp");
+            Texture images = driver.GetTexture("../../medias/2ddemo.bmp");
             driver.MakeColorKeyTexture(images, new Position2D(0, 0));
 
             /*

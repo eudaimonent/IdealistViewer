@@ -58,7 +58,7 @@ namespace Tutorial13
             }
             // Create device and exit if creation fails:
             device = new IrrlichtDevice(driverType, new Dimension2D(640, 480), 32, false, true, true, true);
-            device.FileSystem.WorkingDirectory = "../../media"; //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = "../../medias"; //We set Irrlicht's current directory to %application directory%/media
 
             /*************************************************/
             /* First, we add standard stuff to the scene: A nice irrlicht engine logo,
@@ -133,7 +133,7 @@ namespace Tutorial13
             {
                 // create problem text
                 GUISkin skin = env.Skin;
-                GUIFont font = env.GetFont("../../media/fonthaettenschweiler.bmp");
+                GUIFont font = env.GetFont("../../medias/fonthaettenschweiler.bmp");
                 // Not implemented
                 //if (font!=null)
                 //    skin.Font.SetFont(font);

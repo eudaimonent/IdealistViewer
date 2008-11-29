@@ -136,7 +136,7 @@ namespace Tutorial14
             }
             // Create device and exit if creation fails:
             device = new IrrlichtDevice(driverType, new Dimension2D(ResX, ResY), 32, fullScreen, true, true, true);
-            device.FileSystem.WorkingDirectory = "../../media"; //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = "../../medias"; //We set Irrlicht's current directory to %application directory%/media
             device.OnEvent += new OnEventDelegate(OnEvent); //We had a simple delegate that will handle every event
             SceneManager smgr = device.SceneManager;
             VideoDriver driver = device.VideoDriver;

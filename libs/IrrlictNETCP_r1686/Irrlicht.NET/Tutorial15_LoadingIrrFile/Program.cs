@@ -60,7 +60,7 @@ namespace Tutorial15
             GUIEnvironment env = device.GUIEnvironment;
 
             // load the scene
-            smgr.LoadScene("../../media/example.irr");
+            smgr.LoadScene("../../medias/example.irr");
 
             // add a user controlled camera
             smgr.AddCameraSceneNodeFPS(smgr.RootSceneNode, 100, 100, false);

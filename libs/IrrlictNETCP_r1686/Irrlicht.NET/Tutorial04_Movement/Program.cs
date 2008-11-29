@@ -55,7 +55,7 @@ namespace Tutorial04
 
             // Create device and exit if creation fails:
             IrrlichtDevice device = new IrrlichtDevice(driverType, new Dimension2D(640, 480), 32, false, true, true, true);
-            device.FileSystem.WorkingDirectory = "../../media"; //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = "../../medias"; //We set Irrlicht's current directory to %application directory%/media
 
             if (device == null)
             {
