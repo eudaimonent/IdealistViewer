@@ -475,8 +475,8 @@ namespace IdealistViewer
             submenu.AddItem("Quit", (int)MenuID.FileQuit, true, false);
 
             submenu = menu.GetSubMenu(1);
-            submenu.AddItem("toggle sky box visibility", (int)MenuID.ViewVisibility, true, false);
-            submenu.AddItem("toggle debug information", (int)MenuID.ViewDebug, true, false);
+            submenu.AddItem("Show PrimCount", (int)MenuID.ShowPrimcount, true, false);
+            submenu.AddItem("Clear Cache", (int)MenuID.ClearCache, true, false);
             submenu.AddItem("toggle mode", -1, true, true);
 
             submenu = submenu.GetSubMenu(2);
@@ -3223,14 +3223,22 @@ namespace IdealistViewer
                             case (int)MenuID.FileQuit: // File -> Quit
                                 Shutdown();
                                 break;
-                            case (int)MenuID.ViewVisibility: // View -> Skybox
-                                //CFK nothing yet, circa Thanksgiving eve 08
-                                //CFK                                SkyBox.Visible = SkyBox.Visible ? false : true;
+                            case (int)MenuID.ShowPrimcount:
+                                {
+                                    uint texcount = 0;
+                                    if (textureMan != null)
+                                        texcount = textureMan.TextureCacheCount;
+                                    m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount, m_MeshFactory.UniqueObjects);
+                                }
                                 break;
-                            case (int)MenuID.ViewDebug: // View -> Debug Information
-                                //CFK nothing yet, circa Thanksgiving eve 08
-                                //CFK                                if (Model != null)
-                                //CFK                                    Model.DebugDataVisible = Model.DebugDataVisible ? false : true; ;
+                            case (int)MenuID.ClearCache:
+                                {
+                                    if (textureMan != null)
+                                    {
+                                        textureMan.ClearMemoryCache();
+
+                                    }
+                                }
                                 break;
                             case (int)MenuID.About: // Help->About
                                 showAboutText();
@@ -3504,8 +3512,8 @@ namespace IdealistViewer
     {
         FileOpen = 10,
         FileQuit = 99,
-        ViewVisibility = 101,
-        ViewDebug = 102,
+        ShowPrimcount = 101,
+        ClearCache = 102,
         ViewModeOne = 111,
         ViewModeTwo = 112,
         ViewModeThree = 113,
