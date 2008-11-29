@@ -81,29 +81,6 @@
       </Files>
     </Project>
 
-    <Project name="GUIExample" path="GUIExample" type="Exe">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../../bin/Release/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../../bin/Release/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../../bin/</ReferencePath>
-      <Reference name="System" localCopy="false"/>
-      <Reference name="System.Data" localCopy="false"/>
-      <Reference name="System.Xml"/>
-      <Reference name="Irrlicht.NET"/>
-      <Reference name="Irrlicht.Extensions"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-
     <Project name="ShadersAndParticles" path="ShadersAndParticles" type="Exe">
       <Configuration name="Debug">
         <Options>
@@ -149,7 +126,49 @@
       </Files>
     </Project>
 
-    <Project name="CustomSceneNode" path="CustomSceneNode" type="Exe">
+    <Project name="Tutorial01_Sample" path="Tutorial01_Sample" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial02_Quake3Map" path="Tutorial02_Quake3Map" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial03_CustomSceneNode" path="Tutorial03_CustomSceneNode" type="Exe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/Release/</OutputPath>
@@ -172,7 +191,180 @@
       </Files>
     </Project>
 
-    <Project name="TerrainExample" path="TerrainExample" type="Exe">
+    <Project name="Tutorial04_Movement" path="Tutorial04_Movement" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial05_GUIExample" path="Tutorial05_GUIExample" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Data" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Reference name="Irrlicht.Extensions"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial06_T2DGraphics" path="Tutorial06_T2DGraphics" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Collections.Generic" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial07_Collision" path="Tutorial07_Collision" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial08_SpecialFX" path="Tutorial08_SpecialFX" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial09_Meshviewer" path="Tutorial09_Meshviewer" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial10_Shaders" path="Tutorial10_Shaders" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Data" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial11_PerPixelLighting" path="Tutorial11_PerPixelLighting" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Collections.Generic" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial12_TerrainExample" path="Tutorial12_TerrainExample" type="Exe">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/Release/</OutputPath>
@@ -195,6 +387,99 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
+
+    <Project name="Tutorial13_RenderToTexture" path="Tutorial13_RenderToTexture" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial14_InsideWindowsForm" path="Tutorial14_InsideWindowsForm" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Collections.Generic" localCopy="false"/>
+      <Reference name="System.ComponentModel" localCopy="false"/>
+      <Reference name="System.Data" localCopy="false"/>
+      <Reference name="System.Drawing" localCopy="false"/>
+      <Reference name="System.Text" localCopy="false"/>
+      <Reference name="System.Windows.Forms" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Reference name="Irrlicht.Extensions"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial15_LoadingIrrFile" path="Tutorial15_LoadingIrrFile" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Data" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
+    <Project name="Tutorial20_SplitScreen" path="Tutorial20_SplitScreen" type="Exe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/Release/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System" localCopy="false"/>
+      <Reference name="System.Xml"/>
+      <Reference name="Irrlicht.NET"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
+
   </Solution>
 
 
