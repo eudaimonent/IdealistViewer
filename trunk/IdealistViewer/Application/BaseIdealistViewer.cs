@@ -2100,6 +2100,44 @@ namespace IdealistViewer
             }
         }
 
+
+        /// <summary>
+        /// Show Chat History window
+        /// </summary>
+        protected virtual void ShowChat()
+        {
+            // remove tool box if already there
+            GUIEnvironment guienv = device.GUIEnvironment;
+            GUIElement root = guienv.RootElement;
+            GUIElement e = root.GetElementFromID(5000, true);
+            if (e != null) e.Remove();
+
+            GUIWindow wnd = guienv.AddWindow(
+                new Rect(new Position2D(150, 25), new Position2D(640, 485)),
+                false, "Chat Window", guienv.RootElement, 5000);
+
+            // create tab control and tabs
+            GUITabControl tab = guienv.AddTabControl(
+            new Rect(new Position2D(2, 20), new Position2D(490, 473)),
+            wnd, true, true, -1);
+            GUITab t1 = tab.AddTab("Main", -1);
+            GUITab t2 = tab.AddTab("Groups", -1);
+
+            // add some edit boxes and a button to tab one
+            //env.AddEditBox("1.0", new Rect(40,50,130,70), true, t1, 901);
+            guienv.AddListBox(new Rect(new Position2D(5, 55), new Position2D(485, 420)),
+                wnd, 5100, true);
+            //            guienv.AddEditBox("1.0",
+            //                new Rect(new Position2D(40, 50), new Position2D(130, 70)), true, t1, 901);
+            //            guienv.AddEditBox("1.0",
+            //                new Rect(new Position2D(40, 350), new Position2D(130, 400)), true, t1, 902);
+            guienv.AddEditBox(" ",
+                new Rect(new Position2D(2, 380), new Position2D(485, 470)), true, t1, 903);
+            //            guienv.AddButton(new
+            //                Rect(new Position2D(10, 150), new Position2D(100, 190)), t1, 1101, "set");
+
+        }
+        
         /// <summary>
         /// Show help information
         /// </summary>
@@ -3345,6 +3383,14 @@ namespace IdealistViewer
 
                             doKeyHeldStore(p_event.KeyCode,p_event.KeyPressedDown);
                             break;
+
+                        case KeyCode.Key_H:
+                            if (p_event.KeyPressedDown)
+                            {
+                                ShowChat();
+                            }
+                            break;
+
                         case KeyCode.Key_P:
                             if (p_event.KeyPressedDown)
                             {
@@ -3354,6 +3400,7 @@ namespace IdealistViewer
                                 m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount,m_MeshFactory.UniqueObjects);
                             }
                             break;
+
                         case KeyCode.Key_C:
                             if (p_event.KeyPressedDown)
                             {
