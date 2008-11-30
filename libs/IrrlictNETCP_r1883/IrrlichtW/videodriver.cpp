@@ -72,8 +72,8 @@ IntPtr VideoDriver_CreateImageFromFile(IntPtr videodriver, M_STRING filename)
 }
 
 IntPtr VideoDriver_CreateRenderTargetTexture(IntPtr videodriver, M_DIM2DS size)
-{
-	return GetVideoFromIntPtr(videodriver)->createRenderTargetTexture(MU_DIM2DS(size));
+{	
+	return GetVideoFromIntPtr(videodriver)->addRenderTargetTexture(MU_DIM2DS(size));
 }
 
 void VideoDriver_Draw2DImage(IntPtr videodriver, IntPtr texture, M_POS2DS destPos, M_RECT sourceRect, M_RECT clipRect, M_SCOLOR color, bool useAlphaChannelOfTexture)
