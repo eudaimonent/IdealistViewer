@@ -99,7 +99,7 @@ namespace IdealistViewer
                     //}
                     //else
                     //{
-                    newMaterialType1 = gpu.AddHighLevelShaderMaterial(GLASS_VERTEX_GLSL,"main",VertexShaderType._1_1, GLASS_FRAG_GLSL,"main", PixelShaderType._1_1, callBack, MaterialType.Solid, 0);
+                    newMaterialType1 = gpu.AddHighLevelShaderMaterial(GOOCH_VERTEX_GLSL,"main",VertexShaderType._1_1, GOOCH_FRAG_GLSL,"main", PixelShaderType._1_1, callBack, MaterialType.Solid, 0);
                             //gpu.AddShaderMaterialFromFiles(vsFileName,
                             //psFileName, callBack, MaterialType.Solid, 0);
                         //newMaterialType2 = gpu.AddShaderMaterialFromFiles(vsFileName,
@@ -335,21 +335,21 @@ namespace IdealistViewer
                         {
                             case Shininess.Low:
                                 shinyval = 0.8f;
-                                coldata.R += 0.1f;
-                                coldata.B += 0.1f;
-                                coldata.G += 0.1f;
+                                coldata.R *= 0.8f;
+                                coldata.B *= 0.8f;
+                                coldata.G *= 0.8f;
                                 break;
                             case Shininess.Medium:
                                 shinyval = 0.7f;
-                                coldata.R += 0.2f;
-                                coldata.B += 0.2f;
-                                coldata.G += 0.2f;
+                                coldata.R *= 0.6f;
+                                coldata.B *= 0.6f;
+                                coldata.G *= 0.6f;
                                 break;
                             case Shininess.High:
                                 shinyval = 0.6f;
-                                coldata.R += 0.3f;
-                                coldata.B += 0.3f;
-                                coldata.G += 0.3f;
+                                coldata.R *= 0.3f;
+                                coldata.B *= 0.3f;
+                                coldata.G *= 0.3f;
                                 break;
                         }
                         
@@ -397,21 +397,21 @@ namespace IdealistViewer
                                 {
                                     case Shininess.Low:
                                         shinyval = 0.8f;
-                                        coldata.R += 0.1f;
-                                        coldata.B += 0.1f;
-                                        coldata.G += 0.1f;
+                                        coldata.R *= 0.8f;
+                                        coldata.B *= 0.8f;
+                                        coldata.G *= 0.8f;
                                         break;
                                     case Shininess.Medium:
                                         shinyval = 0.7f;
-                                        coldata.R += 0.2f;
-                                        coldata.B += 0.2f;
-                                        coldata.G += 0.2f;
+                                        coldata.R *= 0.6f;
+                                        coldata.B *= 0.6f;
+                                        coldata.G *= 0.6f;
                                         break;
                                     case Shininess.High:
                                         shinyval = 0.6f;
-                                        coldata.R += 0.3f;
-                                        coldata.B += 0.3f;
-                                        coldata.G += 0.3f;
+                                        coldata.R *= 0.3f;
+                                        coldata.B *= 0.3f;
+                                        coldata.G *= 0.3f;
                                         break;
                                 }
 
@@ -546,7 +546,7 @@ namespace IdealistViewer
                 //vObj.mesh.GetMeshBuffer(j).Material.DiffuseColor = new Color((int)(coldata.A * 255), (int)(coldata.R * 255), (int)(coldata.B * 255), (int)(coldata.G * 255));
             //}
             //mb.Material.MaterialType = MaterialType.Solid;
-            mb.Material.Shininess = shinyval;
+            //mb.Material.Shininess = shinyval;
 
             //if (teface.Fullbright)
             //{
@@ -595,7 +595,7 @@ namespace IdealistViewer
             // If it's partially translucent inform Irrlicht
             if (coldata.A != 1)
             {
-                mb.Material.MaterialType = MaterialType.TransparentAddColor;
+                mb.Material.MaterialType = MaterialType.TransparentVertexAlpha;
                 mb.Material.Lighting = false;
                 //mb.Material.Lighting = !teface.Fullbright;
             }
@@ -603,9 +603,15 @@ namespace IdealistViewer
             {
                 // Full bright means no lighting
                 mb.Material.Lighting = !teface.Fullbright;
-                //mb.Material.MaterialType = (MaterialType)newMaterialType1;
+
+                if (shinyval > 0)
+                {
+                    
+                    mb.Material.MaterialType = (MaterialType)newMaterialType1;
+                    mb.Material.Lighting = false;
+                }
                
-                mb.Material.SpecularColor = new Color(52, 52, 52, 52);
+                //mb.Material.SpecularColor = new Color(52, 52, 52, 52);
             }
                 //mb.Material.MaterialTypeParam = (float)MaterialType.TransparentAddColor;
            // }
@@ -693,6 +699,7 @@ namespace IdealistViewer
             //invWorld.MakeInverse();
             //services.VideoDriver.GPUProgrammingServices.
             //services.SetVertexShaderConstant(invWorld.ToShader(), 0, 4);
+            //services.SetVertexShaderConstant("LightPosition", (new Vector3D(128,128,128).ToShader()));
 
             //IrrlichtNETCP.Matrix4 worldviewproj;
             //worldviewproj = driver.GetTransform(TransformationState.Projection);
@@ -704,39 +711,52 @@ namespace IdealistViewer
             //services.SetVertexShaderConstant(device.SceneManager.ActiveCamera.Position.ToShader(), 8, 1);
 
             //services.SetVertexShaderConstant(Colorf.Blue.ToShader(), 9, 1);
+            //services.SetVertexShaderConstant(Colorf.Blue.ToShader(),9,1);//SurfaceColor; // (0.75, 0.75, 0.75)
 
             //world = world.GetTransposed();
             //services.SetVertexShaderConstant(world.ToShader(), 10, 4);
         }
-        static string GLASS_VERTEX_GLSL =
-@"
-varying vec3 fvNormal;
-varying vec3 fvViewVec;
 
-void main( void )
+        // Gooch shader based on the Gooch shader by Randi Rost for 3Dlabs Inc LTD.  (standard MIT licence)
+        static string GOOCH_VERTEX_GLSL =
+@"
+uniform vec3  LightPosition;  // not used yet..    but will be for the sun
+
+varying float NdotL;
+varying vec3  ReflectVec;
+varying vec3  ViewVec;
+
+void main(void)
 {
-float dist =0.00087;
-gl_Position = ftransform();
-fvNormal    = gl_NormalMatrix * gl_Normal;
-fvViewVec = vec3(dist * gl_ModelViewMatrix * gl_Vertex);
-}
+    vec3 ecPos      = vec3 (gl_ModelViewMatrix * gl_Vertex);
+    vec3 tnorm      = normalize(gl_NormalMatrix * gl_Normal);
+    vec3 lightVec   = normalize(gl_LightSource[0].position.xyz - ecPos);
+    ReflectVec      = normalize(reflect(-lightVec, tnorm));
+    ViewVec         = normalize(-ecPos);
+    NdotL           = (dot(lightVec, tnorm) + 1.0) * 0.5;
+    gl_Position     = ftransform();
+    gl_TexCoord[0] = gl_MultiTexCoord0;
+}	
+	
 ";
-        static string GLASS_FRAG_GLSL =
+        static string GOOCH_FRAG_GLSL =
 @"
-varying vec3 fvNormal;
-varying vec3 fvViewVec;
+varying float NdotL;
+varying vec3  ReflectVec;
+varying vec3  ViewVec;
+uniform sampler2D colorMap;
 
-void main( void )
+void main (void)
 {
-vec4 color;
-vec4 temp;
-temp.xyz=-normalize(fvNormal);
-color.r=temp.r+0.5;
-color.g=temp.g+0.5;
-color.b=temp.b+0.5;
-float t=(1.0-fvViewVec.z)/2.0;
-if(t<0.0){t=0.0;}
-gl_FragColor = color*t;
+    vec3 kfinal   = vec3(texture2D(colorMap, gl_TexCoord[0].xy).rgb * 0.7);
+
+    vec3 nreflect = normalize(ReflectVec);
+    vec3 nview    = normalize(ViewVec);
+
+    float spec    = max(dot(nreflect, nview), 0.0);
+    spec          = pow(spec, 64.0);
+   
+    gl_FragColor = vec4 (min(kfinal + spec, 1.0), 1.0);
 }
 ";
 }
