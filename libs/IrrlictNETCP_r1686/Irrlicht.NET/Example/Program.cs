@@ -156,7 +156,7 @@ namespace IrrlichtNetExample
             AnimatedMeshSceneNode dwarf = scene.AddAnimatedMeshSceneNode(scene.GetMesh("dwarf.x"));
             dwarf.AnimationSpeed = 15;
             dwarf.Position = new Vector3D(0, 0, 100);
-            dwarf.AddShadowVolumeSceneNode(-1, true, 10000f); //Wow... It was really hard to create it !
+            //dwarf.AddShadowVolumeSceneNode(-1, true, 1f); //Wow... It was really hard to create it !
             dwarf.Scale = new Vector3D(1.5f, 1.5f, 1.5f);
 
             //Here we have our light that will simply rotate around the dwarf

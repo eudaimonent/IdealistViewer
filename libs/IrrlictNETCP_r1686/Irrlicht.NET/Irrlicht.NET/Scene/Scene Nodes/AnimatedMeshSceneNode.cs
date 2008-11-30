@@ -110,7 +110,7 @@ namespace IrrlichtNETCP
         /// <returns></returns>
 		public ShadowVolumeSceneNode AddShadowVolumeSceneNode(int ID,bool zfail, float infinity)
 		{
-            return null;
+            return null; // Fails currently.
 			return (ShadowVolumeSceneNode)
 				NativeElement.GetObject(AnimatedMeshSceneNode_AddShadowVolumeSceneNode(_raw, ID, zfail, infinity),
 										typeof(ShadowVolumeSceneNode));
