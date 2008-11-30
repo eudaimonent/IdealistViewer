@@ -88,6 +88,8 @@ namespace IdealistViewer
         /// </summary>
         private static SceneNode SNGlobalwater;
 
+        private static WaterSceneNode SNGlobalwater2;
+
         /// <summary>
         /// Combines triangle selectors for all of the objects in the scene.  A reference to the triangles
         /// </summary>
@@ -448,17 +450,17 @@ namespace IdealistViewer
             SNGlobalwater.SetMaterialType(MaterialType.TransparentReflection2Layer);
             SNGlobalwater.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
             SNGlobalwater.Position = new Vector3D(0, 0, 0);
-            
-            /*
-            WaterSceneNode water = new WaterSceneNode(null, smgr, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
-                            water.Position = new Vector3D(0, 30, 0);
+
+
+            SNGlobalwater2 = new WaterSceneNode(null, smgr, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
+            SNGlobalwater2.Position = new Vector3D(0, 30, 0);
                             //water.WaveDisplacement /= 1.0f;
-                            water.WaveHeight *= .5f;
+            SNGlobalwater2.WaveHeight *= .5f;
                             //water.WaveSpeed *= 1;
-                            water.RefractionFactor = 0.21f;
+            SNGlobalwater2.RefractionFactor = 0.21f;
                             //water.WaveLength *= 1;
                             //water.WaveRepetition = 1;
-            */
+            
 //            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, -1);
 //            gcontext.Text = "Some Text";
 //            gcontext.AddItem("SomeCooItem", -1, true, true);
@@ -2703,6 +2705,7 @@ namespace IdealistViewer
             {
                 // Set the water position
                 SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight-0.5f, 0);
+                SNGlobalwater2.Position = new Vector3D(0, sim.WaterHeight - 2.5f, 0);
                 //SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight - 50.5f, 0);
                 // TODO REFIX!
             }
