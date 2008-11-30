@@ -342,7 +342,8 @@ namespace IdealistViewer
             device = new IrrlichtDevice(DriverType.OpenGL,
                                                      new Dimension2D(WindowWidth, WindowHeight),
                                                     32, false, true, false, false);
-
+            //device.Timer.Stop();
+            device.Timer.Speed = 1;
             device.WindowCaption = "IdealistViewer 0.001";
             
             // Sets directory to load assets from
@@ -445,6 +446,7 @@ namespace IdealistViewer
                 new Dimension2Df(0, 0),
                 new Dimension2Df(10, 10));
 
+            /*
             SNGlobalwater = smgr.AddWaterSurfaceSceneNode(mesh.GetMesh(0),
                                                     0.4f, 300.0f, 12.0f, smgr.RootSceneNode, -1);
             SNGlobalwater.SetMaterialTexture(0, driver.GetTexture("water.jpg"));
@@ -452,7 +454,8 @@ namespace IdealistViewer
             SNGlobalwater.SetMaterialType(MaterialType.TransparentReflection2Layer);
             SNGlobalwater.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
             SNGlobalwater.Position = new Vector3D(0, 0, 0);
-
+            SNGlobalwater.Visible = false;
+            */
 
             SNGlobalwater2 = new WaterSceneNode(null, smgr, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
             SNGlobalwater2.Position = new Vector3D(0, 30, 0);
@@ -586,7 +589,7 @@ namespace IdealistViewer
                 if (!running)
                     break;
                 tickcount = System.Environment.TickCount;
-
+                SNGlobalwater2.Update();
                 skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
                 skincolor.A = 255;
                 skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
@@ -606,7 +609,6 @@ namespace IdealistViewer
                 //avmeshsntest.DebugDataVisible = DebugSceneType.Full;
                 avmeshsntest.LoopMode = true;
                 */
-
 
 
 
@@ -2727,8 +2729,8 @@ namespace IdealistViewer
             if (isCurrentSim)
             {
                 // Set the water position
-                SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight-0.5f, 0);
-                SNGlobalwater2.Position = new Vector3D(0, sim.WaterHeight - 2.5f, 0);
+                //SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight-0.5f, 0);
+                SNGlobalwater2.Position = new Vector3D(0, sim.WaterHeight - 0.5f, 0);
                 //SNGlobalwater.Position = new Vector3D(0, sim.WaterHeight - 50.5f, 0);
                 // TODO REFIX!
             }

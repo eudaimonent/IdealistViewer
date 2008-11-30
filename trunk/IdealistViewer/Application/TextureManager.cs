@@ -29,6 +29,8 @@ namespace IdealistViewer
 
         private VideoDriver driver = null;
         private string imagefolder = string.Empty;
+        private bool shaderYN = true;
+        private int newMaterialType1 = 0;
 
         /// <summary>
         /// In Memory texture cache
@@ -58,6 +60,55 @@ namespace IdealistViewer
             triPicker = ptriPicker;
             mts = pmts;
             m_user.OnImageReceived += imageReceivedCallback;
+
+            if (!driver.QueryFeature(VideoDriverFeature.PixelShader_1_1) &&
+                !driver.QueryFeature(VideoDriverFeature.ARB_FragmentProgram_1))
+            {
+                device.Logger.Log("WARNING: Pixel shaders disabled \n" +
+                   "because of missing driver/hardware support.");
+                shaderYN=false;
+            }
+            if (!driver.QueryFeature(VideoDriverFeature.VertexShader_1_1) &&
+                !driver.QueryFeature(VideoDriverFeature.ARB_FragmentProgram_1))
+            {
+                device.Logger.Log("WARNING: Vertex shaders disabled \n" +
+                   "because of missing driver/hardware support.");
+                shaderYN = false;
+            }
+
+
+            if (shaderYN)
+            {
+                GPUProgrammingServices gpu = driver.GPUProgrammingServices;
+                if (gpu != null)
+                {
+                    OnShaderConstantSetDelegate callBack = OnSetConstants;
+                    // create the shaders depending on if the user wanted high level
+                    // or low level shaders:
+                    //if (UseHighLevelShaders)
+                    //{
+                        // create material from high level shaders (hlsl or glsl)
+                       // newMaterialType1 = gpu.AddHighLevelShaderMaterialFromFiles(
+                      //      vsFileName, "vertexMain", VertexShaderType._1_1,
+                    //        psFileName, "pixelMain", PixelShaderType._1_1,
+                    //        callBack, MaterialType.Solid, 0);
+                    //    newMaterialType2 = gpu.AddHighLevelShaderMaterialFromFiles(
+                    //        vsFileName, "vertexMain", VertexShaderType._1_1,
+                    //        psFileName, "pixelMain", PixelShaderType._1_1,
+                    //        callBack, MaterialType.TransparentAddColor, 0);
+                    //}
+                    //else
+                    //{
+                    newMaterialType1 = gpu.AddHighLevelShaderMaterial(GLASS_VERTEX_GLSL,"main",VertexShaderType._1_1, GLASS_FRAG_GLSL,"main", PixelShaderType._1_1, callBack, MaterialType.Solid, 0);
+                            //gpu.AddShaderMaterialFromFiles(vsFileName,
+                            //psFileName, callBack, MaterialType.Solid, 0);
+                        //newMaterialType2 = gpu.AddShaderMaterialFromFiles(vsFileName,
+                        //    psFileName, callBack, MaterialType.TransparentAddColor, 0);
+                   // }
+                }
+
+            }
+
         }
         /// <summary>
         /// Requests an image for an object.
@@ -552,6 +603,9 @@ namespace IdealistViewer
             {
                 // Full bright means no lighting
                 mb.Material.Lighting = !teface.Fullbright;
+                //mb.Material.MaterialType = (MaterialType)newMaterialType1;
+               
+                mb.Material.SpecularColor = new Color(52, 52, 52, 52);
             }
                 //mb.Material.MaterialTypeParam = (float)MaterialType.TransparentAddColor;
            // }
@@ -627,5 +681,63 @@ namespace IdealistViewer
                 }
             }
         }
-    }
+        public void OnSetConstants(MaterialRendererServices services, int userData)
+        {
+            //This is called when we need to set shader's constants
+            //It is very simple and taken from Irrlicht's original shader example.
+            //Please notice that many types already has a "ToShader" func made especially
+            //For exporting to shader floats !
+            //If the structure you want has no such function, then simply use "ToUnmanaged" instead
+            //IrrlichtNETCP.Matrix4 world = driver.GetTransform(TransformationState.World);
+            //IrrlichtNETCP.Matrix4 invWorld = world;
+            //invWorld.MakeInverse();
+            //services.VideoDriver.GPUProgrammingServices.
+            //services.SetVertexShaderConstant(invWorld.ToShader(), 0, 4);
+
+            //IrrlichtNETCP.Matrix4 worldviewproj;
+            //worldviewproj = driver.GetTransform(TransformationState.Projection);
+            ///worldviewproj *= driver.GetTransform(TransformationState.View);
+            //worldviewproj *= world;
+
+            //services.SetVertexShaderConstant(worldviewproj.ToShader(), 4, 4);
+
+            //services.SetVertexShaderConstant(device.SceneManager.ActiveCamera.Position.ToShader(), 8, 1);
+
+            //services.SetVertexShaderConstant(Colorf.Blue.ToShader(), 9, 1);
+
+            //world = world.GetTransposed();
+            //services.SetVertexShaderConstant(world.ToShader(), 10, 4);
+        }
+        static string GLASS_VERTEX_GLSL =
+@"
+varying vec3 fvNormal;
+varying vec3 fvViewVec;
+
+void main( void )
+{
+float dist =0.00087;
+gl_Position = ftransform();
+fvNormal    = gl_NormalMatrix * gl_Normal;
+fvViewVec = vec3(dist * gl_ModelViewMatrix * gl_Vertex);
+}
+";
+        static string GLASS_FRAG_GLSL =
+@"
+varying vec3 fvNormal;
+varying vec3 fvViewVec;
+
+void main( void )
+{
+vec4 color;
+vec4 temp;
+temp.xyz=-normalize(fvNormal);
+color.r=temp.r+0.5;
+color.g=temp.g+0.5;
+color.b=temp.b+0.5;
+float t=(1.0-fvViewVec.z)/2.0;
+if(t<0.0){t=0.0;}
+gl_FragColor = color*t;
+}
+";
+}
 }
