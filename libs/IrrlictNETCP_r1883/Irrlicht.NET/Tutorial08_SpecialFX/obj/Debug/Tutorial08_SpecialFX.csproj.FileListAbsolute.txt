@@ -1,5 +1,0 @@
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial08_SpecialFX.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial08_SpecialFX.pdb
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial08_SpecialFX\obj\Debug\ResolveAssemblyReference.cache
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial08_SpecialFX\obj\Debug\Tutorial08_SpecialFX.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial08_SpecialFX\obj\Debug\Tutorial08_SpecialFX.pdb

@@ -1,5 +1,0 @@
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial13_RenderToTexture.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial13_RenderToTexture.pdb
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial13_RenderToTexture\obj\Debug\ResolveAssemblyReference.cache
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial13_RenderToTexture\obj\Debug\Tutorial13_RenderToTexture.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial13_RenderToTexture\obj\Debug\Tutorial13_RenderToTexture.pdb

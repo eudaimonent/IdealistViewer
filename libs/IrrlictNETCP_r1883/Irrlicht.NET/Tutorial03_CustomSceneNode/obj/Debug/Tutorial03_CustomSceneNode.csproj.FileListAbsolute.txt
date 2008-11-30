@@ -1,5 +1,0 @@
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial03_CustomSceneNode.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial03_CustomSceneNode.pdb
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial03_CustomSceneNode\obj\Debug\ResolveAssemblyReference.cache
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial03_CustomSceneNode\obj\Debug\Tutorial03_CustomSceneNode.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial03_CustomSceneNode\obj\Debug\Tutorial03_CustomSceneNode.pdb

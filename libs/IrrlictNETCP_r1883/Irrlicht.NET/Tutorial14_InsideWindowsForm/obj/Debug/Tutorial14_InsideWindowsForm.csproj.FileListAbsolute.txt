@@ -1,5 +1,0 @@
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial14_InsideWindowsForm.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial14_InsideWindowsForm.pdb
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial14_InsideWindowsForm\obj\Debug\ResolveAssemblyReference.cache
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial14_InsideWindowsForm\obj\Debug\Tutorial14_InsideWindowsForm.exe
-C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial14_InsideWindowsForm\obj\Debug\Tutorial14_InsideWindowsForm.pdb
