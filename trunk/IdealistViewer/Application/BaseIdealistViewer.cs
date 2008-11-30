@@ -354,6 +354,12 @@ namespace IdealistViewer
             defaultfont = guienv.GetFont("defaultfont.png");
             GUISkin skin = guienv.Skin;
             skin.Font = defaultfont;
+            Color skincolor = skin.GetColor(GuiDefaultColor.Face3D);
+            skincolor.A = 255;
+            skin.SetColor(GuiDefaultColor.Face3D, skincolor);
+            skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
+            skincolor.A = 255;
+            skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
             // Set up event handler for the GUI window events.
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
@@ -576,7 +582,10 @@ namespace IdealistViewer
                 if (!running)
                     break;
                 tickcount = System.Environment.TickCount;
-                
+
+                skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
+                skincolor.A = 255;
+                skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
                 //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
                 //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
                 //avm.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);

@@ -98,7 +98,7 @@ namespace IdealistViewer
 
             Bitmap resize = new Bitmap(bitmap);
             //resize.RotateFlip(RotateFlipType.RotateNoneFlipY);
-            resize.RotateFlip(RotateFlipType.RotateNoneFlipX);
+            //resize.RotateFlip(RotateFlipType.RotateNoneFlipX);
             resize.Save( filename, System.Drawing.Imaging.ImageFormat.Bmp);
         }
 
