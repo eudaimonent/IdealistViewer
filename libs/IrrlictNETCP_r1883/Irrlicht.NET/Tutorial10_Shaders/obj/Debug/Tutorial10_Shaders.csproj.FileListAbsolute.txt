@@ -1,0 +1,5 @@
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial10_Shaders.exe
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial10_Shaders.pdb
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial10_Shaders\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial10_Shaders\obj\Debug\Tutorial10_Shaders.exe
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial10_Shaders\obj\Debug\Tutorial10_Shaders.pdb

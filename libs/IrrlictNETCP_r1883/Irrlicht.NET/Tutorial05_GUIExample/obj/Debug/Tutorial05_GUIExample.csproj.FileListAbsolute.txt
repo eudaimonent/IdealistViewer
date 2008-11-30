@@ -1,0 +1,5 @@
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial05_GUIExample.exe
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial05_GUIExample.pdb
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial05_GUIExample\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial05_GUIExample\obj\Debug\Tutorial05_GUIExample.exe
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial05_GUIExample\obj\Debug\Tutorial05_GUIExample.pdb

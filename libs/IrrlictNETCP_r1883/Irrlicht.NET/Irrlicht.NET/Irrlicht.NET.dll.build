@@ -1,0 +1,130 @@
+<?xml version="1.0" ?>
+<project name="Irrlicht.NET" default="build">
+    <target name="build">
+        <echo message="Build Directory is ${project::get-base-directory()}/${build.dir}" />
+        <mkdir dir="${project::get-base-directory()}/${build.dir}" />
+        <copy todir="${project::get-base-directory()}/${build.dir}" flatten="true">
+            <fileset basedir="${project::get-base-directory()}">
+            </fileset>
+        </copy>
+        <copy todir="${project::get-base-directory()}/${build.dir}">
+            <fileset basedir=".">
+            </fileset>
+        </copy>
+        <csc target="library" debug="${build.debug}" unsafe="True" warnaserror="False" define="TRACE;DEBUG" main="" output="${project::get-base-directory()}/${build.dir}/${project::get-name()}.dll">
+            <resources prefix="Irrlicht.NET" dynamicprefix="true" >
+            </resources>
+            <sources failonempty="true">
+                <include name="AssemblyInfo.cs" />
+                <include name="Device/FileSystem.cs" />
+                <include name="Device/IrrlichtDevice.cs" />
+                <include name="Device/Timer.cs" />
+                <include name="Events/Event.cs" />
+                <include name="Global/IrrMarshal.cs" />
+                <include name="Global/MainDefinition.cs" />
+                <include name="Global/NativeElement.cs" />
+                <include name="Global/NewMath.cs" />
+                <include name="Global/Types/Box3D.cs" />
+                <include name="Global/Types/Color.cs" />
+                <include name="Global/Types/Dimension2D.cs" />
+                <include name="Global/Types/Line2D.cs" />
+                <include name="Global/Types/Line3D.cs" />
+                <include name="Global/Types/Matrix4.cs" />
+                <include name="Global/Types/Position2D.cs" />
+                <include name="Global/Types/Quaternion.cs" />
+                <include name="Global/Types/Rect.cs" />
+                <include name="Global/Types/Triangle3D.cs" />
+                <include name="Global/Types/Vector2D.cs" />
+                <include name="Global/Types/Vector3D.cs" />
+                <include name="Global/Types/ViewFrustrum.cs" />
+                <include name="Gui/CursorControl.cs" />
+                <include name="Gui/CustomElement.cs" />
+                <include name="Gui/GUIButton.cs" />
+                <include name="Gui/GUICheckBox.cs" />
+                <include name="Gui/GUIColorSelectDialog.cs" />
+                <include name="Gui/GUIComboBox.cs" />
+                <include name="Gui/GUIContextMenu.cs" />
+                <include name="Gui/GUIEditBox.cs" />
+                <include name="Gui/GUIElement.cs" />
+                <include name="Gui/GUIEnvironment.cs" />
+                <include name="Gui/GUIFileOpenDialog.cs" />
+                <include name="Gui/GUIFont.cs" />
+                <include name="Gui/GUIImage.cs" />
+                <include name="Gui/GUIInOutFader.cs" />
+                <include name="Gui/GUIListBox.cs" />
+                <include name="Gui/GUIMeshViewer.cs" />
+                <include name="Gui/GUIScrollBar.cs" />
+                <include name="Gui/GUISkin.cs" />
+                <include name="Gui/GUISpinBox.cs" />
+                <include name="Gui/GUIStaticText.cs" />
+                <include name="Gui/GUITab.cs" />
+                <include name="Gui/GUITabControl.cs" />
+                <include name="Gui/GUIToolBar.cs" />
+                <include name="Gui/GUIWindow.cs" />
+                <include name="Scene/SceneManager.cs" />
+                <include name="Scene/Meshes/AnimatedMesh.cs" />
+                <include name="Scene/Meshes/AnimatedMeshMD2.cs" />
+                <include name="Scene/Meshes/Mesh.cs" />
+                <include name="Scene/Meshes/MeshBuffer.cs" />
+                <include name="Scene/Meshes/MeshCache.cs" />
+                <include name="Scene/Meshes/MeshManipulator.cs" />
+                <include name="Scene/Meshes/SkinnedMesh.cs" />
+                <include name="Scene/Scene Nodes/AnimatedMeshSceneNode.cs" />
+                <include name="Scene/Scene Nodes/BillboardSceneNode.cs" />
+                <include name="Scene/Scene Nodes/BoneSceneNode.cs" />
+                <include name="Scene/Scene Nodes/CameraSceneNode.cs" />
+                <include name="Scene/Scene Nodes/CustomSceneNode.cs" />
+                <include name="Scene/Scene Nodes/LightSceneNode.cs" />
+                <include name="Scene/Scene Nodes/MeshSceneNode.cs" />
+                <include name="Scene/Scene Nodes/ParticleSystemSceneNode.cs" />
+                <include name="Scene/Scene Nodes/SceneNode.cs" />
+                <include name="Scene/Scene Nodes/ShadowVolumeSceneNode.cs" />
+                <include name="Scene/Scene Nodes/TerrainSceneNode.cs" />
+                <include name="Scene/Scene Nodes/TextSceneNode.cs" />
+                <include name="Scene/Utils/Animator.cs" />
+                <include name="Scene/Utils/Light.cs" />
+                <include name="Scene/Utils/Particle.cs" />
+                <include name="Scene/Utils/ParticleAffector.cs" />
+                <include name="Scene/Utils/ParticleEmitter.cs" />
+                <include name="Scene/Utils/SceneCollisionManager.cs" />
+                <include name="Scene/Utils/TriangleSelector.cs" />
+                <include name="Video/GPUProgrammingServices.cs" />
+                <include name="Video/Image.cs" />
+                <include name="Video/Material.cs" />
+                <include name="Video/MaterialLayer.cs" />
+                <include name="Video/MaterialRendererServices.cs" />
+                <include name="Video/Texture.cs" />
+                <include name="Video/Vertices.cs" />
+                <include name="Video/VideoDriver.cs" />
+            </sources>
+            <references basedir="${project::get-base-directory()}">
+                <lib>
+                    <include name="${project::get-base-directory()}" />
+                    <include name="${project::get-base-directory()}/${build.dir}" />
+                </lib>
+                <include name="System.dll" />
+                <include name="System.Data.dll" />
+                <include name="System.Drawing.dll" />
+                <include name="System.Windows.Forms.dll" />
+                <include name="System.Xml.dll" />
+            </references>
+        </csc>
+        <echo message="Copying from [${project::get-base-directory()}/${build.dir}/] to [${project::get-base-directory()}/../../bin/Release/" />
+        <mkdir dir="${project::get-base-directory()}/../../bin/Release/"/>
+        <copy todir="${project::get-base-directory()}/../../bin/Release/">
+            <fileset basedir="${project::get-base-directory()}/${build.dir}/" >
+                <include name="*.dll"/>
+                <include name="*.exe"/>
+                <if test="${build.debug=='true'}">
+                  <include name="*.mdb"/>
+                </if>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="${obj.dir}" failonerror="false" />
+        <delete dir="${bin.dir}" failonerror="false" />
+    </target>
+    <target name="doc" description="Creates documentation.">
+    </target>
+</project>

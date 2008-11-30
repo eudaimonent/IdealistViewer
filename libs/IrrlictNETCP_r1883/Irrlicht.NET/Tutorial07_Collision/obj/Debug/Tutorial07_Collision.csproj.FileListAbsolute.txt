@@ -1,0 +1,5 @@
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial07_Collision.exe
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\bin\Release\Tutorial07_Collision.pdb
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial07_Collision\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial07_Collision\obj\Debug\Tutorial07_Collision.exe
+C:\Documents and Settings\dcolive\Desktop\IdealitViewer_forge2\libs\IrrlictNETCP_r1686\Irrlicht.NET\Tutorial07_Collision\obj\Debug\Tutorial07_Collision.pdb

@@ -1,0 +1,336 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{1C74F93E-0000-0000-0000-000000000000}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon></ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>Irrlicht.NET</AssemblyName>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder></AppDesignerFolder>
+    <RootNamespace>Irrlicht.NET</RootNamespace>
+    <StartupObject></StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DocumentationFile></DocumentationFile>
+    <DebugSymbols>True</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <Optimize>False</Optimize>
+    <OutputPath>..\..\bin\Release\</OutputPath>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <RemoveIntegerChecks>False</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn></NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile></DocumentationFile>
+    <DebugSymbols>False</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <Optimize>True</Optimize>
+    <OutputPath>..\..\bin\Release\</OutputPath>
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <RemoveIntegerChecks>False</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn></NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" >
+      <HintPath>System.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data" >
+      <HintPath>System.Data.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Drawing" >
+      <HintPath>System.Drawing.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Windows.Forms" >
+      <HintPath>System.Windows.Forms.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml" >
+      <HintPath>System.Xml.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Device\FileSystem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Device\IrrlichtDevice.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Device\Timer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Events\Event.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\IrrMarshal.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\MainDefinition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\NativeElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\NewMath.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Box3D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Color.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Dimension2D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Line2D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Line3D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Matrix4.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Position2D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Quaternion.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Rect.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Triangle3D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Vector2D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\Vector3D.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Global\Types\ViewFrustrum.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\CursorControl.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\CustomElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIButton.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUICheckBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIColorSelectDialog.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIComboBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIContextMenu.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIEditBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIEnvironment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIFileOpenDialog.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIFont.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIImage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIInOutFader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIListBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIMeshViewer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIScrollBar.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUISkin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUISpinBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIStaticText.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUITab.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUITabControl.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIToolBar.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Gui\GUIWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\SceneManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\AnimatedMesh.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\AnimatedMeshMD2.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\Mesh.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\MeshBuffer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\MeshCache.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\MeshManipulator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Meshes\SkinnedMesh.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\AnimatedMeshSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\BillboardSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\BoneSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\CameraSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\CustomSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\LightSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\MeshSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\ParticleSystemSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\SceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\ShadowVolumeSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\TerrainSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Scene Nodes\TextSceneNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\Animator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\Light.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\Particle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\ParticleAffector.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\ParticleEmitter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\SceneCollisionManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Scene\Utils\TriangleSelector.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\GPUProgrammingServices.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\Image.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\Material.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\MaterialLayer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\MaterialRendererServices.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\Texture.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\Vertices.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Video\VideoDriver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSHARP.Targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
