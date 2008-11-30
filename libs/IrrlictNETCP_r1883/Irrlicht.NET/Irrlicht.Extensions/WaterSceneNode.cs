@@ -117,8 +117,15 @@ namespace IrrlichtNETCP.Extensions
 	           	_fixedcam.Target = _fixedcam.Position + target;
 	           	_fixedcam.UpVector = camera.UpVector;
            }
-           _driver.SetRenderTarget(_rt, true, true, Color.TransparentGray);      	
-           _scene.DrawAll();
+           _driver.SetRenderTarget(_rt, true, true, Color.TransparentGray);
+           try
+           {
+               _scene.DrawAll();
+           }
+           catch (AccessViolationException)
+           {
+               System.Console.WriteLine("Unable to update water reflection this round due to an access violation");
+           }
                
            foreach(TerrainSceneNode terr in clampList)
            	   if(terr != null)
