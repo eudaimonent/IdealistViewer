@@ -246,6 +246,8 @@ namespace IdealistViewer
         private uint framecounter = 0;
         private int maxFPS = 30;  // cap frame rate at 30 fps to help keep cpu load down
 
+        private int defaultAnimationFramesPerSecond = 30;
+
         /// <summary>
         /// If the neighbor returned is a 0 ulong region handle, use this one for testing
         /// </summary>
@@ -652,23 +654,22 @@ namespace IdealistViewer
                     // process avatar animation changes
                     doAnimationFrame();
 
-                    // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(20);
-
                     // Process Object Mod Queue.  Parameter is 'Items'
                     doObjectMods(20);
+
+                    // Process Mesh Queue.  Parameter is 'Items'
+                    doProcessMesh(10);
 
                     // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
 
                     // Apply textures
-                    doTextureMods(20);
+                    doTextureMods(10);
                     
-
                     // Check for Dirty terrain Update as necessary.
                     UpdateTerrain();
 
-                    doFoliage(3);
+                    doFoliage(1);
 
                     // Set the FPS in the window title.
                     device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
@@ -940,7 +941,9 @@ namespace IdealistViewer
         /// <param name="pObjects"></param>
         private void doObjectMods(int pObjects)
         {
-            for (int i = 0; i < pObjects; i++)
+            //for (int i = 0; i < pObjects; i++)
+            //int numObjectsOutOfRange = 0;
+            while (pObjects-- > 0)
             {
                 VObject vObj = null;
                 lock (objectModQueue)
@@ -948,6 +951,19 @@ namespace IdealistViewer
                     if (objectModQueue.Count == 0)
                         break;
                     vObj = objectModQueue.Dequeue();
+
+                    // this commented code was an attempt at distance based culling - needs more work as it fails to rez all prims
+                    // as they come into range - ok to delete, especially if you implement a full solution ;)
+                    //
+                    //if (UserAvatar != null && vObj != null && UserAvatar.prim != null && vObj.prim != null)
+                    //    if (Vector3.Distance(UserAvatar.prim.Position, vObj.prim.Position) > 50.0f)
+                    //    {
+                    //        numObjectsOutOfRange++;
+                    //        objectModQueue.Enqueue(vObj);
+                    //        if (objectModQueue.Count - numObjectsOutOfRange > pObjects + 1)
+                    //            pObjects++;
+                    //        continue;
+                    //    }
                 }
                 if (vObj.prim != null)
                 {
@@ -1054,6 +1070,8 @@ namespace IdealistViewer
                                 node = vObj.node;
                             }
 
+                            ((AnimatedMeshSceneNode)node).AnimationSpeed = defaultAnimationFramesPerSecond;
+
                             // TODO: FIXME - this depends on the mesh being loaded. A good candidate for a config item.
                             node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
                             //node.Scale = new Vector3D(15f, 15f, 15f);
@@ -1064,11 +1082,6 @@ namespace IdealistViewer
                             // Light avatar
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
 
-                            //if (node is AnimatedMeshSceneNode)
-                            //{
-                            //    ((AnimatedMeshSceneNode) node).SetFrameLoop(0, 6);
-                            //    // cast and do extra cool stuff 
-                            //}
 #if DebugObjectPipeline
                             m_log.DebugFormat("[OBJ]: Added Interpolation Target for Avatar ID: {0}", vObj.prim.ID);
 #endif
@@ -1695,6 +1708,7 @@ namespace IdealistViewer
                             {
                                 int startFrame = 0;
                                 int endFrame = 40 * 4 - 1;
+                                int animFramesPerSecond = defaultAnimationFramesPerSecond;
                                 //MD2Animation md2Anim = MD2Animation.Stand;
                                 foreach (UUID animID in newAnims)
                                 {
@@ -1719,8 +1733,6 @@ namespace IdealistViewer
                                         // 154-159
                                         startFrame = 154 * 4;
                                         endFrame = 159 * 4 - 1;
-
-
                                     }
                                     if (animID == Animations.WALK
                                         || animID == Animations.FEMALE_WALK)
@@ -1729,7 +1741,16 @@ namespace IdealistViewer
                                         //md2Anim = MD2Animation.Run;
                                         startFrame = 160;
                                         endFrame = 180;
+                                        animFramesPerSecond = 15;
                                     }
+                                    if (animID == Animations.RUN)
+                                    {
+                                        m_log.Debug("[ANIMATION] - running");
+                                        //md2Anim = MD2Animation.Run;
+                                        startFrame = 160;
+                                        endFrame = 180;
+                                    }
+
                                     if (animID == Animations.SIT
                                         || animID == Animations.SIT_FEMALE
                                         || animID == Animations.SIT_GENERIC
@@ -1762,6 +1783,7 @@ namespace IdealistViewer
                                 }
                                 if (avobj.node is AnimatedMeshSceneNode)
                                 {
+                                    ((AnimatedMeshSceneNode)avobj.node).AnimationSpeed = animFramesPerSecond;
                                     //((AnimatedMeshSceneNode)avobj.node).SetMD2Animation(md2Anim);
                                     ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(startFrame, endFrame);
                                     
@@ -1774,6 +1796,7 @@ namespace IdealistViewer
                                 if (avobj.node is AnimatedMeshSceneNode)
                                 {
                                     myFramesDirty = false;
+                                    
                                     ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(myStartFrame, myStopFrame);
                                     m_log.Debug("setting frames to " + myStartFrame.ToString() + " " + myStopFrame.ToString());
                                 }
