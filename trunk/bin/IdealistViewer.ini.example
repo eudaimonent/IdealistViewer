@@ -1,4 +1,5 @@
 [Startup]
+multiple_sims = false
 login_uri="http://127.0.0.1:9000"
 ;login_uri="http://osgrid.org:8002"
 ;login_uri="https://login.agni.lindenlab.com/cgi-bin/login.cgi"

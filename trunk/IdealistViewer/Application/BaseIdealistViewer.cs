@@ -1778,6 +1778,7 @@ namespace IdealistViewer
                                         || animID == Animations.HOVER_DOWN
                                         || animID == Animations.HOVER_UP)
                                     {
+                                        m_log.Debug("[ANIMATION] - hover");
                                         startFrame = 75 * 4;
                                         endFrame = 79 * 4 - 1;
                                         animFramesPerSecond = 7;
@@ -2252,6 +2253,7 @@ namespace IdealistViewer
             string password = string.Empty;
             string startlocation = "";
             bool loadtextures = true;
+            bool multipleSims = false;
 
             if (cnf != null)
             {
@@ -2264,12 +2266,14 @@ namespace IdealistViewer
                 avatarMesh = cnf.GetString("avatar_mesh", avatarMesh);
                 avatarMaterial = cnf.GetString("avatar_material", avatarMaterial);
                 startlocation = cnf.GetString("start_location", "");
+                multipleSims = cnf.GetBoolean("multiple_sims", multipleSims);
             }
             loadTextures = loadtextures;
             MainConsole.Instance = m_console;
 
             // Initialize LibOMV
             avatarConnection = new SLProtocol();
+            avatarConnection.m_user.Settings.MULTIPLE_SIMS = multipleSims;
             avatarConnection.OnLandPatch += landPatchCallback;
             avatarConnection.OnGridConnected += connectedCallback;
             avatarConnection.OnNewPrim += newPrimCallback;

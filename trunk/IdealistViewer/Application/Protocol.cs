@@ -52,12 +52,13 @@ namespace IdealistViewer
         // received animations are stored here before being processed in the main frame loop
         public Dictionary<UUID, List<UUID>> AvatarAnimations = new Dictionary<UUID,List<UUID>>();
 
-        GridClient m_user;
+        public GridClient m_user;
+
         public SLProtocol()
         {
             m_user = new GridClient();
+
             //m_user.Settings.STORE_LAND_PATCHES = true;
-            m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
@@ -80,7 +81,7 @@ namespace IdealistViewer
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
             m_user.Assets.OnImageReceived += imageReceivedCallback;
-            m_user.Objects.OnNewFoliage += newFoliageCallback;
+            //m_user.Objects.OnNewFoliage += newFoliageCallback;
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
             
