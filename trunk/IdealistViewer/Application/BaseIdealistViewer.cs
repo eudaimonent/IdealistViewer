@@ -460,7 +460,7 @@ namespace IdealistViewer
             SNGlobalwater2 = new WaterSceneNode(null, smgr, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
             SNGlobalwater2.Position = new Vector3D(0, 30, 0);
                             //water.WaveDisplacement /= 1.0f;
-            SNGlobalwater2.WaveHeight *= .5f;
+            SNGlobalwater2.WaveHeight *= .4f;
                             //water.WaveSpeed *= 1;
             SNGlobalwater2.RefractionFactor = 0.21f;
                             //water.WaveLength *= 1;
@@ -1772,6 +1772,15 @@ namespace IdealistViewer
                                         //md2Anim = MD2Animation.Jump;
                                         startFrame = 195 * 4;
                                         endFrame = 197 * 4 - 1;
+                                        animFramesPerSecond = 7;
+                                    }
+                                    if (animID == Animations.HOVER
+                                        || animID == Animations.HOVER_DOWN
+                                        || animID == Animations.HOVER_UP)
+                                    {
+                                        startFrame = 75 * 4;
+                                        endFrame = 79 * 4 - 1;
+                                        animFramesPerSecond = 7;
                                     }
                                     if (animID == Animations.CROUCH)
                                     {
@@ -2963,6 +2972,8 @@ namespace IdealistViewer
                 objectModQueue.Enqueue(avob);
             }
 
+            bool needInitialAnimationState = false;
+
             lock (Avatars)
             {
                 if (Avatars.ContainsKey(avatar.ID))
@@ -2972,6 +2983,20 @@ namespace IdealistViewer
                 else
                 {
                     Avatars.Add(avatar.ID, avob);
+                    needInitialAnimationState = true;
+                }
+            }
+
+            if (needInitialAnimationState)
+            {
+                lock (avatarConnection.AvatarAnimations)
+                {
+                    List<UUID> initialAnims = new List<UUID>();
+                    initialAnims.Add(Animations.STAND);
+                    if (avatarConnection.AvatarAnimations.ContainsKey(avatar.ID))
+                        avatarConnection.AvatarAnimations[avatar.ID] = initialAnims;
+                    else
+                        avatarConnection.AvatarAnimations.Add(avatar.ID, initialAnims);
                 }
             }
         }
