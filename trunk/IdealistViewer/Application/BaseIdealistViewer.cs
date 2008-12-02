@@ -52,17 +52,17 @@ namespace IdealistViewer
         /// Standard Log4Net setup.
         /// </summary>
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        
+
         /// <summary>
         /// Thread for running the GUI in.
         /// </summary>
         private Thread guithread;
-        
+
         /// <summary>
         /// Bitmaps for the terrain in each active region indexed by ulong regionhandle
         /// </summary>
         private Dictionary<ulong, System.Drawing.Bitmap> terrainBitmap = new Dictionary<ulong, System.Drawing.Bitmap>();
-        
+
         /// <summary>
         /// LibOMV Connection
         /// </summary>
@@ -71,18 +71,18 @@ namespace IdealistViewer
         /// <summary>
         /// TerrainSceneNode Irrlicht representations of the terrain.  Indexed by regionhandle
         /// </summary>
-        private Dictionary<ulong,TerrainSceneNode> terrains = new Dictionary<ulong,TerrainSceneNode>();
-        
+        private Dictionary<ulong, TerrainSceneNode> terrains = new Dictionary<ulong, TerrainSceneNode>();
+
         /// <summary>
         /// Simulator patch storage Indexed by regionhandle  Contains a dictionary with the patch number as an index.
         /// </summary>
         private Dictionary<ulong, Dictionary<int, float[]>> m_landmaps = new Dictionary<ulong, Dictionary<int, float[]>>();
-        
+
         /// <summary>
         /// Terrain Triangle Selectors indexed by ulong regionhandle.  Used for the Picker
         /// </summary>
-        private Dictionary<ulong, TriangleSelector> terrainsels = new Dictionary<ulong,TriangleSelector>();
-        
+        private Dictionary<ulong, TriangleSelector> terrainsels = new Dictionary<ulong, TriangleSelector>();
+
         /// <summary>
         /// Future water use
         /// </summary>
@@ -101,6 +101,11 @@ namespace IdealistViewer
         private static Queue<VObject> objectModQueue = new Queue<VObject>();
 
         /// <summary>
+        /// All avatar modifications run through this queue
+        /// </summary>
+        private static Queue<VObject> avatarModQueue = new Queue<VObject>();
+
+        /// <summary>
         /// All Meshing gets queued up int this queue.
         /// </summary>
         private static Queue<VObject> objectMeshQueue = new Queue<VObject>();
@@ -109,14 +114,14 @@ namespace IdealistViewer
         /// foliage (trees, grass, etc. are queued in this queue.
         /// </summary>
         private static Queue<FoliageObject> foliageObjectQueue = new Queue<FoliageObject>();
-        
+
 
         /// <summary>
         /// Child prim in a prim group where the children don't yet have parents 
         /// rendered get put in here to wait for the parent
         /// </summary>
         private static Queue<VObject> UnAssignedChildObjectModQueue = new Queue<VObject>();
-        
+
         /// <summary>
         /// The texture has completed downloading, put it into this queue for assigning to linked objects
         /// </summary>
@@ -127,7 +132,7 @@ namespace IdealistViewer
         /// All objects that are interpolated get put into this dictionary.  Indexed by VUtil.GetHashId
         /// </summary>
         private static Dictionary<string, VObject> interpolationTargets = new Dictionary<string, VObject>();
-        
+
         /// <summary>
         /// Tester for AV Mesh
         /// </summary>
@@ -153,7 +158,7 @@ namespace IdealistViewer
         /// Known Entities.  Indexed by VUtil.GetHashId
         /// </summary>
         private static Dictionary<string, VObject> Entities = new Dictionary<string, VObject>();
-        
+
         /// <summary>
         /// Known Avatars Indexed by Avatar UUID
         /// </summary>
@@ -168,7 +173,7 @@ namespace IdealistViewer
 
         private static AvatarController AVControl = null;
 
-        private const int modAVUpdates = 10;
+        private const int modAVUpdates = 1;
 
         /// <summary>
         /// Flag to allow viewer to run. Set to false with File->Quit
@@ -189,7 +194,7 @@ namespace IdealistViewer
         /// Configuration option to load the textures
         /// </summary>
         private static bool loadTextures = true;
-        
+
 
         /// <summary>
         /// Configuration option to represent the avatar mesh.
@@ -211,7 +216,7 @@ namespace IdealistViewer
         /// Gui Window Width
         /// </summary>
         private static int WindowWidth = 1024;
-        
+
         /// <summary>
         /// Gui Window Height
         /// </summary>
@@ -223,12 +228,12 @@ namespace IdealistViewer
         private static float WindowWidth_DIV2 = WindowWidth * 0.5f;
         private static float WindowHeight_DIV2 = WindowHeight * 0.5f;
         private static float aspect = (float)WindowWidth / WindowHeight;
-        
+
         /// <summary>
         /// User's Camera
         /// </summary>
         private Camera cam;
-        
+
         /// <summary>
         /// Target Position of the camera
         /// </summary>
@@ -312,29 +317,29 @@ namespace IdealistViewer
 
         private float TimeDilation = 0;
 
-        private float[,] RegionHFArray = new float[256,256];
+        private float[,] RegionHFArray = new float[256, 256];
 
         public BaseIdealistViewer(IConfigSource iconfig)
         {
 
             m_config = new IdealistViewerConfigSource();
             m_config.Source = new IniConfigSource();
-            
+
 
             string iniconfig = Path.Combine(Util.configDir(), "IdealistViewer.ini");
             if (File.Exists(iniconfig))
             {
-                m_config.Source.Merge(new IniConfigSource(iniconfig));    
+                m_config.Source.Merge(new IniConfigSource(iniconfig));
             }
             m_config.Source.Merge(iconfig);
             m_startuptime = DateTime.Now;
         }
 
-       
-       /// <summary>
-       /// Starts up Irrlicht for the GUI
-       /// </summary>
-       /// <param name="o"></param>
+
+        /// <summary>
+        /// Starts up Irrlicht for the GUI
+        /// </summary>
+        /// <param name="o"></param>
         public void startupGUI(object o)
         {
 
@@ -345,16 +350,16 @@ namespace IdealistViewer
             //device.Timer.Stop();
             device.Timer.Speed = 1;
             device.WindowCaption = "IdealistViewer 0.001";
-            
+
             // Sets directory to load assets from
             device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
 
-            
+
             driver = device.VideoDriver;
             smgr = device.SceneManager;
 
             GreenGrassTexture = driver.GetTexture("Green_Grass_Detailed.tga");
-            
+
             guienv = device.GUIEnvironment;
             defaultfont = guienv.GetFont("defaultfont.png");
             GUISkin skin = guienv.Skin;
@@ -386,7 +391,7 @@ namespace IdealistViewer
             AVControl = new AvatarController(avatarConnection, null);
 
             smgr.SetAmbientLight(new Colorf(0.6f, 0.6f, 0.6f, 0.6f));
-            
+
 
 
             // Fog is on by default, this line disables it.
@@ -425,14 +430,14 @@ namespace IdealistViewer
             driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
             */
             ATMOSkySceneNode skynode = new ATMOSkySceneNode(driver.GetTexture("irrlicht2_up.jpg"), null, smgr, 20, -1);
-            
+
             // Create User's Camera
             cam = new Camera(smgr);
 
             // Set up Scene Lighting.
             // This light rotates around to highlight prim meshing issues.
             //SceneNode light = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 0, 0), new Colorf(1, 0.2f, 0.2f, 0.2f), 90, -1);
-           // Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
+            // Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
             //light.AddAnimator(anim);
             //anim.Dispose();
 
@@ -459,19 +464,19 @@ namespace IdealistViewer
 
             SNGlobalwater2 = new WaterSceneNode(null, smgr, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
             SNGlobalwater2.Position = new Vector3D(0, 30, 0);
-                            //water.WaveDisplacement /= 1.0f;
+            //water.WaveDisplacement /= 1.0f;
             SNGlobalwater2.WaveHeight *= .4f;
-                            //water.WaveSpeed *= 1;
+            //water.WaveSpeed *= 1;
             SNGlobalwater2.RefractionFactor = 0.21f;
-                            //water.WaveLength *= 1;
-                            //water.WaveRepetition = 1;
-            
-//            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, -1);
-//            gcontext.Text = "Some Text";
-//            gcontext.AddItem("SomeCooItem", -1, true, true);
-//            GUIContextMenu submenu;
-//            submenu = gcontext.GetSubMenu(0);
-//            submenu.AddItem("Weird!", 100, true, false);
+            //water.WaveLength *= 1;
+            //water.WaveRepetition = 1;
+
+            //            GUIContextMenu gcontext = guienv.AddMenu(guienv.RootElement, -1);
+            //            gcontext.Text = "Some Text";
+            //            gcontext.AddItem("SomeCooItem", -1, true, true);
+            //            GUIContextMenu submenu;
+            //            submenu = gcontext.GetSubMenu(0);
+            //            submenu.AddItem("Weird!", 100, true, false);
 
             // create menu toplevel and submenu items. 
             // device_OnEvent handles these menu items - ckrinke
@@ -480,7 +485,7 @@ namespace IdealistViewer
             menu.AddItem("View", -1, true, true);
             menu.AddItem("Other", -1, true, true);
             menu.AddItem("Help", -1, true, true);
-            
+
             GUIContextMenu submenu;
             submenu = menu.GetSubMenu(0);
             submenu.AddItem("Open File...", (int)MenuID.FileOpen, true, false);
@@ -633,7 +638,7 @@ namespace IdealistViewer
                 {
                     // Repeat any held keys
                     processHeldKeys();
-                    
+
                     // Update Interpolation targets
                     updateInterpolationTargets();
 
@@ -648,16 +653,29 @@ namespace IdealistViewer
                     if (framecounter == uint.MaxValue)
                         framecounter = 0;
                 }
-                
-               
-              
-                if ((framecounter % objectmods) == 0)
+
+                if ((framecounter % modAVUpdates) == 0)
                 {
+                    AVControl.UpdateRemote();
+                    doSetCameraPosition();
+
                     // process avatar animation changes
                     doAnimationFrame();
 
+                    // Process Avatar Mod Queue
+                    doObjectMods(10, ref avatarModQueue);
+                }
+
+                if ((framecounter % objectmods) == 0)
+                {
+                    // process avatar animation changes
+                    //doAnimationFrame();
+
+                    // Process Avatar Mod Queue
+                    //doObjectMods(10, ref avatarModQueue);
+
                     // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(20);
+                    doObjectMods(10, ref objectModQueue);
 
                     // Process Mesh Queue.  Parameter is 'Items'
                     doProcessMesh(10);
@@ -667,7 +685,7 @@ namespace IdealistViewer
 
                     // Apply textures
                     doTextureMods(10);
-                    
+
                     // Check for Dirty terrain Update as necessary.
                     UpdateTerrain();
 
@@ -678,22 +696,22 @@ namespace IdealistViewer
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
                     //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
-                    
+
                     //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
 
                 }
 
-                if ((framecounter % modAVUpdates) == 0)
-                {
-                    AVControl.UpdateRemote();
-                    doSetCameraPosition();
-                }
-                
+                //if ((framecounter % modAVUpdates) == 0)
+                //{
+                //    AVControl.UpdateRemote();
+                //    doSetCameraPosition();
+                //}
+
                 // Frame Limiter
                 int frameTime = System.Environment.TickCount - tickcount;
                 if (frameTime < minFrameTime)
                     Thread.Sleep(minFrameTime - frameTime);
-                
+
             }
             //In the end, delete the Irrlicht device.
             Shutdown();
@@ -716,7 +734,7 @@ namespace IdealistViewer
                     if (obj == null)
                     {
                         //if (removestr == null)
-                            //removestr = new List<string>();
+                        //removestr = new List<string>();
 
                         //removestr.Add(str);
                         continue;
@@ -760,12 +778,12 @@ namespace IdealistViewer
                             if (UserAvatar.prim.ID == obj.prim.ID)
                             {
                                 if (obj.prim.Position.Z >= 0)
-                                //terrainBitmap lower then avatar byte 2.3
-                                if (RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))] + 1.5f >= obj.prim.Position.Z)
-                                {
-                                    
-                                    againstground = true;
-                                }
+                                    //terrainBitmap lower then avatar byte 2.3
+                                    if (RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))] + 1.5f >= obj.prim.Position.Z)
+                                    {
+
+                                        againstground = true;
+                                    }
                                 //m_log.InfoFormat("[INTERPOLATION]: TerrainHeight:{0}-{1}-{2}-<{3},{4},{5}>", RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)),(int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))], obj.prim.Position.Z, (int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255) * 256 + Util.Clamp<float>(obj.prim.Position.X, 0, 255)), obj.prim.Position.X, obj.prim.Position.Y, obj.prim.Position.Z);
                             }
                         }
@@ -782,12 +800,12 @@ namespace IdealistViewer
 
                         //if (obj.prim is Avatar)
                         //{
-                            //Avatar av = (Avatar)obj.prim;
-                            //if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
-                            //    obj.prim.Velocity.Z = 0;
-                       // }
+                        //Avatar av = (Avatar)obj.prim;
+                        //if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
+                        //    obj.prim.Velocity.Z = 0;
+                        // }
                         obj.node.Position = pos + interpolatedpos;
-                        
+
                     }
                     catch (AccessViolationException)
                     {
@@ -799,11 +817,11 @@ namespace IdealistViewer
                     }
                     catch (System.Runtime.InteropServices.SEHException)
                     {
-                        
-                       // if (removestr == null)
+
+                        // if (removestr == null)
                         //    removestr = new List<string>();
 
-                       // removestr.Add(str);
+                        // removestr.Add(str);
                         continue;
                     }
 
@@ -836,7 +854,7 @@ namespace IdealistViewer
                     pCount = assignTextureQueue.Count;
             }
 
-            for (int i=0;i < pCount; i++)
+            for (int i = 0; i < pCount; i++)
             {
 
                 TextureComplete tx;
@@ -859,40 +877,38 @@ namespace IdealistViewer
 
                 if (tx.vObj != null && tex != null)
                 {
-                    
-                        if (tx.textureID == tx.vObj.prim.Sculpt.SculptTexture)
+
+                    if (tx.textureID == tx.vObj.prim.Sculpt.SculptTexture)
+                    {
+                        tx.vObj.updateFullYN = true;
+                        //tx.vObj.mesh.Dispose();
+
+                        if (tx.vObj.node != null && tx.vObj.node.TriangleSelector != null)
                         {
-                            tx.vObj.updateFullYN = true;
-                            //tx.vObj.mesh.Dispose();
-
-                            if (tx.vObj.node != null && tx.vObj.node.TriangleSelector != null)
+                            if (mts != null)
                             {
-                                if (mts != null)
-                                {
-                                    mts.RemoveTriangleSelector(tx.vObj.node.TriangleSelector);
-                                }
-
+                                mts.RemoveTriangleSelector(tx.vObj.node.TriangleSelector);
                             }
-                            if (tx.vObj.node != null && tx.vObj.node.Raw != IntPtr.Zero)
-                                smgr.AddToDeletionQueue(tx.vObj.node);
-                            
-                            //tx.vObj.mesh = null;
 
-                            lock (objectMeshQueue)
-                            {
-                                m_log.Warn("[SCULPT]: Got Sculpt Callback, remeshing");
-                                objectMeshQueue.Enqueue(tx.vObj);
-                            }
-                            continue;
-                            // applyTexture will skip over textures that are not 
-                            // defined in the textureentry
                         }
-                    
+                        if (tx.vObj.node != null && tx.vObj.node.Raw != IntPtr.Zero)
+                            smgr.AddToDeletionQueue(tx.vObj.node);
+
+                        //tx.vObj.mesh = null;
+
+                        lock (objectMeshQueue)
+                        {
+                            m_log.Warn("[SCULPT]: Got Sculpt Callback, remeshing");
+                            objectMeshQueue.Enqueue(tx.vObj);
+                        }
+                        continue;
+                        // applyTexture will skip over textures that are not 
+                        // defined in the textureentry
+                    }
+
                     textureMan.applyTexture(tex, tx.vObj, tx.textureID);
                 }
             }
-            
-            
         }
 
         /// <summary>
@@ -941,36 +957,42 @@ namespace IdealistViewer
         /// After the prim are meshed, here to be placed in the scene.  Linked object textures are requested
         /// </summary>
         /// <param name="pObjects"></param>
-        private void doObjectMods(int pObjects)
+        private void doObjectMods(int pObjects, ref Queue<VObject> modQueue)
         {
             //for (int i = 0; i < pObjects; i++)
             //int numObjectsOutOfRange = 0;
             while (pObjects-- > 0)
             {
                 VObject vObj = null;
-                lock (objectModQueue)
-                {
-                    if (objectModQueue.Count == 0)
-                        break;
-                    vObj = objectModQueue.Dequeue();
+                //lock (objectModQueue)
+                //{
+                //    if (objectModQueue.Count == 0)
+                //        break;
+                //    vObj = objectModQueue.Dequeue();
 
-                    // this commented code was an attempt at distance based culling - needs more work as it fails to rez all prims
-                    // as they come into range - ok to delete, especially if you implement a full solution ;)
-                    //
-                    //if (UserAvatar != null && vObj != null && UserAvatar.prim != null && vObj.prim != null)
-                    //    if (Vector3.Distance(UserAvatar.prim.Position, vObj.prim.Position) > 50.0f)
-                    //    {
-                    //        numObjectsOutOfRange++;
-                    //        objectModQueue.Enqueue(vObj);
-                    //        if (objectModQueue.Count - numObjectsOutOfRange > pObjects + 1)
-                    //            pObjects++;
-                    //        continue;
-                    //    }
+                //    // this commented code was an attempt at distance based culling - needs more work as it fails to rez all prims
+                //    // as they come into range - ok to delete, especially if you implement a full solution ;)
+                //    //
+                //    //if (UserAvatar != null && vObj != null && UserAvatar.prim != null && vObj.prim != null)
+                //    //    if (Vector3.Distance(UserAvatar.prim.Position, vObj.prim.Position) > 50.0f)
+                //    //    {
+                //    //        numObjectsOutOfRange++;
+                //    //        objectModQueue.Enqueue(vObj);
+                //    //        if (objectModQueue.Count - numObjectsOutOfRange > pObjects + 1)
+                //    //            pObjects++;
+                //    //        continue;
+                //    //    }
+                //}
+
+                lock (modQueue)
+                {
+                    if (modQueue.Count == 0)
+                        break;
+                    vObj = modQueue.Dequeue();
                 }
+
                 if (vObj.prim != null)
                 {
-
-                    
 
                     ulong simhandle = vObj.prim.RegionHandle;
 
@@ -985,17 +1007,17 @@ namespace IdealistViewer
                         {
                             Vector3 gposr = Util.OffsetGobal(simhandle, Vector3.Zero);
                             Vector3 gposc = Util.OffsetGobal(currentSim.Handle, Vector3.Zero);
-                            
-                            WorldoffsetPos =  gposr - gposc;
+
+                            WorldoffsetPos = gposr - gposc;
                         }
                     }
-                    
+
                     VObject parentObj = null;
                     SceneNode parentNode = smgr.RootSceneNode;
                     //VObject vObj = UnAssignedChildObjectModQueue.Dequeue();
                     //if (Entities.ContainsKey(vObj.prim.RegionHandle.ToString() + vObj.prim.ParentID.ToString()))
                     //{
-                    
+
                     if (vObj.prim.ParentID != 0)
                     {
 #if DebugObjectPipeline
@@ -1019,7 +1041,10 @@ namespace IdealistViewer
                                     m_log.DebugFormat("[OBJ]: No Parent Yet for ID: {0}", vObj.prim.ID);
 #endif
                                     // No parent yet...    Stick it in the child prim wait queue.
-                                    UnAssignedChildObjectModQueue.Enqueue(vObj);
+                                    lock (UnAssignedChildObjectModQueue)
+                                    {
+                                        UnAssignedChildObjectModQueue.Enqueue(vObj);
+                                    }
                                     continue;
                                 }
 
@@ -1029,7 +1054,7 @@ namespace IdealistViewer
                     }
                     //}
                     bool creatednode = false;
-#region Avatar 
+                    #region Avatar
 
                     SceneNode node = null;
                     if (vObj.prim is Avatar)
@@ -1077,10 +1102,10 @@ namespace IdealistViewer
                             // TODO: FIXME - this depends on the mesh being loaded. A good candidate for a config item.
                             node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
                             //node.Scale = new Vector3D(15f, 15f, 15f);
-                           
+
                             if (!isTextured)
                                 node.SetMaterialTexture(0, driver.GetTexture(avatarMaterial));
-                            
+
                             // Light avatar
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
 
@@ -1116,10 +1141,10 @@ namespace IdealistViewer
                             SceneNode trans2 = smgr.AddEmptySceneNode(node, -1);
                             node.AddChild(trans2);
                             trans2.Position = new Vector3D(0.0f, 49.5f, 0.5f);
-                            
+
                             smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)vObj.prim).Name, new Color(255, 255, 255, 255), trans);
                             smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)vObj.prim).Name, new Color(255, 0, 0, 0), trans2);
-                            
+
                             //node
                         }
                         else
@@ -1132,7 +1157,7 @@ namespace IdealistViewer
                         }
 
                     }
-#endregion
+                    #endregion
                     else
                     {
 #if DebugObjectPipeline
@@ -1190,21 +1215,21 @@ namespace IdealistViewer
                     {
                         // TODO: FIXME - This is dependant on the avatar mesh loaded. a good candidate for a config option.
                         //vObj.prim.Position.Z -= 0.2f;
-                        if (vObj.prim.Position.Z >=0)
+                        if (vObj.prim.Position.Z >= 0)
                             if (RegionHFArray[(int)(Util.Clamp<float>(vObj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(vObj.prim.Position.X, 0, 255))] + 2.5f >= vObj.prim.Position.Z)
                             {
                                 vObj.prim.Position.Z = RegionHFArray[(int)(Util.Clamp<float>(vObj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(vObj.prim.Position.X, 0, 255))] + 0.9f;
                             }
-                    
+
                     }
                     else
                     {
                         // Set the scale of the prim to the libomv reported scale.
                         node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
                     }
-                    
-                   // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
-                    
+
+                    // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
+
                     // If this prim is either the parent prim or an individual prim
                     if (vObj.prim.ParentID == 0)
                     {
@@ -1231,7 +1256,7 @@ namespace IdealistViewer
                         {
                             continue;
                         }
-                        
+
                     }
                     else
                     {
@@ -1280,9 +1305,9 @@ namespace IdealistViewer
                         {
                             lock (interpolationTargets)
                             {
-                                if (! (vObj.prim is Avatar))
-                                if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
-                                    interpolationTargets.Remove(simhandle.ToString() + vObj.prim.LocalID.ToString());
+                                if (!(vObj.prim is Avatar))
+                                    if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                        interpolationTargets.Remove(simhandle.ToString() + vObj.prim.LocalID.ToString());
                             }
                         }
 
@@ -1328,9 +1353,9 @@ namespace IdealistViewer
                         node.Rotation = finalpos.Matrix.RotationDegrees;
                     }
 
-                    
+
                     if (creatednode)
-                    {   
+                    {
                         // If we created this node, then we need to add it to the 
                         // picker targets and request it's textures
 
@@ -1351,18 +1376,18 @@ namespace IdealistViewer
                                 if (vObj.prim.Textures.DefaultTexture.TextureID != UUID.Zero)
                                 {
                                     UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
-                                    
+
                                     // Only request texture if texture downloading is enabled.
                                     if (textureMan != null)
                                         textureMan.RequestImage(textureID, vObj);
 
                                 }
                             }
-                            
+
                             // If we have individual face texture settings
                             if (vObj.prim.Textures.FaceTextures != null)
                             {
-                                
+
                                 Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
                                 for (int i2 = 0; i2 < objfaces.Length; i2++)
                                 {
@@ -1384,7 +1409,7 @@ namespace IdealistViewer
                     if (node.Raw == IntPtr.Zero)
                         continue;
                     node.UpdateAbsolutePosition();
-                    
+
                 }
             }
         }
@@ -1407,13 +1432,13 @@ namespace IdealistViewer
                 {
                     if (UnAssignedChildObjectModQueue.Count == 0)
                         break;
-                    
-                    
-                
+
+
+
                     vObj = UnAssignedChildObjectModQueue.Dequeue();
                 }
                 ulong simhandle = vObj.prim.RegionHandle;
-                
+
                 if (simhandle == 0)
                     simhandle = TESTNEIGHBOR;
 
@@ -1439,7 +1464,7 @@ namespace IdealistViewer
                         {
                             if (vObj.prim is Avatar)
                             {
-                                
+
                                 //AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
                                 AnimatedMesh avmesh = smgr.GetMesh(avatarMesh);
 
@@ -1484,12 +1509,12 @@ namespace IdealistViewer
                         node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
 
                         //m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, parentObj.node.Scale.X, parentObj.node.Scale.Y, parentObj.node.Scale.Z);
-                        
+
                         vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
                         vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
 
                         node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
-                        
+
                         //m_log.Warn(vObj.prim.Rotation.ToString());
                         IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
                         iqu.makeInverse();
@@ -1561,12 +1586,18 @@ namespace IdealistViewer
                     else
                     {
                         m_log.Warn("[CHILDOBJ]: Found Parent Object but it doesn't have a SceneNode, Skipping");
-                        UnAssignedChildObjectModQueue.Enqueue(vObj);
+                        lock (UnAssignedChildObjectModQueue)
+                        {
+                            UnAssignedChildObjectModQueue.Enqueue(vObj);
+                        }
                     }
                 }
                 else
                 {
-                    UnAssignedChildObjectModQueue.Enqueue(vObj);
+                    lock (UnAssignedChildObjectModQueue)
+                    {
+                        UnAssignedChildObjectModQueue.Enqueue(vObj);
+                    }
                 }
             }
         }
@@ -1641,7 +1672,10 @@ namespace IdealistViewer
                     {
                         if (!Entities.ContainsKey(regionHandle.ToString() + vobj.prim.ParentID.ToString()))
                         {
-                            UnAssignedChildObjectModQueue.Enqueue(vobj);
+                            lock (UnAssignedChildObjectModQueue)
+                            {
+                                UnAssignedChildObjectModQueue.Enqueue(vobj);
+                            }
                         }
                         else
                         {
@@ -1657,14 +1691,14 @@ namespace IdealistViewer
                 }
                 else
                 {
-                    
+
                     vobj.updateFullYN = true;
                     enqueueVObject(vobj);
                 }
             }
         }
 
-         //for animation debugging...
+        //for animation debugging...
         public int myStartFrame = 0;
         public int myStopFrame = 90;
         public bool myFramesDirty = false;
@@ -1798,7 +1832,7 @@ namespace IdealistViewer
                                     ((AnimatedMeshSceneNode)avobj.node).AnimationSpeed = animFramesPerSecond;
                                     //((AnimatedMeshSceneNode)avobj.node).SetMD2Animation(md2Anim);
                                     ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(startFrame, endFrame);
-                                    
+
                                 }
                             }
 
@@ -1808,7 +1842,7 @@ namespace IdealistViewer
                                 if (avobj.node is AnimatedMeshSceneNode)
                                 {
                                     myFramesDirty = false;
-                                    
+
                                     ((AnimatedMeshSceneNode)avobj.node).SetFrameLoop(myStartFrame, myStopFrame);
                                     m_log.Debug("setting frames to " + myStartFrame.ToString() + " " + myStopFrame.ToString());
                                 }
@@ -1874,7 +1908,7 @@ namespace IdealistViewer
                     SceneNode tree;
 
                     int type = foliage.prim.PrimData.State;
-                    
+
                     switch (type)
                     {
                         case 0: // Pine 1 -0
@@ -1947,7 +1981,7 @@ namespace IdealistViewer
                     if (tree != null)
                     {
 
-                       
+
 
                         m_log.Debug("[FOLIAGE]: got foliage, location: " + prim.Position.ToString() + " type: " + type.ToString());
 
@@ -1972,7 +2006,7 @@ namespace IdealistViewer
 
         #endregion
 
-       
+
         #region Console
         /// <summary>
         /// Set the level of log notices being echoed to the console
@@ -2147,7 +2181,7 @@ namespace IdealistViewer
             //                Rect(new Position2D(10, 150), new Position2D(100, 190)), t1, 1101, "set");
 
         }
-        
+
         /// <summary>
         /// Show help information
         /// </summary>
@@ -2220,7 +2254,7 @@ namespace IdealistViewer
         #endregion
 
         #region Startup
-       
+
         /// <summary>
         /// Performs initialisation of the scene, such as loading configuration from disk.
         /// </summary>
@@ -2287,7 +2321,7 @@ namespace IdealistViewer
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
             guithread.Start();
 
-            
+
 
             // Compose Coordinate space converter quaternion
             IrrlichtNETCP.Matrix4 m4 = new IrrlichtNETCP.Matrix4();
@@ -2377,7 +2411,7 @@ namespace IdealistViewer
                             terrains.Remove(regionhandle);
                         }
                     }
-                    
+
                     lock (mesh_synclock)
                     {
 
@@ -2426,7 +2460,7 @@ namespace IdealistViewer
                                 mts.RemoveTriangleSelector(terrainsels[regionhandle]);
                             }
                             terrainsels.Remove(regionhandle);
-                            
+
                         }
                     }
 
@@ -2474,7 +2508,7 @@ namespace IdealistViewer
             //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
 
             FoliageObject newFoliageObject = new FoliageObject();
-            
+
             // add to the foliage queue
             newFoliageObject.prim = foliage;
             lock (foliageObjectQueue)
@@ -2482,7 +2516,7 @@ namespace IdealistViewer
                 foliageObjectQueue.Enqueue(newFoliageObject);
             }
 
-            
+
         }
 
         /// <summary>
@@ -2543,10 +2577,10 @@ namespace IdealistViewer
                         //{
                         //    if (objmaterial.Layer1.Texture != null)
                         //    {
-                       //         objmaterial.Layer1.Texture.Dispose();
-                       //     }
-                       //     objmaterial.Layer1.Dispose();
-                       // }
+                        //         objmaterial.Layer1.Texture.Dispose();
+                        //     }
+                        //     objmaterial.Layer1.Dispose();
+                        // }
                         //objmaterial.Dispose();
                     }
 
@@ -2569,12 +2603,12 @@ namespace IdealistViewer
 
             }
 
-            
-            // Box the object and node
-            newObject = VUtil.NewVObject(prim,newObject);
-            
 
-                
+            // Box the object and node
+            newObject = VUtil.NewVObject(prim, newObject);
+
+
+
             // Add to the mesh queue
             lock (objectMeshQueue)
             {
@@ -2589,7 +2623,7 @@ namespace IdealistViewer
 
             if (simhandle == 0)
                 simhandle = TESTNEIGHBOR;
-            
+
             if (x < 0 || x > 15 || y < 0 || y > 15)
             {
                 m_log.WarnFormat("Invalid land patch ({0}, {1}) received from server", x, y);
@@ -2632,18 +2666,18 @@ namespace IdealistViewer
                     m_dirtyTerrain.Enqueue(simhandle);
                 }
             }
-            
+
         }
 
         private void updateTerrainBitmap(int x, int y, Simulator sim)
         {
-            
+
             Dictionary<int, float[]> m_landMap;
             ulong simhandle = sim.Handle;
 
             if (simhandle == 0)
                 simhandle = TESTNEIGHBOR;
-            
+
             lock (m_landmaps)
             {
                 if (m_landmaps.ContainsKey(simhandle))
@@ -2664,7 +2698,7 @@ namespace IdealistViewer
 
             float[] currentPatch = m_landMap[y * 16 + x];
 
-            
+
             System.Drawing.Bitmap terrainbitmap;
 
             lock (terrainBitmap)
@@ -2702,16 +2736,16 @@ namespace IdealistViewer
                         {
                             if (currentSim.Handle == simhandle)
                             {
-                                RegionHFArray[bitmapy,bitmapx] = col;
+                                RegionHFArray[bitmapy, bitmapx] = col;
                             }
                         }
 
                         col *= 0.00397f;  // looks a little closer by eyeball
-                        
-                        
+
+
                         //m_log.Debug("[COLOR]: " + currentPatch[cy * 16 + cx].ToString());
                         //terrainbitmap.SetPixel(bitmapy, bitmapx, System.Drawing.Color.FromArgb(col, col, col));
-                        terrainbitmap.SetPixel(bitmapy, bitmapx, Util.FromArgbf(1,col,col,col));
+                        terrainbitmap.SetPixel(bitmapy, bitmapx, Util.FromArgbf(1, col, col, col));
                     }
                 }
             }
@@ -2738,7 +2772,7 @@ namespace IdealistViewer
             if (simhandle == 0)
                 simhandle = TESTNEIGHBOR;
 
-            
+
 
             if (currentSim == null)
             {
@@ -2752,7 +2786,7 @@ namespace IdealistViewer
                     isCurrentSim = true;
                 }
             }
-            
+
             // Add the simulators to our known simulators and initialize the terrain constructs
             lock (Simulators)
             {
@@ -2794,66 +2828,67 @@ namespace IdealistViewer
         /// <param name="update"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle, 
+        private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle,
             ushort timeDilation)
         {
             TimeDilation = (float)(timeDilation / ushort.MaxValue);
-            
+
             VObject obj = null;
             //if (!update.Avatar)
             //{
-                lock (Entities)
+            lock (Entities)
+            {
+                if (Entities.ContainsKey(regionHandle.ToString() + update.LocalID.ToString()))
                 {
-                    if (Entities.ContainsKey(regionHandle.ToString() + update.LocalID.ToString()))
-                    {
-                        obj = Entities[regionHandle.ToString() + update.LocalID.ToString()];
-                        if (obj.prim is Avatar)
-                        {
-                            if (obj.node != null)
-                            {
-                                obj.updateFullYN = false;
-                            }
-                            
-                        }
-                        else
-                        {
-                            obj.updateFullYN = false;
-                        }
-                        // Update the primitive properties for this object.
-                        obj.prim.Acceleration = update.Acceleration;
-                        obj.prim.AngularVelocity = update.AngularVelocity;
-                        obj.prim.CollisionPlane = update.CollisionPlane;
-                        obj.prim.Position = update.Position;
-                        obj.prim.Rotation = update.Rotation;
-                        obj.prim.PrimData.State = update.State;
-                        obj.prim.Textures = update.Textures;
-                        obj.prim.Velocity = update.Velocity;
-                        
-                        // Save back to the Entities.  vObject used to be a value type, so this was neccessary.
-                        // it may not be anymore.
-
-                        Entities[regionHandle.ToString() + update.LocalID.ToString()] = obj;
-                    }
-                }
-
-                // Enqueue this object into the modification queue.
-                if (obj != null)
-                {
+                    obj = Entities[regionHandle.ToString() + update.LocalID.ToString()];
                     if (obj.prim is Avatar)
                     {
                         if (obj.node != null)
                         {
-                            lock (objectModQueue)
-                            {
-                                objectModQueue.Enqueue(obj);
-                            }
+                            obj.updateFullYN = false;
                         }
+
                     }
                     else
                     {
-                        enqueueVObject(obj);
+                        obj.updateFullYN = false;
+                    }
+                    // Update the primitive properties for this object.
+                    obj.prim.Acceleration = update.Acceleration;
+                    obj.prim.AngularVelocity = update.AngularVelocity;
+                    obj.prim.CollisionPlane = update.CollisionPlane;
+                    obj.prim.Position = update.Position;
+                    obj.prim.Rotation = update.Rotation;
+                    obj.prim.PrimData.State = update.State;
+                    obj.prim.Textures = update.Textures;
+                    obj.prim.Velocity = update.Velocity;
+
+                    // Save back to the Entities.  vObject used to be a value type, so this was neccessary.
+                    // it may not be anymore.
+
+                    Entities[regionHandle.ToString() + update.LocalID.ToString()] = obj;
+                }
+            }
+
+            // Enqueue this object into the modification queue.
+            if (obj != null)
+            {
+                if (obj.prim is Avatar)
+                {
+                    if (obj.node != null)
+                    {
+                        //lock (objectModQueue)
+                        //{
+                        //    objectModQueue.Enqueue(obj);
+                        //}
+                        lock (avatarModQueue) { avatarModQueue.Enqueue(obj); }
                     }
                 }
+                else
+                {
+                    enqueueVObject(obj);
+                }
+            }
             //}
         }
 
@@ -2867,7 +2902,7 @@ namespace IdealistViewer
             ulong regionHandle = psim.Handle;
             m_log.Debug("[DELETE]: obj " + regionHandle.ToString() + ":" + pLocalID.ToString());
             VObject obj = null;
-          
+
             lock (Entities)
             {
 
@@ -2901,7 +2936,7 @@ namespace IdealistViewer
 
                         smgr.AddToDeletionQueue(obj.node);
                         obj.node = null;
-                        
+
                     }
                     // Remove this object from the known entities.
                     Entities.Remove(regionHandle.ToString() + pLocalID.ToString());
@@ -2945,8 +2980,8 @@ namespace IdealistViewer
                                        ushort timeDilation)
         {
             TimeDilation = (float)(timeDilation / ushort.MaxValue);
-            VObject avob = null; 
-            
+            VObject avob = null;
+
             lock (Entities)
             {
                 // If we've got an entitiy for this avatar, then this is a full object update
@@ -2965,16 +3000,19 @@ namespace IdealistViewer
                     avob.mesh = null;
                     avob.node = null;
                     Entities.Add(regionHandle.ToString() + avatar.LocalID.ToString(), avob);
-                    
+
                 }
             }
 
+            avob.updateFullYN = true;
             // Add to the Object Modification queue.
-            lock (objectModQueue)
-            {
-                avob.updateFullYN = true;
-                objectModQueue.Enqueue(avob);
-            }
+            //lock (objectModQueue)
+            //{
+            //    objectModQueue.Enqueue(avob);
+            //}
+
+            // Add to the Avatar modification queue
+            lock (avatarModQueue) { avatarModQueue.Enqueue(avob); }
 
             bool needInitialAnimationState = false;
 
@@ -3035,7 +3073,7 @@ namespace IdealistViewer
             switch (ky)
             {
                 case KeyCode.Up:
-                    
+
                     AVControl.Forward = kydown;
                     break;
 
@@ -3067,7 +3105,7 @@ namespace IdealistViewer
                     break;
 
                 case KeyCode.Home:
-                    if (!held && !kydown) 
+                    if (!held && !kydown)
                         AVControl.Fly = !AVControl.Fly;
                     break;
 
@@ -3382,14 +3420,14 @@ namespace IdealistViewer
                 //Keyboard event
                 if (p_event.Type == EventType.KeyInputEvent)
                 {
-                    
+
                     switch (p_event.KeyCode)
                     {
                         case KeyCode.Control:
                             ctrlHeld = p_event.KeyPressedDown;
                             if (ctrlHeld)
                             {
-          
+
                                 cam.ResetMouseOffsets();
                             }
                             else
@@ -3410,7 +3448,7 @@ namespace IdealistViewer
                             if (!ctrlHeld)
                                 DoMotorAction(p_event.KeyCode, p_event.KeyPressedDown, false);
 
-                            doKeyHeldStore(p_event.KeyCode,p_event.KeyPressedDown);
+                            doKeyHeldStore(p_event.KeyCode, p_event.KeyPressedDown);
                             break;
 
                         case KeyCode.Key_H:
@@ -3426,7 +3464,7 @@ namespace IdealistViewer
                                 uint texcount = 0;
                                 if (textureMan != null)
                                     texcount = textureMan.TextureCacheCount;
-                                m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount,m_MeshFactory.UniqueObjects);
+                                m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount, m_MeshFactory.UniqueObjects);
                             }
                             break;
 
@@ -3453,8 +3491,8 @@ namespace IdealistViewer
             return false;
         }
 
-        
-        
+
+
         #region Mouse Handler
         public bool MouseEventProcessor(Event p_event)
         {
@@ -3463,7 +3501,7 @@ namespace IdealistViewer
             {
                 //KeyCode.RButton
                 cam.MouseWheelAction(p_event.MouseWheelDelta);
-                
+
 
             }
             if (p_event.MouseInputEvent == MouseInputEvent.LMouseLeftUp)
@@ -3488,12 +3526,12 @@ namespace IdealistViewer
                     // Pick!
 
                     cam.ResetMouseOffsets();
-                    Vector3D[] projection = cam.ProjectRayPoints(p_event.MousePosition, WindowWidth_DIV2,WindowHeight_DIV2, aspect);
+                    Vector3D[] projection = cam.ProjectRayPoints(p_event.MousePosition, WindowWidth_DIV2, WindowHeight_DIV2, aspect);
                     Line3D projectedray = new Line3D(projection[0], projection[1]);
 
                     Vector3D collisionpoint = new Vector3D(0, 0, 0);
                     Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
-                    
+
                     // Check if we have a node under the mouse
                     SceneNode node = triPicker.GetSceneNodeFromRay(projectedray, 0x0128, true, cam.SNCamera.Position); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
                     if (node == null)
@@ -3520,7 +3558,7 @@ namespace IdealistViewer
                     {
                         // Sometimes the terrain picker returns weird values.
                         // If it's weird try the general 'everything' triangle picker.
-                        m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>",node.Position.X,node.Position.Y,node.Position.Z);
+                        m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>", node.Position.X, node.Position.Y, node.Position.Z);
                         if (node.Position.X == 0 && node.Position.Z == 0)
                         {
                             if (mts != null)
@@ -3578,7 +3616,7 @@ namespace IdealistViewer
                     //loMouseOffsetPHI = loMouseOffsetPHI + (deltaY * CAMERASPEED);
                     cam.SetDeltaFromMouse(deltaX, deltaY);
 
-                    
+
                     // m_log.DebugFormat("pos1:{0}, pos2{1}", deltaX, deltaY);
 
                 }
@@ -3635,11 +3673,11 @@ namespace IdealistViewer
     /// <summary>
     /// embedded struct for texture complete object.
     /// </summary>
-    public struct TextureComplete 
+    public struct TextureComplete
     {
         public VObject vObj;
         public string texture;
         public UUID textureID;
-        
+
     }
 }
