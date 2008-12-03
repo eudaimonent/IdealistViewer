@@ -81,7 +81,7 @@ namespace IdealistViewer
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
             m_user.Assets.OnImageReceived += imageReceivedCallback;
-            //m_user.Objects.OnNewFoliage += newFoliageCallback;
+            m_user.Objects.OnNewFoliage += newFoliageCallback;
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
             
