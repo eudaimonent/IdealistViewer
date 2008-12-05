@@ -24,6 +24,7 @@ namespace IdealistViewer
 {
     public class BaseIdealistViewer : conscmd_callback
     {
+        List<string> messageHistory = new List<string>();
         public IdealistViewerConfigSource m_config = null;
         public static Dictionary<string, UUID> waitingSculptQueue = new Dictionary<string, UUID>();
         public static bool backFaceCulling = true;
@@ -127,6 +128,7 @@ namespace IdealistViewer
         /// </summary>
         private static Queue<TextureComplete> assignTextureQueue = new Queue<TextureComplete>();
 
+        private static Queue<string> outgoingChatQueue = new Queue<string>();
 
         /// <summary>
         /// All objects that are interpolated get put into this dictionary.  Indexed by VUtil.GetHashId
@@ -510,10 +512,13 @@ namespace IdealistViewer
 
             // create menu toplevel and submenu items. 
             // device_OnEvent handles these menu items - ckrinke
+
+           
             GUIContextMenu menu = guienv.AddMenu(guienv.RootElement, -1);
             menu.AddItem("File", -1, true, true);
             menu.AddItem("View", -1, true, true);
             menu.AddItem("Other", -1, true, true);
+            menu.AddItem("Communication", -1, true, true);
             menu.AddItem("Help", -1, true, true);
 
             GUIContextMenu submenu;
@@ -533,7 +538,12 @@ namespace IdealistViewer
             submenu.AddItem("Reflection", (int)MenuID.ViewModeThree, true, false);
 
             submenu = menu.GetSubMenu(3);
+            submenu.AddItem("Show Chat", (int)MenuID.ShowChat, true, false);
+
+            submenu = menu.GetSubMenu(4);
             submenu.AddItem("About", (int)MenuID.About, true, false);
+
+
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
             //gtb.Text = "Hi";
@@ -769,6 +779,14 @@ namespace IdealistViewer
                 //    AVControl.UpdateRemote();
                 //    doSetCameraPosition();
                 //}
+
+                // process chat
+                if (outgoingChatQueue.Count > 0)
+                    lock (outgoingChatQueue)
+                        for (int i = 0; i < outgoingChatQueue.Count; i++)
+                            avatarConnection.Say(outgoingChatQueue.Dequeue());
+
+                UpdateChatWindow();
 
                 // Frame Limiter
                 int frameTime = System.Environment.TickCount - tickcount;
@@ -1765,6 +1783,8 @@ namespace IdealistViewer
         public int myStartFrame = 0;
         public int myStopFrame = 90;
         public bool myFramesDirty = false;
+        private GUIEditBox chatBoxInput;
+        private GUIListBox chatBoxMessageList;
 
         /// <summary>
         /// Animations that are received are stored in a dictionary in the protocol module and associated
@@ -2214,7 +2234,7 @@ namespace IdealistViewer
         /// <summary>
         /// Show Chat History window
         /// </summary>
-        protected virtual void ShowChat()
+        protected virtual void ShowChatWindow()
         {
             // remove tool box if already there
             GUIEnvironment guienv = device.GUIEnvironment;
@@ -2223,7 +2243,7 @@ namespace IdealistViewer
             if (e != null) e.Remove();
 
             GUIWindow wnd = guienv.AddWindow(
-                new Rect(new Position2D(150, 25), new Position2D(640, 485)),
+                new Rect(new Position2D(150, 25), new Position2D(640, 500)),
                 false, "Chat Window", guienv.RootElement, 5000);
 
             // create tab control and tabs
@@ -2235,17 +2255,17 @@ namespace IdealistViewer
 
             // add some edit boxes and a button to tab one
             //env.AddEditBox("1.0", new Rect(40,50,130,70), true, t1, 901);
-            guienv.AddListBox(new Rect(new Position2D(5, 55), new Position2D(485, 420)),
+            chatBoxMessageList = guienv.AddListBox(new Rect(new Position2D(5, 55), new Position2D(485, 420)),
                 wnd, 5100, true);
             //            guienv.AddEditBox("1.0",
             //                new Rect(new Position2D(40, 50), new Position2D(130, 70)), true, t1, 901);
             //            guienv.AddEditBox("1.0",
             //                new Rect(new Position2D(40, 350), new Position2D(130, 400)), true, t1, 902);
-            guienv.AddEditBox(" ",
-                new Rect(new Position2D(2, 380), new Position2D(485, 470)), true, t1, 903);
+            chatBoxInput = guienv.AddEditBox(" ",
+                new Rect(new Position2D(2, 375), new Position2D(485, 400)), true, t1, 903);
             //            guienv.AddButton(new
             //                Rect(new Position2D(10, 150), new Position2D(100, 190)), t1, 1101, "set");
-
+            UpdateChatWindow();
         }
 
         /// <summary>
@@ -2382,6 +2402,8 @@ namespace IdealistViewer
             avatarConnection.OnObjectKilled += objectKilledCallback;
             avatarConnection.OnNewAvatar += newAvatarCallback;
             avatarConnection.OnNewFoliage += newFoliageCallback;
+            avatarConnection.OnChat +=new SLProtocol.Chat(avatarConnection_OnChat);
+            
 
             // Startup the GUI
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
@@ -2416,6 +2438,44 @@ namespace IdealistViewer
             // Begin Login!
             avatarConnection.BeginLogin(loginURI, firstName + " " + lastName, password, startlocation);
             //base.StartupSpecific();
+            
+        }
+
+        private bool newChat = false;
+
+        private void avatarConnection_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourcetype, string fromName, UUID id, UUID ownerid, Vector3 position)
+        {
+            lock (messageHistory)
+            {
+                if (message.ToLower().StartsWith("/me "))
+                    messageHistory.Add(fromName + message.Substring(3));
+                else
+                    if (type == ChatType.Shout)
+                        messageHistory.Add(fromName + " shouts: " + message);
+                    else
+                        messageHistory.Add(fromName + ": " + message);
+
+                newChat = true;
+            }
+        }
+
+        private void UpdateChatWindow()
+        {
+            if (newChat)
+            {
+                newChat = false;
+                if (chatBoxMessageList != null)
+                {
+                    chatBoxMessageList.Clear();
+                    lock (messageHistory)
+                    {
+                        for (int i = messageHistory.Count - 1; i >= 0; i--)
+                        {
+                            chatBoxMessageList.AddItem(messageHistory[i]);
+                        }
+                    }
+                }
+            }
         }
 
         #endregion
@@ -3431,6 +3491,9 @@ namespace IdealistViewer
                             case (int)MenuID.FileQuit: // File -> Quit
                                 Shutdown();
                                 break;
+                            case (int)MenuID.ShowChat:
+                                ShowChatWindow();
+                                break;
                             case (int)MenuID.ShowPrimcount:
                                 {
                                     uint texcount = 0;
@@ -3475,7 +3538,19 @@ namespace IdealistViewer
                         //CFK GUIFileOpenDialog dialog = ((GUIFileOpenDialog)p_event.Caller);
                         //CFK                        loadModel(dialog.Filename);
                         break;
+                    case GUIEventType.EditBoxEnter:
+                        if (p_event.Caller == chatBoxInput)
+                        {
+                            lock (outgoingChatQueue)
+                                outgoingChatQueue.Enqueue(chatBoxInput.Text);
 
+                            lock (messageHistory)
+                            {
+                                messageHistory.Add("You: " + chatBoxInput.Text);
+                                newChat = true;
+                            }
+                        }
+                        break;
                 }
             }
 
@@ -3520,7 +3595,7 @@ namespace IdealistViewer
                         case KeyCode.Key_H:
                             if (p_event.KeyPressedDown)
                             {
-                                ShowChat();
+                                ShowChatWindow();
                             }
                             break;
 
@@ -3556,8 +3631,6 @@ namespace IdealistViewer
 
             return false;
         }
-
-
 
         #region Mouse Handler
         public bool MouseEventProcessor(Event p_event)
@@ -3734,6 +3807,7 @@ namespace IdealistViewer
         ViewModeOne = 111,
         ViewModeTwo = 112,
         ViewModeThree = 113,
+        ShowChat = 114,
         About = 999
     }
     /// <summary>

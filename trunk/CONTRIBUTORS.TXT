@@ -9,3 +9,6 @@ Primary Developers (alphabetical order)
 * Dahlia Trimble
 * Teravus Ousley
 
+Patches
+* Daedius Moskvitch
+
