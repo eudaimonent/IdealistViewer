@@ -305,5 +305,10 @@ namespace IdealistViewer
             // experimental - build sculpt mesh using vertex, normal, and coord lists
             return SculptMeshToIrrMesh(newSculpty);
         }
+
+        public static Mesh SculptIrrMesh(float[,] zMap, float minX, float maxX, float minY, float maxY)
+        {
+            return SculptMeshToIrrMesh(new SculptMesh(zMap, minX, maxX, minY, maxY, true));
+        }
     }
 }

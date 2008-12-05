@@ -318,6 +318,7 @@ namespace IdealistViewer
         private float TimeDilation = 0;
 
         private float[,] RegionHFArray = new float[256, 256];
+        private bool meshHeightField = false;
 
         public BaseIdealistViewer(IConfigSource iconfig)
         {
@@ -335,6 +336,16 @@ namespace IdealistViewer
             m_startuptime = DateTime.Now;
         }
 
+        float[,] subHeightField(int startX, int endX, int startY, int endY)
+        {
+            float[,] retVal = new float[endY - startY + 1, endX - startX + 1];
+
+            for (int retY = 0, y = startY; y <= endY; retY++, y++)
+                for (int retX = 0, x = startX; x <= endX; retX ++, x++)
+                    retVal[retY, retX] = RegionHFArray[y, x];
+
+            return retVal;
+        }
 
         /// <summary>
         /// Starts up Irrlicht for the GUI
@@ -440,6 +451,25 @@ namespace IdealistViewer
             // Animator anim = smgr.CreateFlyCircleAnimator(new Vector3D(128, 250, 128), 250.0f, 0.0010f);
             //light.AddAnimator(anim);
             //anim.Dispose();
+
+            // dahlia's experimental extra scene acoutraments
+            //try
+            //{
+            //    AnimatedMesh testSceneMesh = smgr.GetMesh("mySceneMesh.obj");
+            //    if (testSceneMesh != null)
+            //    {
+            //        SceneNode testObject = smgr.AddAnimatedMeshSceneNode(testSceneMesh);
+            //        //testObject.SetMaterialTexture(0, driver.GetTexture("mySceneMesh.bmp"));
+                    
+            //        testObject.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+            //        testObject.Position = new Vector3D(128, 0, 128);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    m_log.Warn(e.Message);
+            //}
+            
 
             // This light simulates the sun
             SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
@@ -664,6 +694,39 @@ namespace IdealistViewer
 
                     // Process Avatar Mod Queue
                     doObjectMods(10, ref avatarModQueue);
+                }
+
+                if (meshHeightField)
+                {
+                    meshHeightField = false;
+
+                    int heightOffset = 0;
+                    int x, y;
+                    int x1, y1;
+
+                    // size of each plane mesh in the grid in meters
+                    int xStep = 16;
+                    int yStep = 16;
+
+                    for (y = 0; y < 256; y += yStep)
+                    {
+                        y1 = y + yStep < 256 ? y + yStep : 255;
+
+                        for (x = 0; x < 256; x += xStep)
+                        {
+                            x1 = x + xStep < 256 ? x + xStep : 255;
+                            Mesh sampleHF = PrimMesherG.SculptIrrMesh(subHeightField( x, x1, y, y1), x, x + xStep, y, y + yStep);
+                            for (int i = 0; i < sampleHF.MeshBufferCount; i++)
+                                sampleHF.GetMeshBuffer(i).SetColor(new Color(128, 32, 32, 32));
+                            SceneNode sampleHFNode = smgr.AddMeshSceneNode(sampleHF, smgr.RootSceneNode, -1);
+                            sampleHFNode.Position = new Vector3D(0, heightOffset, 0);
+                            sampleHFNode.SetMaterialTexture(0, driver.GetTexture("UV.tga"));
+                            sampleHFNode.SetMaterialFlag(MaterialFlag.Lighting, true);
+                            sampleHFNode.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                            sampleHFNode.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
+                            sampleHFNode.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                        }
+                    }
                 }
 
                 if ((framecounter % objectmods) == 0)
@@ -2095,6 +2158,9 @@ namespace IdealistViewer
                 case "help":
                     ShowHelp(cmdparams);
                     Notice("");
+                    break;
+                case "hf":
+                    meshHeightField = true;
                     break;
                 case "relog":
                     avatarConnection.BeginLogin(avatarConnection.loginURI, avatarConnection.firstName + " " + avatarConnection.lastName, avatarConnection.password, avatarConnection.startlocation);
