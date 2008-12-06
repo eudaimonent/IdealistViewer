@@ -29,6 +29,7 @@ namespace IdealistViewer
         public delegate void ImageReceived(AssetTexture tex);
         public delegate void NewFoliage(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation);
 
+        public delegate void FriendsListchanged();
 
         public event NewAvatar OnNewAvatar;
         public event Chat OnChat;
@@ -41,6 +42,7 @@ namespace IdealistViewer
         public event ObjectUpdated OnObjectUpdated;
         public event ImageReceived OnImageReceived;
         public event NewFoliage OnNewFoliage;
+        public event FriendsListchanged OnFriendsListChanged;
 
         public string loginURI;
         public string firstName;
@@ -82,11 +84,47 @@ namespace IdealistViewer
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
             m_user.Assets.OnImageReceived += imageReceivedCallback;
             m_user.Objects.OnNewFoliage += newFoliageCallback;
+            m_user.Friends.OnFriendNamesReceived += Friends_OnFriendNamesReceived;
+            m_user.Friends.OnFriendOnline += Friends_OnFriendOnline;
+            m_user.Friends.OnFriendOffline += Friends_OnFriendOffline;
+
             //m_user.Assets.RequestImage(
             //m_user.Assets.Cache..RequestImage(UUID.Zero, ImageType.Normal);
             
             m_user.Network.RegisterCallback(OpenMetaverse.Packets.PacketType.AvatarAnimation, AvatarAnimationHandler);
 
+        }
+
+        private void Friends_OnFriendOffline(FriendInfo friend)
+        {
+            if( OnFriendsListChanged != null )
+            {
+                OnFriendsListChanged();
+            }
+        }
+
+        private void Friends_OnFriendOnline(FriendInfo friend)
+        {
+            if (OnFriendsListChanged != null)
+            {
+                OnFriendsListChanged();
+            }
+        }
+
+        private void Friends_OnFriendNamesReceived(Dictionary<UUID, string> names)
+        {
+            if (OnFriendsListChanged != null)
+            {
+                OnFriendsListChanged();
+            }
+        }
+
+        public Dictionary<UUID, FriendInfo> Friends
+        {
+            get
+            {
+                return m_user.Friends.FriendList.Dictionary;
+            }
         }
 
         public void AvatarAnimationHandler(OpenMetaverse.Packets.Packet packet, Simulator sim)

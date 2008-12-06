@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Forms;
 using System.Xml;
 using System.Net;
 using System.Reflection;
@@ -115,7 +116,6 @@ namespace IdealistViewer
         /// foliage (trees, grass, etc. are queued in this queue.
         /// </summary>
         private static Queue<FoliageObject> foliageObjectQueue = new Queue<FoliageObject>();
-
 
         /// <summary>
         /// Child prim in a prim group where the children don't yet have parents 
@@ -619,6 +619,14 @@ namespace IdealistViewer
             */
             // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
+
+            Form f = new Form() {Width = 300, Height = 300, Visible = true};
+            f.Controls.Add(new Button(){Text="test"});
+
+            new Thread(delegate(){Application.DoEvents();}).Start();
+
+
+
             while (running)
             {
                 try
@@ -766,6 +774,7 @@ namespace IdealistViewer
 
                     // Set the FPS in the window title.
                     device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
+                    
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
                     //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
@@ -792,11 +801,11 @@ namespace IdealistViewer
                 int frameTime = System.Environment.TickCount - tickcount;
                 if (frameTime < minFrameTime)
                     Thread.Sleep(minFrameTime - frameTime);
-
+                Thread.Sleep(1);
+                
             }
             //In the end, delete the Irrlicht device.
             Shutdown();
-
         }
 
         /// <summary>
@@ -1785,6 +1794,7 @@ namespace IdealistViewer
         public bool myFramesDirty = false;
         private GUIEditBox chatBoxInput;
         private GUIListBox chatBoxMessageList;
+        private GUIListBox friendsList;
 
         /// <summary>
         /// Animations that are received are stored in a dictionary in the protocol module and associated
@@ -2252,19 +2262,24 @@ namespace IdealistViewer
             wnd, true, true, -1);
             GUITab t1 = tab.AddTab("Main", -1);
             GUITab t2 = tab.AddTab("Groups", -1);
+            GUITab t3 = tab.AddTab("Friends", -1);
 
             // add some edit boxes and a button to tab one
             //env.AddEditBox("1.0", new Rect(40,50,130,70), true, t1, 901);
-            chatBoxMessageList = guienv.AddListBox(new Rect(new Position2D(5, 55), new Position2D(485, 420)),
-                wnd, 5100, true);
+            chatBoxMessageList = guienv.AddListBox(new Rect(new Position2D(5, 5), new Position2D(485, 380)),
+                t1, 5100, true);
             //            guienv.AddEditBox("1.0",
             //                new Rect(new Position2D(40, 50), new Position2D(130, 70)), true, t1, 901);
             //            guienv.AddEditBox("1.0",
             //                new Rect(new Position2D(40, 350), new Position2D(130, 400)), true, t1, 902);
             chatBoxInput = guienv.AddEditBox(" ",
-                new Rect(new Position2D(2, 375), new Position2D(485, 400)), true, t1, 903);
+                new Rect(new Position2D(5, 385), new Position2D(485, 410)), true, t1, 903);
             //            guienv.AddButton(new
             //                Rect(new Position2D(10, 150), new Position2D(100, 190)), t1, 1101, "set");
+
+            friendsList = guienv.AddListBox(new Rect(new Position2D(5, 5), new Position2D(485, 410)),
+                t3, 5101, true);
+            UpdateFriendsList();
             UpdateChatWindow();
         }
 
@@ -2403,7 +2418,7 @@ namespace IdealistViewer
             avatarConnection.OnNewAvatar += newAvatarCallback;
             avatarConnection.OnNewFoliage += newFoliageCallback;
             avatarConnection.OnChat +=new SLProtocol.Chat(avatarConnection_OnChat);
-            
+            avatarConnection.OnFriendsListChanged +=new SLProtocol.FriendsListchanged(avatarConnection_OnFriendsListChanged);
 
             // Startup the GUI
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
@@ -2441,7 +2456,13 @@ namespace IdealistViewer
             
         }
 
+        private void avatarConnection_OnFriendsListChanged()
+        {
+            UpdateFriendsList();
+        }
+
         private bool newChat = false;
+        private object focusedElement;
 
         private void avatarConnection_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourcetype, string fromName, UUID id, UUID ownerid, Vector3 position)
         {
@@ -2456,6 +2477,28 @@ namespace IdealistViewer
                         messageHistory.Add(fromName + ": " + message);
 
                 newChat = true;
+            }
+        }
+
+        private void UpdateFriendsList()
+        {
+            if (friendsList == null)
+            {
+                return;
+            }
+            friendsList.Clear();
+            foreach( var friend in avatarConnection.Friends )
+            {
+                string statusString = "(Offline)";
+                if( friend.Value.IsOnline)
+                {
+                    statusString = "(Online)";
+                }
+
+                if (friend.Value.Name != null)
+                {
+                    friendsList.AddItem(friend.Value.Name + statusString);
+                }
             }
         }
 
@@ -2882,7 +2925,7 @@ namespace IdealistViewer
         /// </summary>
         protected void connectedCallback()
         {
-
+            UpdateFriendsList();
         }
 
         /// <summary>
@@ -3476,9 +3519,17 @@ namespace IdealistViewer
                 int id = p_event.Caller.ID;
                 GUIEnvironment env = device.GUIEnvironment;
 
+               
+
                 //m_log.InfoFormat("{0} {1} {2} {3}", p_event.Type, p_event.Caller, p_event.GUIEvent, p_event.Caller.ID);
                 switch (p_event.GUIEvent)
                 {
+                    case GUIEventType.ElementFocused:
+                        this.focusedElement = p_event.Caller as GUIElement;
+                        break;
+                    case GUIEventType.ElementFocusLost:
+                        this.focusedElement = null;
+                        break;
                     case GUIEventType.MenuItemSelected:
                         // a menu item was clicked
                         GUIContextMenu menu = ((GUIContextMenu)p_event.Caller);
@@ -3549,6 +3600,8 @@ namespace IdealistViewer
                                 messageHistory.Add("You: " + chatBoxInput.Text);
                                 newChat = true;
                             }
+
+                            chatBoxInput.Text = "";
                         }
                         break;
                 }
@@ -3558,67 +3611,66 @@ namespace IdealistViewer
             // !Mouse event  (we do this so that we don't process the rest of this each mouse move
             if (p_event.Type != EventType.MouseInputEvent)
             {
+                
                 //Keyboard event
                 if (p_event.Type == EventType.KeyInputEvent)
                 {
-
-                    switch (p_event.KeyCode)
+                    //If we have focus on the 3d screen and not a control
+                    if (focusedElement == null)
                     {
-                        case KeyCode.Control:
-                            ctrlHeld = p_event.KeyPressedDown;
-                            if (ctrlHeld)
-                            {
+                        var c = p_event.Caller;
+                        switch (p_event.KeyCode)
+                        {
 
-                                cam.ResetMouseOffsets();
-                            }
-                            else
-                            {
-                                cam.ApplyMouseOffsets();
-                            }
-                            break;
-                        case KeyCode.Shift:
-                            shiftHeld = p_event.KeyPressedDown;
-                            break;
-                        case KeyCode.Up:
-                        case KeyCode.Down:
-                        case KeyCode.Left:
-                        case KeyCode.Right:
-                        case KeyCode.Prior:
-                        case KeyCode.Next:
-                        case KeyCode.Home:
-                            if (!ctrlHeld)
-                                DoMotorAction(p_event.KeyCode, p_event.KeyPressedDown, false);
-
-                            doKeyHeldStore(p_event.KeyCode, p_event.KeyPressedDown);
-                            break;
-
-                        case KeyCode.Key_H:
-                            if (p_event.KeyPressedDown)
-                            {
-                                ShowChatWindow();
-                            }
-                            break;
-
-                        case KeyCode.Key_P:
-                            if (p_event.KeyPressedDown)
-                            {
-                                uint texcount = 0;
-                                if (textureMan != null)
-                                    texcount = textureMan.TextureCacheCount;
-                                m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount, m_MeshFactory.UniqueObjects);
-                            }
-                            break;
-
-                        case KeyCode.Key_C:
-                            if (p_event.KeyPressedDown)
-                            {
-                                if (textureMan != null)
+                            case KeyCode.Control:
+                                ctrlHeld = p_event.KeyPressedDown;
+                                if (ctrlHeld)
                                 {
-                                    textureMan.ClearMemoryCache();
 
+                                    cam.ResetMouseOffsets();
                                 }
-                            }
-                            break;
+                                else
+                                {
+                                    cam.ApplyMouseOffsets();
+                                }
+                                break;
+                            case KeyCode.Shift:
+                                shiftHeld = p_event.KeyPressedDown;
+                                break;
+                            case KeyCode.Up:
+                            case KeyCode.Down:
+                            case KeyCode.Left:
+                            case KeyCode.Right:
+                            case KeyCode.Prior:
+                            case KeyCode.Next:
+                            case KeyCode.Home:
+                                if (!ctrlHeld)
+                                    DoMotorAction(p_event.KeyCode, p_event.KeyPressedDown, false);
+
+                                doKeyHeldStore(p_event.KeyCode, p_event.KeyPressedDown);
+                                break;
+
+                            case KeyCode.Key_P:
+                                if (p_event.KeyPressedDown)
+                                {
+                                    uint texcount = 0;
+                                    if (textureMan != null)
+                                        texcount = textureMan.TextureCacheCount;
+                                    m_log.DebugFormat("FullUpdateCount:{0}, PrimCount:{1}, TextureCount:{2}, UniquePrim:{3}", primcount, Entities.Count, texcount, m_MeshFactory.UniqueObjects);
+                                }
+                                break;
+
+                            case KeyCode.Key_C:
+                                if (p_event.KeyPressedDown)
+                                {
+                                    if (textureMan != null)
+                                    {
+                                        textureMan.ClearMemoryCache();
+
+                                    }
+                                }
+                                break;
+                        }  
                     }
                 }
                 processHeldKeys();
