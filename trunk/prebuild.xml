@@ -61,6 +61,8 @@
       <Reference name="OpenMetaverse.dll" />
       <Reference name="OpenMetaverseTypes.dll" />
       <Reference name="PrimMesher.dll" />
+      <Reference name="System.Windows.Forms" />
+      <Reference name="System.Data" />
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
