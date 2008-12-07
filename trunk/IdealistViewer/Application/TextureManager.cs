@@ -370,7 +370,7 @@ namespace IdealistViewer
                                 // Apply color settings
                                 ApplyFaceSettings(vObj, alphaimage, vObj.prim.Textures.DefaultTexture, null, j, shinyval, coldata);
                             }
-
+                            
 
                             vObj.mesh.GetMeshBuffer(j).Material.NormalizeNormals = true;
                             vObj.mesh.GetMeshBuffer(j).Material.GouraudShading = true;
