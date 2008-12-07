@@ -620,9 +620,7 @@ namespace IdealistViewer
             // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
 
-            Form f = new Form() {Width = 300, Height = 300, Visible = true};
-            f.Controls.Add(new Button(){Text="test"});
-
+            frmCommunications f = new frmCommunications(avatarConnection) { Visible = true };
             new Thread(delegate(){Application.DoEvents();}).Start();
 
 
