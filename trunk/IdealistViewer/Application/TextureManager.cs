@@ -568,11 +568,26 @@ namespace IdealistViewer
             
             //mesh = device.SceneManager.MeshManipulator.CreateMeshWithTangents(mesh);
 
+            //if (teface.TexMapType == MappingType.Planar)
+            //{
+            //    // according to a certain source, for linden viewer style planar mapping:
+            //    // "the texture coordinates are dot products of the position and the surface binormals."
 
+            //    for (uint i = 0; i < mb.VertexCount; i++)
+            //    {
+            //        Vertex3D v = mb.GetVertex(i);
+            //        Vector3D uvw = new Vector3D(v.TCoords.X, v.TCoords.Y, 0.0f);
+            //        uvw = uvw.CrossProduct(v.Normal);
+            //        //uvw = v.Normal.CrossProduct(new Vector3D(v.TCoords.X, v.TCoords.Y, 0.0f));
+            //        v.TCoords = new Vector2D(uvw.X, uvw.Y);
+            //        mb.SetVertex(i, v);
+            //    }
+            //}
 
             mb.Material.ZWriteEnable = true;
             //mb.Material.ZBuffer = 1;
-            mb.Material.BackfaceCulling = true;
+            //mb.Material.BackfaceCulling = true;
+            mb.Material.BackfaceCulling = BaseIdealistViewer.backFaceCulling;
             
             if (coldata.A != 1)
             {

@@ -264,7 +264,7 @@ namespace IdealistViewer
         /// <summary>
         /// We loop the graphics rendering 10 times per second.
         /// </summary>
-        private uint objectmods = 5; // process object queue 2 times a second
+        private uint objectmods = 2; // process object queue 2 times a second
 
         /// <summary>
         /// Use this to ensure that meshing occurs one at a time.
@@ -762,10 +762,10 @@ namespace IdealistViewer
                     //doObjectMods(10, ref avatarModQueue);
 
                     // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(10, ref objectModQueue);
+                    doObjectMods(20, ref objectModQueue);
 
                     // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(10);
+                    doProcessMesh(20);
 
                     // Check the UnAssigned Child Queue for parents that have since rezed
                     CheckAndApplyParent(5);
@@ -776,7 +776,7 @@ namespace IdealistViewer
                     // Check for Dirty terrain Update as necessary.
                     UpdateTerrain();
 
-                    doFoliage(1);
+                    doFoliage(3);
 
                     if ((framecounter % (objectmods * 2)) == 0)
                     {
@@ -2216,6 +2216,16 @@ namespace IdealistViewer
                     break;
                 case "hf":
                     meshHeightField = true;
+                    break;
+                case "q":
+                    string qMsg = " ***************QUEUE STATUS*****************";
+                    qMsg += "\nfoliageObjectQueue.........................: " + foliageObjectQueue.Count.ToString();
+                    qMsg += "\nobjectModQueue.............................: " + objectModQueue.Count.ToString();
+                    qMsg += "\nobjectMeshQueue............................: " + objectMeshQueue.Count.ToString();
+                    qMsg += "\nUnAssignedChildObjectModQueue..............: " + UnAssignedChildObjectModQueue.Count.ToString();
+                    qMsg += "\noutgoingChatQueue..........................: " + outgoingChatQueue.Count.ToString();
+
+                    m_log.Debug(qMsg);
                     break;
                 case "relog":
                     avatarConnection.BeginLogin(avatarConnection.loginURI, avatarConnection.firstName + " " + avatarConnection.lastName, avatarConnection.password, avatarConnection.startlocation);
