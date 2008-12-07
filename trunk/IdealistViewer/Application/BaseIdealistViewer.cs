@@ -33,7 +33,7 @@ namespace IdealistViewer
         /// <summary>
         /// Irrlicht Instance.  A handle to the Irrlicht device
         /// </summary>
-        public static IrrlichtDevice Device;
+        static IrrlichtDevice device;
 
         /// <summary>
         /// Irrlicht Video Driver.  A handle to the video driver being used
@@ -50,7 +50,6 @@ namespace IdealistViewer
         /// </summary>
         private GUIEnvironment guienv = null;
 
-        private UserInterfaceService userInterface = null;
         /// <summary>
         /// Standard Log4Net setup.
         /// </summary>
@@ -358,23 +357,23 @@ namespace IdealistViewer
         {
 
             //Create a New Irrlicht Device
-            Device = new IrrlichtDevice(DriverType.OpenGL,
+            device = new IrrlichtDevice(DriverType.OpenGL,
                                                      new Dimension2D(WindowWidth, WindowHeight),
                                                     32, false, true, false, false);
             //device.Timer.Stop();
-            Device.Timer.Speed = 1;
-            Device.WindowCaption = "IdealistViewer 0.001";
+            device.Timer.Speed = 1;
+            device.WindowCaption = "IdealistViewer 0.001";
 
             // Sets directory to load assets from
-            Device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
+            device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");  //We set Irrlicht's current directory to %application directory%/media
 
 
-            driver = Device.VideoDriver;
-            smgr = Device.SceneManager;
+            driver = device.VideoDriver;
+            smgr = device.SceneManager;
 
             GreenGrassTexture = driver.GetTexture("Green_Grass_Detailed.tga");
 
-            guienv = Device.GUIEnvironment;
+            guienv = device.GUIEnvironment;
             defaultfont = guienv.GetFont("defaultfont.png");
             GUISkin skin = guienv.Skin;
             skin.Font = defaultfont;
@@ -385,11 +384,11 @@ namespace IdealistViewer
             skincolor.A = 255;
             skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
             // Set up event handler for the GUI window events.
-            Device.OnEvent += new OnEventDelegate(device_OnEvent);
+            device.OnEvent += new OnEventDelegate(device_OnEvent);
 
-            Device.Resizeable = true;
+            device.Resizeable = true;
 
-            m_MeshFactory = new MeshFactory(smgr.MeshManipulator, Device);
+            m_MeshFactory = new MeshFactory(smgr.MeshManipulator, device);
 
             // Set up the picker.
             triPicker = new TrianglePickerMapper(smgr.CollisionManager);
@@ -398,7 +397,7 @@ namespace IdealistViewer
             // Only create a texture manager if the user configuration option is enabled for downloading textures
             if (loadTextures)
             {
-                textureMan = new TextureManager(Device, driver, triPicker, mts, "IdealistCache", avatarConnection);
+                textureMan = new TextureManager(device, driver, triPicker, mts, "IdealistCache", avatarConnection);
                 textureMan.OnTextureLoaded += textureCompleteCallback;
             }
 
@@ -514,16 +513,14 @@ namespace IdealistViewer
             // create menu toplevel and submenu items. 
             // device_OnEvent handles these menu items - ckrinke
 
-            userInterface = new UserInterfaceService(driver, smgr, guienv, cam, AVControl);
-            userInterface.AboutCaption = AboutCaption;
-            userInterface.AboutText = AboutText;
-
+           
             GUIContextMenu menu = guienv.AddMenu(guienv.RootElement, -1);
             menu.AddItem("File", -1, true, true);
             menu.AddItem("View", -1, true, true);
             menu.AddItem("Other", -1, true, true);
             menu.AddItem("Communication", -1, true, true);
-          
+            menu.AddItem("Help", -1, true, true);
+
             GUIContextMenu submenu;
             submenu = menu.GetSubMenu(0);
             submenu.AddItem("Open File...", (int)MenuID.FileOpen, true, false);
@@ -543,7 +540,10 @@ namespace IdealistViewer
             submenu = menu.GetSubMenu(3);
             submenu.AddItem("Show Chat", (int)MenuID.ShowChat, true, false);
 
-            userInterface.AddMenuItems(menu, 4);
+            submenu = menu.GetSubMenu(4);
+            submenu.AddItem("About", (int)MenuID.About, true, false);
+
+
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
             //gtb.Text = "Hi";
@@ -617,14 +617,6 @@ namespace IdealistViewer
             //SkinnedMesh smm = new SkinnedMesh(avm.AnimatedMesh.Raw);
             //smm.SkinMesh();
             */
-             MainRenderLoop(skin, skincolor);
-            //In the end, delete the Irrlicht device.
-            Shutdown();
-
-        }
-
-        private void MainRenderLoop(GUISkin skin, Color skincolor)
-        {
             // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
 
@@ -639,7 +631,7 @@ namespace IdealistViewer
                 {
 
                     // If you close the gui window, device.Run returns false.
-                    running = Device.Run();
+                    running = device.Run();
                 }
                 catch (AccessViolationException e)
                 {
@@ -648,10 +640,10 @@ namespace IdealistViewer
                 if (!running)
                     break;
                 tickcount = System.Environment.TickCount;
-                
-                //skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
-                //skincolor.A = 255;
-                //skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
+                SNGlobalwater2.Update();
+                skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
+                skincolor.A = 255;
+                skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
                 //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
                 //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
                 //avm.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
@@ -739,7 +731,7 @@ namespace IdealistViewer
                         for (x = 0; x < 256; x += xStep)
                         {
                             x1 = x + xStep < 256 ? x + xStep : 255;
-                            Mesh sampleHF = PrimMesherG.SculptIrrMesh(subHeightField(x, x1, y, y1), x, x + xStep, y, y + yStep);
+                            Mesh sampleHF = PrimMesherG.SculptIrrMesh(subHeightField( x, x1, y, y1), x, x + xStep, y, y + yStep);
                             for (int i = 0; i < sampleHF.MeshBufferCount; i++)
                                 sampleHF.GetMeshBuffer(i).SetColor(new Color(128, 32, 32, 32));
                             SceneNode sampleHFNode = smgr.AddMeshSceneNode(sampleHF, smgr.RootSceneNode, -1);
@@ -778,20 +770,8 @@ namespace IdealistViewer
 
                     doFoliage(3);
 
-                    if ((framecounter % (objectmods * 2)) == 0)
-                    {
-                        try
-                        {
-                            SNGlobalwater2.Update();
-                        }
-                        catch (AccessViolationException)
-                        {
-                            m_log.Debug("[WATER]: Unable to update water this round...   TODO: FIXME: !");
-                        }
-
-                    }
                     // Set the FPS in the window title.
-                    Device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
+                    device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
                     
                     //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
                     //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
@@ -1289,15 +1269,8 @@ namespace IdealistViewer
 
                             //Vertex3D vtest = vObj.mesh.GetMeshBuffer(0).GetVertex(0);
                             //System.Console.WriteLine(" X:" + vtest.Position.X + " Y:" + vtest.Position.Y + " Z:" + vtest.Position.Z);
-                            try
-                            {
+                            node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
 
-                                node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
-                            }
-                            catch (AccessViolationException)
-                            {
-                                node = null;
-                            }
                             creatednode = true;
                             vObj.node = node;
                         }
@@ -2282,7 +2255,7 @@ namespace IdealistViewer
         protected virtual void ShowChatWindow()
         {
             // remove tool box if already there
-            GUIEnvironment guienv = Device.GUIEnvironment;
+            GUIEnvironment guienv = device.GUIEnvironment;
             GUIElement root = guienv.RootElement;
             GUIElement e = root.GetElementFromID(5000, true);
             if (e != null) e.Remove();
@@ -2458,7 +2431,7 @@ namespace IdealistViewer
             // Startup the GUI
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
             guithread.Start();
-            Thread.Sleep(5000);
+
 
 
             // Compose Coordinate space converter quaternion
@@ -2484,13 +2457,7 @@ namespace IdealistViewer
             Cordinate_XYZ_XZY = new IrrlichtNETCP.Quaternion(m4);
             Cordinate_XYZ_XZY.makeInverse();
             //Cordinate_XYZ_XZY = (CoordinateConversion.
-            //VGUIComboBox gcb = new VGUIComboBox(guienv, null, -1, new Rect(new Position2D(400, 20), new Dimension2D(230, 30)));
-            //GUISpinBox gsp = guienv.AddSpinBox("uhh", new Rect(new Position2D(400, 20), new Dimension2D(230, 30)), null, -1);
-            //gcb.AddItem("home");
-            //gcb.AddItem("last");
-            //gcb.AddItem(startlocation);
-            //gcb.Text = startlocation;
-            //GUIListBox glb = guienv.AddListBox(new Rect(new Position2D(400, 200), new Dimension2D(215, 30)), null, -1, true);
+
             // Begin Login!
             avatarConnection.BeginLogin(loginURI, firstName + " " + lastName, password, startlocation);
             //base.StartupSpecific();
@@ -2582,8 +2549,8 @@ namespace IdealistViewer
         protected void ShutdownSpecific()
         {
             // Shutdown Irrlicht
-            Device.Close();
-            Device.Dispose();
+            device.Close();
+            device.Dispose();
 
             // Shutdown LibOMV
             avatarConnection.Logout();
@@ -2611,7 +2578,7 @@ namespace IdealistViewer
                         Util.SaveBitmapToFile(terrainbmp, m_startupDirectory + "/" + path);
 
                     }
-                    Device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");
+                    device.FileSystem.WorkingDirectory = m_startupDirectory + "/" + Util.MakePath("media", "materials", "textures", "");
                     TerrainSceneNode terrain = null;
                     lock (terrains)
                     {
@@ -3518,13 +3485,13 @@ namespace IdealistViewer
         /*This function displays a messagebox with messageText that has been 
          * previously read with the xmlreader earlier.
          */
-        //static void showAboutText()
-        //{
-        //    // create modal message box with the text
-        //    // loaded from the xml file.
-        //    device.GUIEnvironment.AddMessageBox(
-        //        AboutCaption, AboutText, true, MessageBoxFlag.OK, device.GUIEnvironment.RootElement, 0);
-        //}
+        static void showAboutText()
+        {
+            // create modal message box with the text
+            // loaded from the xml file.
+            device.GUIEnvironment.AddMessageBox(
+                AboutCaption, AboutText, true, MessageBoxFlag.OK, device.GUIEnvironment.RootElement, 0);
+        }
 
 
         /// <summary>
@@ -3558,7 +3525,7 @@ namespace IdealistViewer
             if (p_event.Type == EventType.GUIEvent)
             {
                 int id = p_event.Caller.ID;
-                GUIEnvironment env = Device.GUIEnvironment;
+                GUIEnvironment env = device.GUIEnvironment;
 
                
 
@@ -3578,7 +3545,7 @@ namespace IdealistViewer
                         switch (id)
                         {
                             case (int)MenuID.FileOpen:
-                                env.AddFileOpenDialog("Please select a model file to open", false, Device.GUIEnvironment.RootElement, 0);
+                                env.AddFileOpenDialog("Please select a model file to open", false, device.GUIEnvironment.RootElement, 0);
                                 break;
                             case (int)MenuID.FileQuit: // File -> Quit
                                 Shutdown();
@@ -3603,6 +3570,9 @@ namespace IdealistViewer
                                     }
                                 }
                                 break;
+                            case (int)MenuID.About: // Help->About
+                                showAboutText();
+                                break;
                             case (int)MenuID.ViewModeOne: // View -> Material -> Solid
                                 //CFK nothing yet, circa Thanksgiving eve 08
                                 //CFK                                if (Model != null)
@@ -3617,9 +3587,6 @@ namespace IdealistViewer
                                 //CFK nothing yet, circa Thanksgiving eve 08
                                 //CFK                                if (Model != null)
                                 //CFK                                    Model.SetMaterialType(MaterialType.SphereMap);
-                                break;
-                            default:
-                                userInterface.HandleMenuAction(id);
                                 break;
                         }
                         break;//case GUIEventType.MenuItemSelected:
