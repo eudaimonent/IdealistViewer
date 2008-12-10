@@ -57,6 +57,7 @@ namespace IdealistViewer
             UpdateCameraPosition();
         
         }
+
         //LibOMV camera position
         public Vector3 Position
         {

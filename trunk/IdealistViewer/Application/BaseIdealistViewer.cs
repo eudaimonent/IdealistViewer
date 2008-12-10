@@ -23,7 +23,7 @@ using PrimMesher;
 
 namespace IdealistViewer
 {
-    public class BaseIdealistViewer : conscmd_callback
+    public class BaseIdealistViewer : Panel3D, conscmd_callback
     {
         List<string> messageHistory = new List<string>();
         public IdealistViewerConfigSource m_config = null;
@@ -273,6 +273,8 @@ namespace IdealistViewer
         private uint primcount = 0;
         private uint foliageCount = 0;
 
+        GUISkin skin;
+
         /// <summary>
         /// Cordinate Switcher Quaternion XYZ space to XZY space.
         /// </summary>
@@ -322,6 +324,8 @@ namespace IdealistViewer
         private float[,] RegionHFArray = new float[256, 256];
         private bool meshHeightField = false;
 
+        private List<Control> controls;
+
         public BaseIdealistViewer(IConfigSource iconfig)
         {
 
@@ -336,6 +340,56 @@ namespace IdealistViewer
             }
             m_config.Source.Merge(iconfig);
             m_startuptime = DateTime.Now;
+            controls = new List<Control>();
+           
+        }
+
+        public override VideoDriver Driver
+        {
+            get
+            {
+                return driver;
+            }
+            set
+            {
+                driver = value;
+            }
+        }
+
+        public class SecondaryWindow : Panel3D
+        {
+            private SceneManager smgr;
+            private bool hit = false;
+            private Camera camera;
+            private CameraSceneNode cnode;
+
+            public SecondaryWindow(VideoDriver driver, SceneManager smgr)
+            {
+                cnode = smgr.AddCameraSceneNode(null);
+                this.smgr = smgr;
+                Driver = driver;
+            }
+
+            public override void Render()
+            {
+                base.Render();
+                
+                if( hit )
+                {
+                    Driver.Draw2DRectangle(new Rect(new Position2D(0,0), Driver.ScreenSize),new Color(255,255,0,0));
+                }
+                else
+                {
+                    smgr.ActiveCamera = cnode;
+                    smgr.DrawAll();    
+                }
+            }
+
+            public override void LeftMouseUp(Event p_event, Position2D pointHit)
+            {
+                base.LeftMouseUp(p_event, pointHit);
+                hit = !hit;
+            }
         }
 
         float[,] subHeightField(int startX, int endX, int startY, int endY)
@@ -369,13 +423,18 @@ namespace IdealistViewer
 
 
             driver = device.VideoDriver;
+            
+
             smgr = device.SceneManager;
+
+           
 
             GreenGrassTexture = driver.GetTexture("Green_Grass_Detailed.tga");
 
             guienv = device.GUIEnvironment;
             defaultfont = guienv.GetFont("defaultfont.png");
-            GUISkin skin = guienv.Skin;
+            
+            skin = guienv.Skin;
             skin.Font = defaultfont;
             Color skincolor = skin.GetColor(GuiDefaultColor.Face3D);
             skincolor.A = 255;
@@ -387,6 +446,7 @@ namespace IdealistViewer
             device.OnEvent += new OnEventDelegate(device_OnEvent);
 
             device.Resizeable = true;
+
 
             m_MeshFactory = new MeshFactory(smgr.MeshManipulator, device);
 
@@ -471,7 +531,6 @@ namespace IdealistViewer
             //{
             //    m_log.Warn(e.Message);
             //}
-            
 
             // This light simulates the sun
             SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
@@ -543,6 +602,31 @@ namespace IdealistViewer
             submenu = menu.GetSubMenu(4);
             submenu.AddItem("About", (int)MenuID.About, true, false);
 
+
+            //lets create a list of controls
+            StackPanel stackPanel = new StackPanel();
+            stackPanel.Width = driver.ScreenSize.Width;
+            stackPanel.Height = driver.ScreenSize.Height;
+
+            //Our first control will actually be this base idealist viewer
+            //later i'd like to transplant the rendering logic of what really 
+            //is the "Primary 3D screen" into a seperate extended class of Panel3D
+            Control primaryWindow = this as Control;
+            primaryWindow.Width = driver.ScreenSize.Width * 3 / 4;
+            primaryWindow.Height = driver.ScreenSize.Height;
+
+            //Next is a secondary window, which really is just a dummy class that renders the same
+            //scene manager as the primary ( think Split screen!)
+            Control secondaryWindow = new SecondaryWindow(driver, smgr);
+            secondaryWindow.Width = driver.ScreenSize.Width / 4;
+            secondaryWindow.Height = driver.ScreenSize.Height;
+
+            //lets add the controls to the stackpanel
+            stackPanel.AddChild(primaryWindow);
+            stackPanel.AddChild(secondaryWindow);
+
+            //lets add the controls to our application controls
+            controls.Add(stackPanel);
 
 
             //GUIToolBar gtb = guienv.AddToolBar(guienv.RootElement, 91);
@@ -626,7 +710,7 @@ namespace IdealistViewer
 
 
             while (running)
-            {
+            {   
                 try
                 {
 
@@ -639,161 +723,18 @@ namespace IdealistViewer
                 }
                 if (!running)
                     break;
-                tickcount = System.Environment.TickCount;
-                SNGlobalwater2.Update();
-                skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
-                skincolor.A = 255;
-                skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
-                //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
-                //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
-                //avm.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                //avm.SetMaterialTexture(0,driver.GetTexture("Green_Grass_Detailed.tga"));
-                //avb
-                //avm.AnimatedMesh.GetMesh(0).GetMeshBuffer(0).GetVertex(0).TCoords
-                /*
-                 * 
-                avmeshsntest.AnimationSpeed = 8;
-                avmeshsntest.SetFrameLoop(0, 1);
-                avmeshsntest.AnimateJoints(true);
-                avmeshsntest.AutomaticCulling = CullingType.Off;
-                avmeshsntest.CurrentFrame = 1;
-                //avmeshsntest.DebugDataVisible = DebugSceneType.Full;
-                avmeshsntest.LoopMode = true;
-                */
-
 
 
                 driver.BeginScene(true, true, new Color(255, 100, 101, 140));
-                // Use this only for profiling.
-                try
-                {
-                    smgr.DrawAll();
-                }
-                catch (AccessViolationException)
-                {
 
+                //Render through all our application wide controls
+                foreach (var control in controls)
+                {
+                    control.RenderControl();
                 }
-                guienv.DrawAll();
-
+                
                 driver.EndScene();
-
-                mscounter += System.Environment.TickCount - tickcount;
-                msreset = 55;
-                //
-                if (mscounter > msreset)
-                {
-                    // Repeat any held keys
-                    processHeldKeys();
-
-                    // Update Interpolation targets
-                    updateInterpolationTargets();
-
-                    AVControl.update(System.Environment.TickCount - tickcount);
-
-                    // Ensure that the camera is still pointing at the target object
-                    cam.CheckTarget();
-
-                    mscounter = 0;
-                    framecounter++;
-
-                    if (framecounter == uint.MaxValue)
-                        framecounter = 0;
-                }
-
-                if ((framecounter % modAVUpdates) == 0)
-                {
-                    AVControl.UpdateRemote();
-                    doSetCameraPosition();
-
-                    // process avatar animation changes
-                    doAnimationFrame();
-
-                    // Process Avatar Mod Queue
-                    doObjectMods(10, ref avatarModQueue);
-                }
-
-                if (meshHeightField)
-                {
-                    meshHeightField = false;
-
-                    int heightOffset = 0;
-                    int x, y;
-                    int x1, y1;
-
-                    // size of each plane mesh in the grid in meters
-                    int xStep = 16;
-                    int yStep = 16;
-
-                    for (y = 0; y < 256; y += yStep)
-                    {
-                        y1 = y + yStep < 256 ? y + yStep : 255;
-
-                        for (x = 0; x < 256; x += xStep)
-                        {
-                            x1 = x + xStep < 256 ? x + xStep : 255;
-                            Mesh sampleHF = PrimMesherG.SculptIrrMesh(subHeightField( x, x1, y, y1), x, x + xStep, y, y + yStep);
-                            for (int i = 0; i < sampleHF.MeshBufferCount; i++)
-                                sampleHF.GetMeshBuffer(i).SetColor(new Color(128, 32, 32, 32));
-                            SceneNode sampleHFNode = smgr.AddMeshSceneNode(sampleHF, smgr.RootSceneNode, -1);
-                            sampleHFNode.Position = new Vector3D(0, heightOffset, 0);
-                            sampleHFNode.SetMaterialTexture(0, driver.GetTexture("UV.tga"));
-                            sampleHFNode.SetMaterialFlag(MaterialFlag.Lighting, true);
-                            sampleHFNode.SetMaterialFlag(MaterialFlag.GouraudShading, true);
-                            sampleHFNode.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
-                            sampleHFNode.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-                        }
-                    }
-                }
-
-                if ((framecounter % objectmods) == 0)
-                {
-                    // process avatar animation changes
-                    //doAnimationFrame();
-
-                    // Process Avatar Mod Queue
-                    //doObjectMods(10, ref avatarModQueue);
-
-                    // Process Object Mod Queue.  Parameter is 'Items'
-                    doObjectMods(20, ref objectModQueue);
-
-                    // Process Mesh Queue.  Parameter is 'Items'
-                    doProcessMesh(20);
-
-                    // Check the UnAssigned Child Queue for parents that have since rezed
-                    CheckAndApplyParent(5);
-
-                    // Apply textures
-                    doTextureMods(10);
-
-                    // Check for Dirty terrain Update as necessary.
-                    UpdateTerrain();
-
-                    doFoliage(3);
-
-                    // Set the FPS in the window title.
-                    device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
-                    
-                    //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
-                    //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
-                    //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
-
-                    //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
-
-                }
-
-                //if ((framecounter % modAVUpdates) == 0)
-                //{
-                //    AVControl.UpdateRemote();
-                //    doSetCameraPosition();
-                //}
-
-                // process chat
-                if (outgoingChatQueue.Count > 0)
-                    lock (outgoingChatQueue)
-                        for (int i = 0; i < outgoingChatQueue.Count; i++)
-                            avatarConnection.Say(outgoingChatQueue.Dequeue());
-
-                UpdateChatWindow();
+                
 
                 // Frame Limiter
                 int frameTime = System.Environment.TickCount - tickcount;
@@ -804,6 +745,190 @@ namespace IdealistViewer
             }
             //In the end, delete the Irrlicht device.
             Shutdown();
+        }
+
+        public override void PreRender()
+        {
+            base.PreRender();
+
+            tickcount = System.Environment.TickCount;
+            SNGlobalwater2.Update();
+            Driver.ViewPort = new Rect(0, 0, 100, 100);
+            Color skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
+            skincolor.A = 255;
+            skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
+            //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
+            //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
+            //avm.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+            //avm.SetMaterialTexture(0,driver.GetTexture("Green_Grass_Detailed.tga"));
+            //avb
+            //avm.AnimatedMesh.GetMesh(0).GetMeshBuffer(0).GetVertex(0).TCoords
+            /*
+             * 
+            avmeshsntest.AnimationSpeed = 8;
+            avmeshsntest.SetFrameLoop(0, 1);
+            avmeshsntest.AnimateJoints(true);
+            avmeshsntest.AutomaticCulling = CullingType.Off;
+            avmeshsntest.CurrentFrame = 1;
+            //avmeshsntest.DebugDataVisible = DebugSceneType.Full;
+            avmeshsntest.LoopMode = true;
+            */
+
+        }
+
+        public override void Render()
+        {
+            base.Render();
+
+            smgr.ActiveCamera = cam.SNCamera;
+            // Use this only for profiling.
+            try
+            {
+                smgr.DrawAll();
+            }
+            catch (AccessViolationException)
+            {
+
+            }
+            guienv.DrawAll();
+           
+        }
+
+        public override void PostRender()
+        {
+            base.PostRender();
+
+            mscounter += System.Environment.TickCount - tickcount;
+            msreset = 55;
+            //
+            if (mscounter > msreset)
+            {
+                // Repeat any held keys
+                processHeldKeys();
+
+                // Update Interpolation targets
+                updateInterpolationTargets();
+
+                AVControl.update(System.Environment.TickCount - tickcount);
+
+                // Ensure that the camera is still pointing at the target object
+                cam.CheckTarget();
+
+                mscounter = 0;
+                framecounter++;
+
+                if (framecounter == uint.MaxValue)
+                    framecounter = 0;
+            }
+
+            if ((framecounter % modAVUpdates) == 0)
+            {
+                AVControl.UpdateRemote();
+                doSetCameraPosition();
+
+                // process avatar animation changes
+                doAnimationFrame();
+
+                // Process Avatar Mod Queue
+                doObjectMods(10, ref avatarModQueue);
+            }
+
+            if (meshHeightField)
+            {
+                meshHeightField = false;
+
+                int heightOffset = 0;
+                int x, y;
+                int x1, y1;
+
+                // size of each plane mesh in the grid in meters
+                int xStep = 16;
+                int yStep = 16;
+
+                for (y = 0; y < 256; y += yStep)
+                {
+                    y1 = y + yStep < 256 ? y + yStep : 255;
+
+                    for (x = 0; x < 256; x += xStep)
+                    {
+                        x1 = x + xStep < 256 ? x + xStep : 255;
+                        Mesh sampleHF = PrimMesherG.SculptIrrMesh(subHeightField(x, x1, y, y1), x, x + xStep, y, y + yStep);
+                        for (int i = 0; i < sampleHF.MeshBufferCount; i++)
+                            sampleHF.GetMeshBuffer(i).SetColor(new Color(128, 32, 32, 32));
+                        SceneNode sampleHFNode = smgr.AddMeshSceneNode(sampleHF, smgr.RootSceneNode, -1);
+                        sampleHFNode.Position = new Vector3D(0, heightOffset, 0);
+                        sampleHFNode.SetMaterialTexture(0, driver.GetTexture("UV.tga"));
+                        sampleHFNode.SetMaterialFlag(MaterialFlag.Lighting, true);
+                        sampleHFNode.SetMaterialFlag(MaterialFlag.GouraudShading, true);
+                        sampleHFNode.SetMaterialFlag(MaterialFlag.BackFaceCulling, backFaceCulling);
+                        sampleHFNode.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+                    }
+                }
+            }
+
+            if ((framecounter % objectmods) == 0)
+            {
+                // process avatar animation changes
+                //doAnimationFrame();
+
+                // Process Avatar Mod Queue
+                //doObjectMods(10, ref avatarModQueue);
+
+                // Process Object Mod Queue.  Parameter is 'Items'
+                doObjectMods(20, ref objectModQueue);
+
+                // Process Mesh Queue.  Parameter is 'Items'
+                doProcessMesh(20);
+
+                // Check the UnAssigned Child Queue for parents that have since rezed
+                CheckAndApplyParent(5);
+
+                // Apply textures
+                doTextureMods(10);
+
+                // Check for Dirty terrain Update as necessary.
+                UpdateTerrain();
+
+                doFoliage(3);
+
+                // Set the FPS in the window title.
+                device.WindowCaption = "IdealistViewer 0.001, FPS:" + driver.FPS.ToString();
+
+                //BoneSceneNode bcn = avmeshsntest.GetJointNode("lCollar:2");
+                //bcn.Rotation = new Vector3D(0, 36 + framecounter, 0);
+                //bcn.Position = new Vector3D(0, 0, 1 + framecounter);
+
+                //avmeshsntest.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
+
+            }
+
+            //if ((framecounter % modAVUpdates) == 0)
+            //{
+            //    AVControl.UpdateRemote();
+            //    doSetCameraPosition();
+            //}
+
+            // process chat
+            if (outgoingChatQueue.Count > 0)
+                lock (outgoingChatQueue)
+                    for (int i = 0; i < outgoingChatQueue.Count; i++)
+                        avatarConnection.Say(outgoingChatQueue.Dequeue());
+
+            UpdateChatWindow();
+        }
+
+        public Control ApplicationLevelPointToControl(Position2D p, out Position2D pointHit)
+        {
+            foreach (var control in controls)
+            {
+                if(control.ActualDimensions.IsPointInside(p))
+                {
+                    return control.PointToControl(p, out pointHit);
+                }
+            }
+
+            pointHit = new Position2D();
+            return null;
         }
 
         /// <summary>
@@ -3686,62 +3811,85 @@ namespace IdealistViewer
 
             if (p_event.Type == EventType.MouseInputEvent)
             {
+
                 return MouseEventProcessor(p_event);
             }
 
             return false;
         }
 
-        #region Mouse Handler
-        public bool MouseEventProcessor(Event p_event)
+        public override void LeftMouseUp(Event p_event, Position2D pointHit)
         {
-            //m_log.DebugFormat("[MOOSE]:<{0},{1}>",p_event.MousePosition.X,p_event.MousePosition.Y);
-            if (p_event.MouseInputEvent == MouseInputEvent.MouseWheel)
+            base.LeftMouseUp(p_event, pointHit);
+
+            if (ctrlHeld)
             {
-                //KeyCode.RButton
-                cam.MouseWheelAction(p_event.MouseWheelDelta);
-
-
+                //if (loMouseOffsetPHI != 0 || loMouseOffsetTHETA != 0)
+                //{
+                //cam.SwitchMode(ECameraMode.Build);
+                cam.ApplyMouseOffsets();
+                //}
             }
-            if (p_event.MouseInputEvent == MouseInputEvent.LMouseLeftUp)
+            LMheld = false;
+        }
+
+        public override void LeftMouseDown(Event p_event, Position2D pointHit)
+        {
+            base.LeftMouseDown(p_event, pointHit);
+
+            LMheld = true;
+            if (ctrlHeld)
             {
-                if (ctrlHeld)
+                cam.SwitchMode(ECameraMode.Build);
+                // Pick!
+
+                cam.ResetMouseOffsets();
+
+                //Position2D relativeMousePosition = new Position2D((int)((double)this.ActualDimensions.Width * (double)pointHit.X / (double)this.ActualDimensions.Width), (int)((double)this.ActualDimensions.Height * (double)pointHit.Y / (double)this.ActualDimensions.Height));
+
+                //Vector3D[] projection = cam.ProjectRayPoints(relativeMousePosition, this.ActualDimensions.Width, this.ActualDimensions.Height, this.ActualDimensions.Width / this.ActualDimensions.Height);
+
+                Vector3D[] projection = cam.ProjectRayPoints(p_event.MousePosition, WindowWidth_DIV2, WindowHeight_DIV2, aspect);
+                Line3D projectedray = new Line3D(projection[0], projection[1]);
+
+                Vector3D collisionpoint = new Vector3D(0, 0, 0);
+                Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+                // Check if we have a node under the mouse
+                SceneNode node = triPicker.GetSceneNodeFromRay(projectedray, 0x0128, true, cam.SNCamera.Position); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
+                if (node == null)
                 {
-                    //if (loMouseOffsetPHI != 0 || loMouseOffsetTHETA != 0)
-                    //{
-                    //cam.SwitchMode(ECameraMode.Build);
-                    cam.ApplyMouseOffsets();
-                    //}
+                    if (mts != null)
+                    {
+                        // Collide test against the terrain
+                        if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
+                        {
+
+                            //if (collisionpoint != null)
+                            //{
+                            //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
+                            //}
+                            if (cam.CameraMode == ECameraMode.Build)
+                            {
+                                cam.SetTarget(collisionpoint);
+                                cam.SNtarget = null;
+                            }
+                        }
+                    }
                 }
-                LMheld = false;
-            }
-            if (p_event.MouseInputEvent == MouseInputEvent.LMousePressedDown)
-            {
-
-                LMheld = true;
-                if (ctrlHeld)
+                else
                 {
-                    cam.SwitchMode(ECameraMode.Build);
-                    // Pick!
-
-                    cam.ResetMouseOffsets();
-                    Vector3D[] projection = cam.ProjectRayPoints(p_event.MousePosition, WindowWidth_DIV2, WindowHeight_DIV2, aspect);
-                    Line3D projectedray = new Line3D(projection[0], projection[1]);
-
-                    Vector3D collisionpoint = new Vector3D(0, 0, 0);
-                    Triangle3D tri = new Triangle3D(0, 0, 0, 0, 0, 0, 0, 0, 0);
-
-                    // Check if we have a node under the mouse
-                    SceneNode node = triPicker.GetSceneNodeFromRay(projectedray, 0x0128, true, cam.SNCamera.Position); //smgr.CollisionManager.GetSceneNodeFromScreenCoordinates(new Position2D(p_event.MousePosition.X, p_event.MousePosition.Y), 0, false);
-                    if (node == null)
+                    // Sometimes the terrain picker returns weird values.
+                    // If it's weird try the general 'everything' triangle picker.
+                    m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>", node.Position.X, node.Position.Y, node.Position.Z);
+                    if (node.Position.X == 0 && node.Position.Z == 0)
                     {
                         if (mts != null)
                         {
-                            // Collide test against the terrain
                             if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
                             {
 
-                                //if (collisionpoint != null)
+                                //if (collisionpoint != nuYesll)
                                 //{
                                 //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
                                 //}
@@ -3755,38 +3903,43 @@ namespace IdealistViewer
                     }
                     else
                     {
-                        // Sometimes the terrain picker returns weird values.
-                        // If it's weird try the general 'everything' triangle picker.
-                        m_log.WarnFormat("[PICK]: Picked <{0},{1},{2}>", node.Position.X, node.Position.Y, node.Position.Z);
-                        if (node.Position.X == 0 && node.Position.Z == 0)
+                        // Target the node
+                        if (cam.CameraMode == ECameraMode.Build)
                         {
-                            if (mts != null)
-                            {
-                                if (smgr.CollisionManager.GetCollisionPoint(projectedray, mts, out collisionpoint, out tri))
-                                {
-
-                                    //if (collisionpoint != nuYesll)
-                                    //{
-                                    //m_log.DebugFormat("Found point: <{0},{1},{2}>", collisionpoint.X, collisionpoint.Y, collisionpoint.Z);
-                                    //}
-                                    if (cam.CameraMode == ECameraMode.Build)
-                                    {
-                                        cam.SetTarget(collisionpoint);
-                                        cam.SNtarget = null;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Target the node
-                            if (cam.CameraMode == ECameraMode.Build)
-                            {
-                                cam.SetTarget(node.Position);
-                                cam.SNtarget = node;
-                            }
+                            cam.SetTarget(node.Position);
+                            cam.SNtarget = node;
                         }
                     }
+                }
+            }
+        }
+
+        #region Mouse Handler
+        public bool MouseEventProcessor(Event p_event)
+        {
+            //m_log.DebugFormat("[MOOSE]:<{0},{1}>",p_event.MousePosition.X,p_event.MousePosition.Y);
+            if (p_event.MouseInputEvent == MouseInputEvent.MouseWheel)
+            {
+                //KeyCode.RButton
+                cam.MouseWheelAction(p_event.MouseWheelDelta);
+
+
+            }
+            Position2D pointHit;
+            Control controlHit = this.ApplicationLevelPointToControl(p_event.MousePosition, out pointHit);
+            if (p_event.MouseInputEvent == MouseInputEvent.LMouseLeftUp)
+            {
+                
+                if (controlHit != null)
+                {
+                    controlHit.LeftMouseUp(p_event, pointHit);
+                }
+            }
+            if (p_event.MouseInputEvent == MouseInputEvent.LMousePressedDown)
+            {
+                if (controlHit != null)
+                {
+                    controlHit.LeftMouseDown(p_event, pointHit);
                 }
             }
             if (p_event.MouseInputEvent == MouseInputEvent.RMouseLeftUp)
