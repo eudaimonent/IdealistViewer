@@ -536,11 +536,11 @@ namespace IdealistViewer
             SceneNode light2 = smgr.AddLightSceneNode(smgr.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
 
             // Set up the water
-            AnimatedMesh mesh = smgr.AddHillPlaneMesh("myHill",
-                new Dimension2Df(120, 120),
-                new Dimension2D(40, 40), 0,
-                new Dimension2Df(0, 0),
-                new Dimension2Df(10, 10));
+            //AnimatedMesh mesh = smgr.AddHillPlaneMesh("myHill",
+            //    new Dimension2Df(120, 120),
+            //    new Dimension2D(40, 40), 0,
+            //    new Dimension2Df(0, 0),
+            //    new Dimension2Df(10, 10));
 
             /*
             SNGlobalwater = smgr.AddWaterSurfaceSceneNode(mesh.GetMesh(0),
@@ -753,10 +753,10 @@ namespace IdealistViewer
 
             tickcount = System.Environment.TickCount;
             SNGlobalwater2.Update();
-            Driver.ViewPort = new Rect(0, 0, 100, 100);
-            Color skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
-            skincolor.A = 255;
-            skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
+            //Driver.ViewPort = new Rect(0, 0, 100, 100);
+            //Color skincolor = skin.GetColor(GuiDefaultColor.Shadow3D);
+            //skincolor.A = 255;
+            //skin.SetColor(GuiDefaultColor.Shadow3D, skincolor);
             //cam.Position = new Vector3D(cam.Position.X , cam.Position.Y, cam.Position.Z- 0.5f);
             //cam.Target = new Vector3D(0, 0, 0);//cam.Target.X - 0.5f, cam.Target.Y, cam.Target.Z);
             //avm.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
@@ -790,7 +790,9 @@ namespace IdealistViewer
             {
 
             }
+            driver.ViewPort = new Rect(new Position2D(0, 0), new Dimension2D(WindowWidth, WindowHeight));
             guienv.DrawAll();
+            driver.ViewPort = base.ActualDimensions;
            
         }
 

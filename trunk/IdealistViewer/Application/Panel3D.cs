@@ -41,5 +41,10 @@ namespace IdealistViewer
         {
 
         }
+
+        public virtual void Resize(Rect dimensions)
+        {
+
+        }
     }
 }
