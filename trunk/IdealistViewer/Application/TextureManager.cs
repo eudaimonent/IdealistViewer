@@ -442,6 +442,18 @@ namespace IdealistViewer
                         MeshSceneNode msn = (MeshSceneNode)vObj.node;
                         
                         msn.SetMesh(vObj.mesh);
+                        if (vObj.prim.Textures != null)
+                        {
+                            // Check the default texture to ensure that it's not null (why would it be null?)
+                            if (vObj.prim.Textures.DefaultTexture != null)
+                            {
+                                Color4 coldata = vObj.prim.Textures.DefaultTexture.RGBA;
+                                IrrlichtNETCP.Color objColor = new Color(Util.Clamp<int>((int)(coldata.A * 255), 0, 255), Util.Clamp<int>((int)(coldata.R * 255), 0, 255), Util.Clamp<int>((int)(coldata.G * 255), 0, 255), Util.Clamp<int>((int)(coldata.B * 255), 0, 255));
+                                msn.GetMaterial(0).AmbientColor = objColor;
+                                msn.GetMaterial(0).DiffuseColor = objColor;
+                            }
+                        }
+
                     }
                     else
                     {
