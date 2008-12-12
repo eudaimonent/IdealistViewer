@@ -5,7 +5,7 @@ using IrrlichtNETCP;
 
 namespace IdealistViewer
 {
-    class AvatarController
+    public class AvatarController
     {
         float heading = 0;
         bool turning_left = false;
