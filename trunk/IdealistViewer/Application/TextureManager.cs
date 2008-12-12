@@ -777,7 +777,7 @@ uniform sampler2D colorMap;
 void main (void)
 {
 	
-    vec3 kfinal   = mix(vec3(texture2D(colorMap, gl_TexCoord[0].xy).rgb * 0.7), gl_Color, 0.5);
+    vec3 kfinal   = mix(vec3(texture2D(colorMap, gl_TexCoord[0].xy).rgb), gl_Color, 0.5);
 
     vec3 nreflect = normalize(ReflectVec);
     vec3 nview    = normalize(ViewVec);
