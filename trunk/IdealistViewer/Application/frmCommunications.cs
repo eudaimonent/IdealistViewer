@@ -27,28 +27,28 @@ namespace IdealistViewer
 
         void avatarConnection_OnFriendsListChanged()
         {
-            this.BeginInvoke((ThreadStart) (() =>
+            this.BeginInvoke((ThreadStart)delegate()
             {
                 listFriends.Items.Clear();
-                foreach (var friend in avatarConnection.Friends)
+                foreach (UUID friend in avatarConnection.Friends.Keys)
                 {
                     string statusString = "(Offline)";
-                    if (friend.Value.IsOnline)
+                    if (avatarConnection.Friends[friend].IsOnline)
                     {
                         statusString = "(Online)";
                     }
 
-                    if (friend.Value.Name != null)
+                    if (avatarConnection.Friends[friend].Name != null)
                     {
-                        listFriends.Items.Add(friend.Value.Name + statusString);
+                        listFriends.Items.Add(avatarConnection.Friends[friend].Name + statusString);
                     }
                 }
-            }));
+            });
         }
 
         void avatarConnection_OnChat(string message, OpenMetaverse.ChatAudibleLevel audible, OpenMetaverse.ChatType type, OpenMetaverse.ChatSourceType sourcetype, string fromName, OpenMetaverse.UUID id, OpenMetaverse.UUID ownerid, OpenMetaverse.Vector3 position)
         {
-           this.BeginInvoke((ThreadStart)(() =>
+           this.BeginInvoke((ThreadStart)delegate()
            {
                string prefix = "";
                if(txtLocalChat.Text.Length!=0)
@@ -65,7 +65,7 @@ namespace IdealistViewer
                        txtLocalChat.Text += prefix + fromName + ": " + message;
 
 
-           }));
+           });
             
         }
 

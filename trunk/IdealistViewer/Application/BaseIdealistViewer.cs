@@ -326,6 +326,8 @@ namespace IdealistViewer
 
         private List<Control> controls;
 
+        private Thread winformThread = null;
+
         public BaseIdealistViewer(IConfigSource iconfig)
         {
 
@@ -707,6 +709,13 @@ namespace IdealistViewer
 
             lastScreenSize = driver.ScreenSize;
 
+            frmCommunications f = new frmCommunications(avatarConnection);
+            f.Visible = true;
+            winformThread = new Thread(delegate() { Application.DoEvents(); Thread.Sleep(50); });
+            winformThread.Start();
+
+
+
             while (running)
             {   
                 if( lastScreenSize != driver.ScreenSize)
@@ -732,7 +741,7 @@ namespace IdealistViewer
                 driver.BeginScene(true, true, new Color(255, 100, 101, 140));
 
                 //Render through all our application wide controls
-                foreach (var control in controls)
+                foreach (Control control in controls)
                 {
                     control.RenderControl();
                 }
