@@ -396,12 +396,31 @@
         <member name="F:OpenMetaverse.Utils.RAD_TO_DEG">
             <summary>Used for converting radians to degrees</summary>
         </member>
+        <member name="M:OpenMetaverse.Utils.BytesToInt16(System.Byte[])">
+            <summary>
+            Convert the first two bytes starting in the byte array in
+            little endian ordering to a signed short integer
+            </summary>
+            <param name="bytes">An array two bytes or longer</param>
+            <returns>A signed short integer, will be zero if a short can't be
+            read at the given position</returns>
+        </member>
+        <member name="M:OpenMetaverse.Utils.BytesToInt16(System.Byte[],System.Int32)">
+            <summary>
+            Convert the first two bytes starting at the given position in
+            little endian ordering to a signed short integer
+            </summary>
+            <param name="bytes">An array two bytes or longer</param>
+            <param name="pos">Position in the array to start reading</param>
+            <returns>A signed short integer, will be zero if a short can't be
+            read at the given position</returns>
+        </member>
         <member name="M:OpenMetaverse.Utils.BytesToInt(System.Byte[],System.Int32)">
             <summary>
             Convert the first four bytes starting at the given position in
             little endian ordering to a signed integer
             </summary>
-            <param name="bytes">Byte array containing the int</param>
+            <param name="bytes">An array four bytes or longer</param>
             <param name="pos">Position to start reading the int from</param>
             <returns>A signed integer, will be zero if an int can't be read
             at the given position</returns>
@@ -414,6 +433,25 @@
             <param name="bytes">An array four bytes or longer</param>
             <returns>A signed integer, will be zero if the array contains
             less than four bytes</returns>
+        </member>
+        <member name="M:OpenMetaverse.Utils.BytesToInt64(System.Byte[])">
+            <summary>
+            Convert the first eight bytes of the given array in little endian
+            ordering to a signed long integer
+            </summary>
+            <param name="bytes">An array eight bytes or longer</param>
+            <returns>A signed long integer, will be zero if the array contains
+            less than eight bytes</returns>
+        </member>
+        <member name="M:OpenMetaverse.Utils.BytesToInt64(System.Byte[],System.Int32)">
+            <summary>
+            Convert the first eight bytes starting at the given position in
+            little endian ordering to a signed long integer
+            </summary>
+            <param name="bytes">An array eight bytes or longer</param>
+            <param name="pos">Position to start reading the long from</param>
+            <returns>A signed long integer, will be zero if a long can't be read
+            at the given position</returns>
         </member>
         <member name="M:OpenMetaverse.Utils.BytesToUInt16(System.Byte[],System.Int32)">
             <summary>
