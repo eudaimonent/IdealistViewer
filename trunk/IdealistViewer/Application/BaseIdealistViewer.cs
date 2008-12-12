@@ -604,9 +604,10 @@ namespace IdealistViewer
 
 
             //lets create a list of controls
-            StackPanel stackPanel = new StackPanel();
+            stackPanel = new StackPanel();
             stackPanel.Width = driver.ScreenSize.Width;
             stackPanel.Height = driver.ScreenSize.Height;
+
 
             //Our first control will actually be this base idealist viewer
             //later i'd like to transplant the rendering logic of what really 
@@ -623,7 +624,7 @@ namespace IdealistViewer
 
             //lets add the controls to the stackpanel
             stackPanel.AddChild(primaryWindow);
-            stackPanel.AddChild(secondaryWindow);
+            //stackPanel.AddChild(secondaryWindow);
 
             //lets add the controls to our application controls
             controls.Add(stackPanel);
@@ -704,13 +705,16 @@ namespace IdealistViewer
             // Main Render Loop
             int minFrameTime = (int)(1.0f / maxFPS);
 
-            frmCommunications f = new frmCommunications(avatarConnection) { Visible = true };
-            new Thread(delegate(){Application.DoEvents();}).Start();
-
-
+            lastScreenSize = driver.ScreenSize;
 
             while (running)
             {   
+                if( lastScreenSize != driver.ScreenSize)
+                {
+                    OnWindowResize();
+                }
+                lastScreenSize = driver.ScreenSize;
+
                 try
                 {
 
@@ -745,6 +749,12 @@ namespace IdealistViewer
             }
             //In the end, delete the Irrlicht device.
             Shutdown();
+        }
+
+        private void OnWindowResize()
+        {
+            stackPanel.Width = driver.ScreenSize.Width;
+            stackPanel.Height = driver.ScreenSize.Height;
         }
 
         public override void PreRender()
@@ -2598,6 +2608,8 @@ namespace IdealistViewer
 
         private bool newChat = false;
         private object focusedElement;
+        private Dimension2D lastScreenSize;
+        private StackPanel stackPanel;
 
         private void avatarConnection_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourcetype, string fromName, UUID id, UUID ownerid, Vector3 position)
         {
