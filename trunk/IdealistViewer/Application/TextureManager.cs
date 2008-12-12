@@ -783,7 +783,7 @@ void main (void)
     vec3 nview    = normalize(ViewVec);
 
     float spec    = max(dot(nreflect, nview), 0.0);
-    spec          = pow(spec, 64.0);
+    spec          = pow(spec, 4.0);
    
     gl_FragColor = vec4 (min(kfinal + spec, 1.0), 1.0);
 }
