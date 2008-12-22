@@ -38,8 +38,8 @@ namespace IdealistViewer
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabNearby = new System.Windows.Forms.TabPage();
             this.tabFriends = new System.Windows.Forms.TabPage();
-            this.tabGroups = new System.Windows.Forms.TabPage();
             this.listFriends = new System.Windows.Forms.ListBox();
+            this.tabGroups = new System.Windows.Forms.TabPage();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -165,15 +165,6 @@ namespace IdealistViewer
             this.tabFriends.Text = "Friends";
             this.tabFriends.UseVisualStyleBackColor = true;
             // 
-            // tabGroups
-            // 
-            this.tabGroups.Location = new System.Drawing.Point(4, 22);
-            this.tabGroups.Name = "tabGroups";
-            this.tabGroups.Size = new System.Drawing.Size(171, 238);
-            this.tabGroups.TabIndex = 2;
-            this.tabGroups.Text = "Groups";
-            this.tabGroups.UseVisualStyleBackColor = true;
-            // 
             // listFriends
             // 
             this.listFriends.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -182,6 +173,15 @@ namespace IdealistViewer
             this.listFriends.Name = "listFriends";
             this.listFriends.Size = new System.Drawing.Size(171, 238);
             this.listFriends.TabIndex = 0;
+            // 
+            // tabGroups
+            // 
+            this.tabGroups.Location = new System.Drawing.Point(4, 22);
+            this.tabGroups.Name = "tabGroups";
+            this.tabGroups.Size = new System.Drawing.Size(171, 238);
+            this.tabGroups.TabIndex = 2;
+            this.tabGroups.Text = "Groups";
+            this.tabGroups.UseVisualStyleBackColor = true;
             // 
             // frmCommunications
             // 
