@@ -984,8 +984,8 @@ namespace IdealistViewer
 
                 if (tx.vObj != null && tex != null)
                 {
-
-                    if (tx.textureID == tx.vObj.prim.Sculpt.SculptTexture)
+                    Primitive.SculptData sculpt = tx.vObj.prim.Sculpt;
+                    if (sculpt != null && tx.textureID == sculpt.SculptTexture)
                     {
                         tx.vObj.updateFullYN = true;
                         //tx.vObj.mesh.Dispose();
@@ -1098,10 +1098,11 @@ namespace IdealistViewer
                     vObj = modQueue.Dequeue();
                 }
 
-                if (vObj.prim != null)
+                Primitive prim = vObj.prim;
+                if (prim != null)
                 {
 
-                    ulong simhandle = vObj.prim.RegionHandle;
+                    ulong simhandle = prim.RegionHandle;
 
                     if (simhandle == 0)
                         simhandle = TESTNEIGHBOR;
@@ -1122,19 +1123,19 @@ namespace IdealistViewer
                     VObject parentObj = null;
                     SceneNode parentNode = smgr.RootSceneNode;
                     //VObject vObj = UnAssignedChildObjectModQueue.Dequeue();
-                    //if (Entities.ContainsKey(vObj.prim.RegionHandle.ToString() + vObj.prim.ParentID.ToString()))
+                    //if (Entities.ContainsKey(prim.RegionHandle.ToString() + prim.ParentID.ToString()))
                     //{
 
-                    if (vObj.prim.ParentID != 0)
+                    if (prim.ParentID != 0)
                     {
 #if DebugObjectPipeline
-                        m_log.DebugFormat("[OBJ]: NonRootPrim ID: {0}", vObj.prim.ID);
+                        m_log.DebugFormat("[OBJ]: NonRootPrim ID: {0}", prim.ID);
 #endif
                         lock (Entities)
                         {
-                            if (Entities.ContainsKey(simhandle.ToString() + vObj.prim.ParentID.ToString()))
+                            if (Entities.ContainsKey(simhandle.ToString() + prim.ParentID.ToString()))
                             {
-                                parentObj = Entities[simhandle.ToString() + vObj.prim.ParentID.ToString()];
+                                parentObj = Entities[simhandle.ToString() + prim.ParentID.ToString()];
                                 if (parentObj.node != null)
                                 {
                                     //parentNode = parentObj.node;
@@ -1145,7 +1146,7 @@ namespace IdealistViewer
                                 else
                                 {
 #if DebugObjectPipeline
-                                    m_log.DebugFormat("[OBJ]: No Parent Yet for ID: {0}", vObj.prim.ID);
+                                    m_log.DebugFormat("[OBJ]: No Parent Yet for ID: {0}", prim.ID);
 #endif
                                     // No parent yet...    Stick it in the child prim wait queue.
                                     lock (UnAssignedChildObjectModQueue)
@@ -1164,21 +1165,21 @@ namespace IdealistViewer
                     #region Avatar
 
                     SceneNode node = null;
-                    if (vObj.prim is Avatar)
+                    if (prim is Avatar)
                     {
 #if DebugObjectPipeline
-                        m_log.DebugFormat("[OBJ]: Avatar ID: {0}", vObj.prim.ID);
+                        m_log.DebugFormat("[OBJ]: Avatar ID: {0}", prim.ID);
 #endif
                         // Little known fact.  Dead avatar in LibOMV have the word 'dead' in their UUID
                         // Skip over this one and move on to the next one if it's dead.
-                        if (((Avatar)vObj.prim).ID.ToString().Contains("dead"))
+                        if (((Avatar)prim).ID.ToString().Contains("dead"))
                             continue;
 
                         // If we don't have an avatar representation yet for this avatar or it's a full update
                         if (vObj.node == null && vObj.updateFullYN)
                         {
 #if DebugObjectPipeline
-                            m_log.DebugFormat("[OBJ]: Created Avatar ID: {0}", vObj.prim.ID);
+                            m_log.DebugFormat("[OBJ]: Created Avatar ID: {0}", prim.ID);
 #endif
                             AnimatedMesh avmesh = smgr.GetMesh(avatarMesh);
 
@@ -1217,23 +1218,23 @@ namespace IdealistViewer
                             node.SetMaterialFlag(MaterialFlag.Lighting, true);
 
 #if DebugObjectPipeline
-                            m_log.DebugFormat("[OBJ]: Added Interpolation Target for Avatar ID: {0}", vObj.prim.ID);
+                            m_log.DebugFormat("[OBJ]: Added Interpolation Target for Avatar ID: {0}", prim.ID);
 #endif
                             // Add to Interpolation targets
                             lock (interpolationTargets)
                             {
-                                if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                if (interpolationTargets.ContainsKey(simhandle.ToString() + prim.LocalID.ToString()))
                                 {
-                                    interpolationTargets[simhandle.ToString() + vObj.prim.LocalID.ToString()] = vObj;
+                                    interpolationTargets[simhandle.ToString() + prim.LocalID.ToString()] = vObj;
                                 }
                                 else
                                 {
-                                    interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
+                                    interpolationTargets.Add(simhandle.ToString() + prim.LocalID.ToString(), vObj);
                                 }
                             }
 
                             // Is this an update about us?
-                            if (vObj.prim.ID == avatarConnection.GetSelfUUID)
+                            if (prim.ID == avatarConnection.GetSelfUUID)
                             {
                                 if (UserAvatar == null)
                                     SetSelfVObj(vObj);
@@ -1249,15 +1250,15 @@ namespace IdealistViewer
                             node.AddChild(trans2);
                             trans2.Position = new Vector3D(0.0f, 49.5f, 0.5f);
 
-                            smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)vObj.prim).Name, new Color(255, 255, 255, 255), trans);
-                            smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)vObj.prim).Name, new Color(255, 0, 0, 0), trans2);
+                            smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)prim).Name, new Color(255, 255, 255, 255), trans);
+                            smgr.AddTextSceneNode(guienv.BuiltInFont, ((Avatar)prim).Name, new Color(255, 0, 0, 0), trans2);
 
                             //node
                         }
                         else
                         {
 #if DebugObjectPipeline
-                            m_log.DebugFormat("[OBJ]: update for existing avatar ID: {0}", vObj.prim.ID);
+                            m_log.DebugFormat("[OBJ]: update for existing avatar ID: {0}", prim.ID);
 #endif
                             // Set the current working node to the already existing node.
                             node = vObj.node;
@@ -1268,13 +1269,13 @@ namespace IdealistViewer
                     else
                     {
 #if DebugObjectPipeline
-                        m_log.DebugFormat("[OBJ]: Update for Prim ID: {0}", vObj.prim.ID);
+                        m_log.DebugFormat("[OBJ]: Update for Prim ID: {0}", prim.ID);
 #endif
                         // No mesh yet, skip over it.
                         if (vObj.mesh == null)
                         {
 #if DebugObjectPipeline
-                            m_log.WarnFormat("[OBJ]: No Mesh for Prim ID: {0}.  This prim won't be displayed", vObj.prim.ID);
+                            m_log.WarnFormat("[OBJ]: No Mesh for Prim ID: {0}.  This prim won't be displayed", prim.ID);
 #endif
                             continue;
                         }
@@ -1283,12 +1284,12 @@ namespace IdealistViewer
                         if (vObj.updateFullYN)
                         {
                             // Check if it's a sculptie and we've got it's texture.
-                            //if (vObj.prim.Sculpt.SculptTexture != UUID.Zero)
+                            //if (prim.Sculpt.SculptTexture != UUID.Zero)
                             //    m_log.Warn("[SCULPT]: Sending sculpt to the scene....");
 
                             //Vertex3D vtest = vObj.mesh.GetMeshBuffer(0).GetVertex(0);
                             //System.Console.WriteLine(" X:" + vtest.Position.X + " Y:" + vtest.Position.Y + " Z:" + vtest.Position.Z);
-                            node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)vObj.prim.LocalID);
+                            node = smgr.AddMeshSceneNode(vObj.mesh, parentNode, (int)prim.LocalID);
 
                             creatednode = true;
                             vObj.node = node;
@@ -1300,49 +1301,49 @@ namespace IdealistViewer
                         }
 
 #if DebugObjectPipeline
-                        m_log.DebugFormat("[OBJ]: Update Data Prim ID: {0}, FULL:{1}, CREATED:{2}", vObj.prim.ID, vObj.updateFullYN ,creatednode);
+                        m_log.DebugFormat("[OBJ]: Update Data Prim ID: {0}, FULL:{1}, CREATED:{2}", prim.ID, vObj.updateFullYN ,creatednode);
 #endif
 
                         if (node == null)
                         {
 #if DebugObjectPipeline
-                            m_log.WarnFormat("[OBJ]: Node was Null for Prim ID: {0}.  This prim won't be displayed", vObj.prim.ID);
+                            m_log.WarnFormat("[OBJ]: Node was Null for Prim ID: {0}.  This prim won't be displayed", prim.ID);
 #endif
                             continue;
                         }
                     }
 
-                    if (node == null && vObj.prim is Avatar)
+                    if (node == null && prim is Avatar)
                     {
                         // why would node = null?  Race Condition?
                         continue;
                     }
 
-                    if (vObj.prim is Avatar)
+                    if (prim is Avatar)
                     {
                         // TODO: FIXME - This is dependant on the avatar mesh loaded. a good candidate for a config option.
-                        //vObj.prim.Position.Z -= 0.2f;
-                        if (vObj.prim.Position.Z >= 0)
-                            if (RegionHFArray[(int)(Util.Clamp<float>(vObj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(vObj.prim.Position.X, 0, 255))] + 2.5f >= vObj.prim.Position.Z)
+                        //prim.Position.Z -= 0.2f;
+                        if (prim.Position.Z >= 0)
+                            if (RegionHFArray[(int)(Util.Clamp<float>(prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(prim.Position.X, 0, 255))] + 2.5f >= prim.Position.Z)
                             {
-                                vObj.prim.Position.Z = RegionHFArray[(int)(Util.Clamp<float>(vObj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(vObj.prim.Position.X, 0, 255))] + 0.9f;
+                                prim.Position.Z = RegionHFArray[(int)(Util.Clamp<float>(prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(prim.Position.X, 0, 255))] + 0.9f;
                             }
 
                     }
                     else
                     {
                         // Set the scale of the prim to the libomv reported scale.
-                        node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
+                        node.Scale = new Vector3D(prim.Scale.X, prim.Scale.Z, prim.Scale.Y);
                     }
 
-                    // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, pscalex, pscaley, pscalez);
+                    // m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", prim.Scale.X, prim.Scale.Z, prim.Scale.Y, pscalex, pscaley, pscalez);
 
                     // If this prim is either the parent prim or an individual prim
-                    if (vObj.prim.ParentID == 0)
+                    if (prim.ParentID == 0)
                     {
-                        if (vObj.prim is Avatar)
+                        if (prim is Avatar)
                         {
-                            //m_log.WarnFormat("[AVATAR]: W:<{0},{1},{2}> R:<{3},{4},{5}>",WorldoffsetPos.X,WorldoffsetPos.Y,WorldoffsetPos.Z,vObj.prim.Position.X,vObj.prim.Position.Y,vObj.prim.Position.Z);
+                            //m_log.WarnFormat("[AVATAR]: W:<{0},{1},{2}> R:<{3},{4},{5}>",WorldoffsetPos.X,WorldoffsetPos.Y,WorldoffsetPos.Z,prim.Position.X,prim.Position.Y,prim.Position.Z);
                             WorldoffsetPos = Vector3.Zero;
                             // The world offset for avatar doesn't work for some reason yet in LibOMV.  
                             // It's offset, so don't offset them by their world position yet.
@@ -1353,7 +1354,7 @@ namespace IdealistViewer
                             if (node.Raw == IntPtr.Zero)
                                 continue;
                             // Offset the node by it's world position
-                            node.Position = new Vector3D(WorldoffsetPos.X + vObj.prim.Position.X, WorldoffsetPos.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + vObj.prim.Position.Y);
+                            node.Position = new Vector3D(WorldoffsetPos.X + prim.Position.X, WorldoffsetPos.Z + prim.Position.Z, WorldoffsetPos.Y + prim.Position.Y);
                         }
                         catch (System.Runtime.InteropServices.SEHException)
                         {
@@ -1371,50 +1372,50 @@ namespace IdealistViewer
                         if (node.Raw == IntPtr.Zero)
                         {
 #if DebugObjectPipeline
-                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing Node, IntPtr.Zero", vObj.prim.ID);
+                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing Node, IntPtr.Zero", prim.ID);
 #endif
                             continue;
                         }
                         if (vObj == null || parentObj == null)
                         {
 #if DebugObjectPipeline
-                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing Node, vObj == null || parentVObj == null", vObj.prim.ID);
+                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing Node, vObj == null || parentVObj == null", prim.ID);
 #endif
                             continue;
                         }
-                        if (vObj.prim == null || parentObj.prim == null)
+                        if (prim == null || parentObj.prim == null)
                         {
 #if DebugObjectPipeline
-                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing prim, vObj.prim == null || parentObj.prim == null", vObj.prim.ID);
+                            m_log.WarnFormat("[OBJ]: Prim ID: {0} Missing prim, prim == null || parentObj.prim == null", prim.ID);
 #endif
                             continue;
                         }
 
                         // apply rotation and position reported form LibOMV
-                        vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
-                        vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
+                        prim.Position = prim.Position * parentObj.prim.Rotation;
+                        prim.Rotation = parentObj.prim.Rotation * prim.Rotation;
 
-                        node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
+                        node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + prim.Position.Y);
                     }
 
                     if (vObj.updateFullYN)
                     {
                         // If the prim is physical, add it to the interpolation targets.
-                        if ((vObj.prim.Flags & PrimFlags.Physics) == PrimFlags.Physics)
+                        if ((prim.Flags & PrimFlags.Physics) == PrimFlags.Physics)
                         {
                             lock (interpolationTargets)
                             {
-                                if (!interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
-                                    interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
+                                if (!interpolationTargets.ContainsKey(simhandle.ToString() + prim.LocalID.ToString()))
+                                    interpolationTargets.Add(simhandle.ToString() + prim.LocalID.ToString(), vObj);
                             }
                         }
                         else
                         {
                             lock (interpolationTargets)
                             {
-                                if (!(vObj.prim is Avatar))
-                                    if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
-                                        interpolationTargets.Remove(simhandle.ToString() + vObj.prim.LocalID.ToString());
+                                if (!(prim is Avatar))
+                                    if (interpolationTargets.ContainsKey(simhandle.ToString() + prim.LocalID.ToString()))
+                                        interpolationTargets.Remove(simhandle.ToString() + prim.LocalID.ToString());
                             }
                         }
 
@@ -1423,18 +1424,18 @@ namespace IdealistViewer
                     if (node.Raw == IntPtr.Zero)
                     {
 #if DebugObjectPipeline
-                        m_log.WarnFormat("[OBJ]: Prim ID: {0} Node IntPtr.Zero, node.Raw == IntPtr.Zero", vObj.prim.ID);
+                        m_log.WarnFormat("[OBJ]: Prim ID: {0} Node IntPtr.Zero, node.Raw == IntPtr.Zero", prim.ID);
 #endif
                         continue;
                     }
 
                     bool ApplyRotationYN = true;
 
-                    if (vObj.prim is Avatar)
+                    if (prim is Avatar)
                     {
                         if (UserAvatar != null && UserAvatar.prim != null && AVControl != null)
                         {
-                            if (vObj.prim.ID == UserAvatar.prim.ID)
+                            if (prim.ID == UserAvatar.prim.ID)
                             {
                                 // If this is our avatar and the update came less then 5 seconds 
                                 // after we last rotated, it'll just confuse the user
@@ -1446,11 +1447,11 @@ namespace IdealistViewer
                         }
                     }
 
-                    //m_log.Warn(vObj.prim.Rotation.ToString());
+                    //m_log.Warn(prim.Rotation.ToString());
                     if (ApplyRotationYN)
                     {
                         // Convert Cordinate space
-                        IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
+                        IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(prim.Rotation.X, prim.Rotation.Z, prim.Rotation.Y, prim.Rotation.W);
 
                         iqu.makeInverse();
 
@@ -1476,13 +1477,13 @@ namespace IdealistViewer
                                 mts.AddTriangleSelector(trisel);
                             }
                         }
-                        if (vObj.prim.Textures != null)
+                        if (prim.Textures != null)
                         {
-                            if (vObj.prim.Textures.DefaultTexture != null)
+                            if (prim.Textures.DefaultTexture != null)
                             {
-                                if (vObj.prim.Textures.DefaultTexture.TextureID != UUID.Zero)
+                                if (prim.Textures.DefaultTexture.TextureID != UUID.Zero)
                                 {
-                                    UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
+                                    UUID textureID = prim.Textures.DefaultTexture.TextureID;
 
                                     // Only request texture if texture downloading is enabled.
                                     if (textureMan != null)
@@ -1492,10 +1493,10 @@ namespace IdealistViewer
                             }
 
                             // If we have individual face texture settings
-                            if (vObj.prim.Textures.FaceTextures != null)
+                            if (prim.Textures.FaceTextures != null)
                             {
 
-                                Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
+                                Primitive.TextureEntryFace[] objfaces = prim.Textures.FaceTextures;
                                 for (int i2 = 0; i2 < objfaces.Length; i2++)
                                 {
                                     if (objfaces[i2] == null)
@@ -1544,14 +1545,17 @@ namespace IdealistViewer
 
                     vObj = UnAssignedChildObjectModQueue.Dequeue();
                 }
-                ulong simhandle = vObj.prim.RegionHandle;
+
+                Primitive prim = vObj.prim;
+
+                ulong simhandle = prim.RegionHandle;
 
                 if (simhandle == 0)
                     simhandle = TESTNEIGHBOR;
 
-                if (Entities.ContainsKey(simhandle.ToString() + vObj.prim.ParentID.ToString()))
+                if (Entities.ContainsKey(simhandle.ToString() + prim.ParentID.ToString()))
                 {
-                    VObject parentObj = Entities[simhandle.ToString() + vObj.prim.ParentID.ToString()];
+                    VObject parentObj = Entities[simhandle.ToString() + prim.ParentID.ToString()];
 
                     if (parentObj.node != null)
                     {
@@ -1569,7 +1573,7 @@ namespace IdealistViewer
                         SceneNode node = null;
                         if (vObj.node == null)
                         {
-                            if (vObj.prim is Avatar)
+                            if (prim is Avatar)
                             {
 
                                 //AnimatedMesh avmesh = smgr.GetMesh("sydney.md2");
@@ -1582,13 +1586,13 @@ namespace IdealistViewer
 
                                 lock (interpolationTargets)
                                 {
-                                    if (interpolationTargets.ContainsKey(simhandle.ToString() + vObj.prim.LocalID.ToString()))
+                                    if (interpolationTargets.ContainsKey(simhandle.ToString() + prim.LocalID.ToString()))
                                     {
-                                        interpolationTargets[simhandle.ToString() + vObj.prim.LocalID.ToString()] = vObj;
+                                        interpolationTargets[simhandle.ToString() + prim.LocalID.ToString()] = vObj;
                                     }
                                     else
                                     {
-                                        interpolationTargets.Add(simhandle.ToString() + vObj.prim.LocalID.ToString(), vObj);
+                                        interpolationTargets.Add(simhandle.ToString() + prim.LocalID.ToString(), vObj);
                                     }
                                 }
                             }
@@ -1596,7 +1600,7 @@ namespace IdealistViewer
                             {
                                 try
                                 {
-                                    node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)vObj.prim.LocalID);
+                                    node = smgr.AddMeshSceneNode(vObj.mesh, smgr.RootSceneNode, (int)prim.LocalID);
                                     creatednode = true;
                                     vObj.node = node;
                                 }
@@ -1613,17 +1617,17 @@ namespace IdealistViewer
                         }
 
                         //parentObj.node.AddChild(node);
-                        node.Scale = new Vector3D(vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y);
+                        node.Scale = new Vector3D(prim.Scale.X, prim.Scale.Z, prim.Scale.Y);
 
-                        //m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", vObj.prim.Scale.X, vObj.prim.Scale.Z, vObj.prim.Scale.Y, parentObj.node.Scale.X, parentObj.node.Scale.Y, parentObj.node.Scale.Z);
+                        //m_log.WarnFormat("[SCALE]: <{0},{1},{2}> = <{3},{4},{5}>", prim.Scale.X, prim.Scale.Z, prim.Scale.Y, parentObj.node.Scale.X, parentObj.node.Scale.Y, parentObj.node.Scale.Z);
 
-                        vObj.prim.Position = vObj.prim.Position * parentObj.prim.Rotation;
-                        vObj.prim.Rotation = parentObj.prim.Rotation * vObj.prim.Rotation;
+                        prim.Position = prim.Position * parentObj.prim.Rotation;
+                        prim.Rotation = parentObj.prim.Rotation * prim.Rotation;
 
-                        node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + vObj.prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + vObj.prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + vObj.prim.Position.Y);
+                        node.Position = new Vector3D(WorldoffsetPos.X + parentObj.prim.Position.X + prim.Position.X, WorldoffsetPos.Z + parentObj.prim.Position.Z + prim.Position.Z, WorldoffsetPos.Y + parentObj.prim.Position.Y + prim.Position.Y);
 
-                        //m_log.Warn(vObj.prim.Rotation.ToString());
-                        IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(vObj.prim.Rotation.X, vObj.prim.Rotation.Z, vObj.prim.Rotation.Y, vObj.prim.Rotation.W);
+                        //m_log.Warn(prim.Rotation.ToString());
+                        IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(prim.Rotation.X, prim.Rotation.Z, prim.Rotation.Y, prim.Rotation.W);
                         iqu.makeInverse();
 
                         //IrrlichtNETCP.Quaternion parentrot = new IrrlichtNETCP.Quaternion(parentObj.node.Rotation.X, parentObj.node.Rotation.Y, parentObj.node.Rotation.Z);
@@ -1657,21 +1661,21 @@ namespace IdealistViewer
                                     mts.AddTriangleSelector(trisel);
                                 }
                             }
-                            if (vObj.prim.Textures != null)
+                            if (prim.Textures != null)
                             {
-                                if (vObj.prim.Textures.DefaultTexture != null)
+                                if (prim.Textures.DefaultTexture != null)
                                 {
-                                    if (vObj.prim.Textures.DefaultTexture.TextureID != UUID.Zero)
+                                    if (prim.Textures.DefaultTexture.TextureID != UUID.Zero)
                                     {
-                                        UUID textureID = vObj.prim.Textures.DefaultTexture.TextureID;
+                                        UUID textureID = prim.Textures.DefaultTexture.TextureID;
                                         if (textureMan != null)
                                             textureMan.RequestImage(textureID, vObj);
 
                                     }
                                 }
-                                if (vObj.prim.Textures.FaceTextures != null)
+                                if (prim.Textures.FaceTextures != null)
                                 {
-                                    Primitive.TextureEntryFace[] objfaces = vObj.prim.Textures.FaceTextures;
+                                    Primitive.TextureEntryFace[] objfaces = prim.Textures.FaceTextures;
                                     for (int i2 = 0; i2 < objfaces.Length; i2++)
                                     {
                                         if (objfaces[i2] == null)
@@ -1728,19 +1732,19 @@ namespace IdealistViewer
                         break;
                     vobj = objectMeshQueue.Dequeue();
                 }
-
-                Primitive.SculptData sculpt;
+                Primitive prim = vobj.prim;
+                Primitive.SculptData sculpt = null;
                 if (textureMan != null)
                 {
-                    if ((sculpt = vobj.prim.Sculpt) != null)
+                    if ((sculpt = prim.Sculpt) != null)
                     {
                         if (sculpt.SculptTexture != UUID.Zero)
                         {
                             m_log.Warn("[SCULPT]: Got Sculpt");
-                            if (!textureMan.tryGetTexture(vobj.prim.Sculpt.SculptTexture, out sculpttex))
+                            if (!textureMan.tryGetTexture(sculpt.SculptTexture, out sculpttex))
                             {
                                 m_log.Warn("[SCULPT]: Didn't have texture, requesting it");
-                                textureMan.RequestImage(vobj.prim.Sculpt.SculptTexture, vobj);
+                                textureMan.RequestImage(sculpt.SculptTexture, vobj);
                                 //Sculpt textures will cause the prim to get put back into the Mesh objects queue
                                 // Skipping it for now.
                                 continue;
@@ -1761,27 +1765,30 @@ namespace IdealistViewer
                 if (sculptYN == false || sculpttex == null)
                 {
                     // Mesh a regular prim.
-                    vobj.mesh = m_MeshFactory.GetMeshInstance(vobj.prim);
+                    vobj.mesh = m_MeshFactory.GetMeshInstance(prim);
                 }
                 else
                 {
-                    // Mesh a scupted prim.
-                    m_log.Warn("[SCULPT]: Meshing Sculptie......");
-                    vobj.mesh = m_MeshFactory.GetSculptMesh(vobj.prim.Sculpt.SculptTexture, sculpttex, vobj.prim.Sculpt.Type, vobj.prim);
-                    m_log.Warn("[SCULPT]: Sculptie Meshed");
+                    if (sculpt != null)
+                    {
+                        // Mesh a scupted prim.
+                        m_log.Warn("[SCULPT]: Meshing Sculptie......");
+                        vobj.mesh = m_MeshFactory.GetSculptMesh(sculpt.SculptTexture, sculpttex, sculpt.Type, prim);
+                        m_log.Warn("[SCULPT]: Sculptie Meshed");
+                    }
 
                 }
 
                 // Add the newly meshed object ot the objectModQueue
-                ulong regionHandle = vobj.prim.RegionHandle;
+                ulong regionHandle = prim.RegionHandle;
 
-                if (vobj.prim.ParentID != 0)
+                if (prim.ParentID != 0)
                 {
                     bool foundEntity = false;
 
                     lock (Entities)
                     {
-                        if (!Entities.ContainsKey(regionHandle.ToString() + vobj.prim.ParentID.ToString()))
+                        if (!Entities.ContainsKey(regionHandle.ToString() + prim.ParentID.ToString()))
                         {
                             lock (UnAssignedChildObjectModQueue)
                             {
