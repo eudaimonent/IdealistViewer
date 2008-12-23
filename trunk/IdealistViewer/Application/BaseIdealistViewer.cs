@@ -1283,8 +1283,8 @@ namespace IdealistViewer
                         if (vObj.updateFullYN)
                         {
                             // Check if it's a sculptie and we've got it's texture.
-                            if (vObj.prim.Sculpt.SculptTexture != UUID.Zero)
-                                m_log.Warn("[SCULPT]: Sending sculpt to the scene....");
+                            //if (vObj.prim.Sculpt.SculptTexture != UUID.Zero)
+                            //    m_log.Warn("[SCULPT]: Sending sculpt to the scene....");
 
                             //Vertex3D vtest = vObj.mesh.GetMeshBuffer(0).GetVertex(0);
                             //System.Console.WriteLine(" X:" + vtest.Position.X + " Y:" + vtest.Position.Y + " Z:" + vtest.Position.Z);
@@ -1729,23 +1729,27 @@ namespace IdealistViewer
                     vobj = objectMeshQueue.Dequeue();
                 }
 
+                Primitive.SculptData sculpt;
                 if (textureMan != null)
                 {
-                    if (vobj.prim.Sculpt.SculptTexture != UUID.Zero)
+                    if ((sculpt = vobj.prim.Sculpt) != null)
                     {
-                        m_log.Warn("[SCULPT]: Got Sculpt");
-                        if (!textureMan.tryGetTexture(vobj.prim.Sculpt.SculptTexture, out sculpttex))
+                        if (sculpt.SculptTexture != UUID.Zero)
                         {
-                            m_log.Warn("[SCULPT]: Didn't have texture, requesting it");
-                            textureMan.RequestImage(vobj.prim.Sculpt.SculptTexture, vobj);
-                            //Sculpt textures will cause the prim to get put back into the Mesh objects queue
-                            // Skipping it for now.
-                            continue;
-                        }
-                        else
-                        {
-                            m_log.Warn("[SCULPT]: have texture, setting sculpt to true");
-                            sculptYN = true;
+                            m_log.Warn("[SCULPT]: Got Sculpt");
+                            if (!textureMan.tryGetTexture(vobj.prim.Sculpt.SculptTexture, out sculpttex))
+                            {
+                                m_log.Warn("[SCULPT]: Didn't have texture, requesting it");
+                                textureMan.RequestImage(vobj.prim.Sculpt.SculptTexture, vobj);
+                                //Sculpt textures will cause the prim to get put back into the Mesh objects queue
+                                // Skipping it for now.
+                                continue;
+                            }
+                            else
+                            {
+                                m_log.Warn("[SCULPT]: have texture, setting sculpt to true");
+                                sculptYN = true;
+                            }
                         }
                     }
                 }
@@ -2443,7 +2447,6 @@ namespace IdealistViewer
             avatarConnection.OnObjectUpdated += objectUpdatedCallback;
             avatarConnection.OnObjectKilled += objectKilledCallback;
             avatarConnection.OnNewAvatar += newAvatarCallback;
-            avatarConnection.OnNewFoliage += newFoliageCallback;
             avatarConnection.OnChat +=new SLProtocol.Chat(avatarConnection_OnChat);
             avatarConnection.OnFriendsListChanged +=new SLProtocol.FriendsListchanged(avatarConnection_OnFriendsListChanged);
 
@@ -2697,24 +2700,7 @@ namespace IdealistViewer
         /// Stick the result in queues so we can process them in our own threads later.
         #region LibOMV Callbacks
 
-        public void newFoliageCallback(Simulator simulator, Primitive foliage, ulong regionHandle, ushort timeDilation)
-        {
-            TimeDilation = (float)(timeDilation / ushort.MaxValue);
-            foliageCount++;
-            //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
-
-            FoliageObject newFoliageObject = new FoliageObject();
-
-            // add to the foliage queue
-            newFoliageObject.prim = foliage;
-            lock (foliageObjectQueue)
-            {
-                foliageObjectQueue.Enqueue(newFoliageObject);
-            }
-
-
-        }
-
+    
         /// <summary>
         /// LibOMV gave us a Full Object Update
         /// </summary>
@@ -2726,6 +2712,23 @@ namespace IdealistViewer
                                       ushort timeDilation)
         {
             TimeDilation = (float)(timeDilation / ushort.MaxValue);
+
+            PCode pCode = prim.PrimData.PCode;
+            if (pCode == PCode.Grass || pCode == PCode.NewTree || pCode == PCode.Tree)
+            {
+                foliageCount++;
+                //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
+
+                FoliageObject newFoliageObject = new FoliageObject();
+
+                // add to the foliage queue
+                newFoliageObject.prim = prim;
+                lock (foliageObjectQueue)
+                {
+                    foliageObjectQueue.Enqueue(newFoliageObject);
+                }
+                return;
+            }
             //System.Console.WriteLine(prim.ToString());
             //return;
             primcount++;
