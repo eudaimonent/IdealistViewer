@@ -29,6 +29,7 @@ namespace IdealistViewer
         public IdealistViewerConfigSource m_config = null;
         public static Dictionary<string, UUID> waitingSculptQueue = new Dictionary<string, UUID>();
         public static bool backFaceCulling = true;
+        public static bool processFoliage = true;
         public GUIFont defaultfont = null;
         /// <summary>
         /// Irrlicht Instance.  A handle to the Irrlicht device
@@ -2440,6 +2441,7 @@ namespace IdealistViewer
                 avatarMaterial = cnf.GetString("avatar_material", avatarMaterial);
                 startlocation = cnf.GetString("start_location", "");
                 multipleSims = cnf.GetBoolean("multiple_sims", multipleSims);
+                processFoliage = cnf.GetBoolean("process_foliage", processFoliage);
             }
             loadTextures = loadtextures;
             MainConsole.Instance = m_console;
@@ -2723,16 +2725,19 @@ namespace IdealistViewer
             PCode pCode = prim.PrimData.PCode;
             if (pCode == PCode.Grass || pCode == PCode.NewTree || pCode == PCode.Tree)
             {
-                foliageCount++;
-                //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
-
-                FoliageObject newFoliageObject = new FoliageObject();
-
-                // add to the foliage queue
-                newFoliageObject.prim = prim;
-                lock (foliageObjectQueue)
+                if (processFoliage)
                 {
-                    foliageObjectQueue.Enqueue(newFoliageObject);
+                    foliageCount++;
+                    //m_log.Debug("[FOLIAGE]: got foliage, location: " + foliage.Position.ToString());
+
+                    FoliageObject newFoliageObject = new FoliageObject();
+
+                    // add to the foliage queue
+                    newFoliageObject.prim = prim;
+                    lock (foliageObjectQueue)
+                    {
+                        foliageObjectQueue.Enqueue(newFoliageObject);
+                    }
                 }
                 return;
             }
