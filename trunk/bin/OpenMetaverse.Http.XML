@@ -12,6 +12,21 @@
         <member name="F:OpenMetaverse.Http.Logger.Log">
             <summary>log4net logging engine</summary>
         </member>
+        <member name="T:OpenMetaverse.Http.CapsRequestCallback">
+            <summary>
+            Delegate for handling incoming HTTP requests through a capability
+            </summary>
+            <param name="context">Client context</param>
+            <param name="request">HTTP request</param>
+            <param name="response">HTTP response</param>
+            <param name="state">User-defined state object</param>
+            <returns>True to send the response and close the connection, false to leave the connection open</returns>
+        </member>
+        <member name="F:OpenMetaverse.Http.log4netLogWriter.Instance">
+            <summary>
+            Singleton instance of this class
+            </summary>
+        </member>
         <member name="F:OpenMetaverse.Http.EventQueueClient.OnConnected">
             <summary></summary>
         </member>

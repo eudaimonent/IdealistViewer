@@ -1307,7 +1307,7 @@
         </member>
         <member name="M:OpenMetaverse.Quaternion.GetAxisAngle(OpenMetaverse.Vector3@,System.Single@)">
             <summary>
-            Conver this quaternion to an angle around an axis
+            Convert this quaternion to an angle around an axis
             </summary>
             <param name="axis">Unit vector describing the axis</param>
             <param name="angle">Angle around the axis, in radians</param>

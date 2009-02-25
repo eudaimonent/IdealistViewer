@@ -1421,6 +1421,11 @@
             message of the day, and after a failed login a descriptive error 
             message will be returned</summary>
         </member>
+        <member name="E:OpenMetaverse.NetworkManager.OnPacketSent">
+            <summary>
+            Event raised when an outgoing packet is sent to a simulator
+            </summary>
+        </member>
         <member name="E:OpenMetaverse.NetworkManager.OnConnected">
             <summary>
             Event raised when the client was able to connected successfully.
@@ -1560,6 +1565,14 @@
             </summary>
             <param name="packet"></param>
             <param name="simulator"></param>
+        </member>
+        <member name="T:OpenMetaverse.NetworkManager.PacketSentCallback">
+            <summary>
+            Triggered whenever an outgoing packet is sent
+            </summary>
+            <param name="data">Buffer holding the outgoing packet payload</param>
+            <param name="bytesSent">Number of bytes of the data buffer that were sent</param>
+            <param name="simulator">Simulator this packet was sent to</param>
         </member>
         <member name="T:OpenMetaverse.NetworkManager.ConnectedCallback">
             <summary>
@@ -2542,7 +2555,7 @@
             </summary>
             <param name="Images">List of requested images</param>
         </member>
-        <member name="M:OpenMetaverse.AssetManager.RequestUpload(OpenMetaverse.UUID@,OpenMetaverse.AssetType,System.Byte[],System.Boolean)">
+        <member name="M:OpenMetaverse.AssetManager.RequestUpload(OpenMetaverse.UUID@,OpenMetaverse.AssetType,System.Byte[],System.Boolean,OpenMetaverse.UUID)">
             <summary>
             Initiate an asset upload
             </summary>
@@ -2552,6 +2565,7 @@
             <param name="data">Raw asset data to upload</param>
             <param name="storeLocal">Whether to store this asset on the local
             simulator or the grid-wide asset server</param>
+            <param name="transactionID">The tranaction id for the upload <see cref="!:RequestCreateItem"/></param>
             <returns>The transaction ID of this transfer</returns>
         </member>
         <member name="M:OpenMetaverse.AssetManager.ImageDataHandler(OpenMetaverse.Packets.Packet,OpenMetaverse.Simulator)">
@@ -2691,6 +2705,13 @@
             <param name="ibs">List of wearables that define the new outfit</param>
             <param name="bake">Whether to bake textures for the avatar or not</param>
         </member>
+        <member name="M:OpenMetaverse.AppearanceManager.AddToOutfit(System.Collections.Generic.List{OpenMetaverse.InventoryBase},System.Boolean)">
+            <summary>
+            Add to the current outfit with the list supplied
+            </summary>
+            <param name="ibs">List of wearables that will be added to the outfit</param>
+            <param name="bake">Whether to bake textures for the avatar or not</param>
+        </member>
         <member name="M:OpenMetaverse.AppearanceManager.WearOutfit(OpenMetaverse.UUID)">
             <summary>
             Replace the current outfit with a folder and set appearance
@@ -2762,6 +2783,11 @@
             <summary>
             Build hashes out of the texture assetIDs for each baking layer to
             ask the simulator whether it has cached copies of each baked texture
+            </summary>
+        </member>
+        <member name="M:OpenMetaverse.AppearanceManager.ForceRebakeAvatarTextures">
+            <summary>
+            Force a rebake of the currently worn textures
             </summary>
         </member>
         <member name="M:OpenMetaverse.AppearanceManager.SendAgentWearablesRequest">
@@ -3100,6 +3126,13 @@
             <param name="packet">Incoming Packet to process</param>
             <param name="simulator">Unused</param>
         </member>
+        <member name="M:OpenMetaverse.AvatarManager.AvatarAnimationHandler(OpenMetaverse.Packets.Packet,OpenMetaverse.Simulator)">
+            <summary>
+            Process incoming avatar animations
+            </summary>
+            <param name="packet"></param>
+            <param name="sim"></param>
+        </member>
         <member name="M:OpenMetaverse.AvatarManager.AvatarAppearanceHandler(OpenMetaverse.Packets.Packet,OpenMetaverse.Simulator)">
             <summary>
             Process incoming avatar appearance
@@ -3134,6 +3167,9 @@
             Process an incoming details of a profile pick
             </summary>
         </member>
+        <member name="E:OpenMetaverse.AvatarManager.OnAvatarAnimation">
+            <summary></summary>
+        </member>
         <member name="E:OpenMetaverse.AvatarManager.OnAvatarAppearance">
             <summary></summary>
         </member>
@@ -3166,6 +3202,13 @@
         </member>
         <member name="E:OpenMetaverse.AvatarManager.OnPickInfo">
             <summary></summary>
+        </member>
+        <member name="T:OpenMetaverse.AvatarManager.AvatarAnimationCallback">
+            <summary>
+            Triggered when an avatar animation signal is received
+            </summary>
+            <param name="avatarID">UUID of the avatar sending the animation</param>
+            <param name="anims">UUID of the animation, and animation sequence number</param>
         </member>
         <member name="T:OpenMetaverse.AvatarManager.AvatarAppearanceCallback">
             <summary>
@@ -5516,7 +5559,7 @@
             <param name="imSessionID">IM Session ID from the group invitation message</param>
             <param name="accept">Accept the group invitation or deny it</param>
         </member>
-        <member name="M:OpenMetaverse.AgentManager.RequestScriptSensor(System.String,OpenMetaverse.UUID,OpenMetaverse.AgentManager.ScriptSensorTypeFlags,System.Single,System.Single,OpenMetaverse.UUID,OpenMetaverse.Simulator)">
+        <member name="M:OpenMetaverse.AgentManager.RequestScriptSensor(System.String,OpenMetaverse.UUID,OpenMetaverse.ScriptSensorTypeFlags,System.Single,System.Single,OpenMetaverse.UUID,OpenMetaverse.Simulator)">
             <summary>
             Requests script detection of objects and avatars
             </summary>
@@ -6068,7 +6111,7 @@
             of this packet</param>
             <param name="simulator">Simulator to send the update to</param>
         </member>
-        <member name="M:OpenMetaverse.AgentManager.AgentMovement.SendManualUpdate(OpenMetaverse.AgentManager.ControlFlags,OpenMetaverse.Vector3,OpenMetaverse.Vector3,OpenMetaverse.Vector3,OpenMetaverse.Vector3,OpenMetaverse.Quaternion,OpenMetaverse.Quaternion,System.Single,OpenMetaverse.AgentManager.AgentFlags,OpenMetaverse.AgentManager.AgentState,System.Boolean)">
+        <member name="M:OpenMetaverse.AgentManager.AgentMovement.SendManualUpdate(OpenMetaverse.AgentManager.ControlFlags,OpenMetaverse.Vector3,OpenMetaverse.Vector3,OpenMetaverse.Vector3,OpenMetaverse.Vector3,OpenMetaverse.Quaternion,OpenMetaverse.Quaternion,System.Single,OpenMetaverse.AgentFlags,OpenMetaverse.AgentState,System.Boolean)">
             <summary>
             Builds an AgentUpdate packet entirely from parameters. This
             will not touch the state of Self.Movement or
@@ -6232,151 +6275,6 @@
             <summary></summary>
         </member>
         <member name="P:OpenMetaverse.AgentManager.AgentMovement.AgentCamera.UpAxis">
-            <summary></summary>
-        </member>
-        <member name="T:OpenMetaverse.AgentManager.AgentFlags">
-            <summary>
-            Currently only used to hide your group title
-            </summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.AgentFlags.None">
-            <summary>No flags set</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.AgentFlags.HideTitle">
-            <summary>Hide your group title</summary>
-        </member>
-        <member name="T:OpenMetaverse.AgentManager.AgentState">
-            <summary>
-            Action state of the avatar, which can currently be typing and
-            editing
-            </summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.AgentState.None">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.AgentState.Typing">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.AgentState.Editing">
-            <summary></summary>
-        </member>
-        <member name="T:OpenMetaverse.AgentManager.TeleportStatus">
-            <summary>
-            Current teleport status
-            </summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportStatus.None">
-            <summary>Unknown status</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportStatus.Start">
-            <summary>Teleport initialized</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportStatus.Progress">
-            <summary>Teleport in progress</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportStatus.Failed">
-            <summary>Teleport failed</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportStatus.Finished">
-            <summary>Teleport completed</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportStatus.Cancelled">
-            <summary>Teleport cancelled</summary>
-        </member>
-        <member name="T:OpenMetaverse.AgentManager.TeleportFlags">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.Default">
-            <summary>No flags set, or teleport failed</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.SetHomeToTarget">
-            <summary>Set when newbie leaves help island for first time</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.SetLastToTarget">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaLure">
-            <summary>Via Lure</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaLandmark">
-            <summary>Via Landmark</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaLocation">
-            <summary>Via Location</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaHome">
-            <summary>Via Home</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaTelehub">
-            <summary>Via Telehub</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaLogin">
-            <summary>Via Login</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaGodlikeLure">
-            <summary>Linden Summoned</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.Godlike">
-            <summary>Linden Forced me</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.NineOneOne">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.DisableCancel">
-            <summary>Agent Teleported Home via Script</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ViaRegionID">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.IsFlying">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ResetHome">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.ForceRedirect">
-            <summary>forced to new location for example when avatar is banned or ejected</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.FinishedViaLure">
-            <summary>Teleport Finished via a Lure</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.FinishedViaNewSim">
-            <summary>Finished, Sim Changed</summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportFlags.FinishedViaSameSim">
-            <summary>Finished, Same Sim</summary>
-        </member>
-        <member name="T:OpenMetaverse.AgentManager.TeleportLureFlags">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportLureFlags.NormalLure">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportLureFlags.GodlikeLure">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.TeleportLureFlags.GodlikePursuit">
-            <summary></summary>
-        </member>
-        <member name="T:OpenMetaverse.AgentManager.ScriptSensorTypeFlags">
-            <summary>
-            
-            </summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.ScriptSensorTypeFlags.Agent">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.ScriptSensorTypeFlags.Active">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.ScriptSensorTypeFlags.Passive">
-            <summary></summary>
-        </member>
-        <member name="F:OpenMetaverse.AgentManager.ScriptSensorTypeFlags.Scripted">
             <summary></summary>
         </member>
         <member name="T:OpenMetaverse.AgentManager.ChatCallback">
@@ -7180,6 +7078,151 @@
         </member>
         <member name="F:OpenMetaverse.ScriptControlChange.MouseLookLeftButton">
             <summary>Left Mouse button in MouseLook</summary>
+        </member>
+        <member name="T:OpenMetaverse.AgentFlags">
+            <summary>
+            Currently only used to hide your group title
+            </summary>
+        </member>
+        <member name="F:OpenMetaverse.AgentFlags.None">
+            <summary>No flags set</summary>
+        </member>
+        <member name="F:OpenMetaverse.AgentFlags.HideTitle">
+            <summary>Hide your group title</summary>
+        </member>
+        <member name="T:OpenMetaverse.AgentState">
+            <summary>
+            Action state of the avatar, which can currently be typing and
+            editing
+            </summary>
+        </member>
+        <member name="F:OpenMetaverse.AgentState.None">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.AgentState.Typing">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.AgentState.Editing">
+            <summary></summary>
+        </member>
+        <member name="T:OpenMetaverse.TeleportStatus">
+            <summary>
+            Current teleport status
+            </summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportStatus.None">
+            <summary>Unknown status</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportStatus.Start">
+            <summary>Teleport initialized</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportStatus.Progress">
+            <summary>Teleport in progress</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportStatus.Failed">
+            <summary>Teleport failed</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportStatus.Finished">
+            <summary>Teleport completed</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportStatus.Cancelled">
+            <summary>Teleport cancelled</summary>
+        </member>
+        <member name="T:OpenMetaverse.TeleportFlags">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.Default">
+            <summary>No flags set, or teleport failed</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.SetHomeToTarget">
+            <summary>Set when newbie leaves help island for first time</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.SetLastToTarget">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaLure">
+            <summary>Via Lure</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaLandmark">
+            <summary>Via Landmark</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaLocation">
+            <summary>Via Location</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaHome">
+            <summary>Via Home</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaTelehub">
+            <summary>Via Telehub</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaLogin">
+            <summary>Via Login</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaGodlikeLure">
+            <summary>Linden Summoned</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.Godlike">
+            <summary>Linden Forced me</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.NineOneOne">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.DisableCancel">
+            <summary>Agent Teleported Home via Script</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ViaRegionID">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.IsFlying">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ResetHome">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.ForceRedirect">
+            <summary>forced to new location for example when avatar is banned or ejected</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.FinishedViaLure">
+            <summary>Teleport Finished via a Lure</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.FinishedViaNewSim">
+            <summary>Finished, Sim Changed</summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportFlags.FinishedViaSameSim">
+            <summary>Finished, Same Sim</summary>
+        </member>
+        <member name="T:OpenMetaverse.TeleportLureFlags">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportLureFlags.NormalLure">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportLureFlags.GodlikeLure">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.TeleportLureFlags.GodlikePursuit">
+            <summary></summary>
+        </member>
+        <member name="T:OpenMetaverse.ScriptSensorTypeFlags">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="F:OpenMetaverse.ScriptSensorTypeFlags.Agent">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.ScriptSensorTypeFlags.Active">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.ScriptSensorTypeFlags.Passive">
+            <summary></summary>
+        </member>
+        <member name="F:OpenMetaverse.ScriptSensorTypeFlags.Scripted">
+            <summary></summary>
         </member>
         <member name="T:OpenMetaverse.InstantMessage">
             <summary>
@@ -10593,9 +10636,6 @@
         <member name="F:OpenMetaverse.Settings.ADITI_LOGIN_SERVER">
             <summary>Beta grid login server</summary>
         </member>
-        <member name="F:OpenMetaverse.Settings.RESOURCE_DIR">
-            <summary>The relative directory where external resources are kept</summary>
-        </member>
         <member name="F:OpenMetaverse.Settings.ENABLE_INVENTORY_STORE">
             <summary>
             InventoryManager requests inventory information on login,
@@ -10640,6 +10680,9 @@
         <member name="F:OpenMetaverse.Settings.PACKET_ARCHIVE_SIZE">
             <summary>The maximum size of the sequence number archive, used to
             check for resent and/or duplicate packets</summary>
+        </member>
+        <member name="F:OpenMetaverse.Settings.RESOURCE_DIR">
+            <summary>The relative directory where external resources are kept</summary>
         </member>
         <member name="F:OpenMetaverse.Settings.LOGIN_SERVER">
             <summary>Login server to connect to</summary>
@@ -15170,6 +15213,15 @@
             <param name="attachPoint">The point on the avatar the object will be attached</param>
             <param name="rotation">The rotation of the attached object</param>
         </member>
+        <member name="M:OpenMetaverse.ObjectManager.DropObject(OpenMetaverse.Simulator,System.UInt32)">
+            <summary>
+            Drop an attached object from this avatar
+            </summary>
+            <param name="simulator">A reference to the <seealso cref="T:OpenMetaverse.Simulator"/>
+            object where the objects reside. This will always be the simulator the avatar is currently in
+            </param>
+            <param name="localID">The object's ID which is local to the simulator the object is in</param>
+        </member>
         <member name="M:OpenMetaverse.ObjectManager.DetachObjects(OpenMetaverse.Simulator,System.Collections.Generic.List{System.UInt32})">
             <summary>
             Detach an object from yourself
@@ -16253,14 +16305,15 @@
             <param name="oldOwnerID"></param>
             <param name="callback"></param>
         </member>
-        <member name="M:OpenMetaverse.InventoryManager.RequestCopyItemFromNotecard(OpenMetaverse.UUID,OpenMetaverse.UUID,OpenMetaverse.UUID,OpenMetaverse.UUID)">
+        <member name="M:OpenMetaverse.InventoryManager.RequestCopyItemFromNotecard(OpenMetaverse.UUID,OpenMetaverse.UUID,OpenMetaverse.UUID,OpenMetaverse.UUID,OpenMetaverse.InventoryManager.ItemCopiedCallback)">
             <summary>
-            
+            Request a copy of an asset embedded within a notecard
             </summary>
-            <param name="objectID"></param>
-            <param name="notecardID"></param>
-            <param name="folderID"></param>
-            <param name="itemID"></param>
+            <param name="objectID">Usually UUID.Zero for copying an asset from a notecard</param>
+            <param name="notecardID">UUID of the notecard to request an asset from</param>
+            <param name="folderID">Target folder for asset to go to in your inventory</param>
+            <param name="itemID">UUID of the embedded asset</param>
+            <param name="callback">callback to run when item is copied to inventory</param>
         </member>
         <member name="M:OpenMetaverse.InventoryManager.RequestUpdateItem(OpenMetaverse.InventoryItem)">
             <summary>
@@ -17391,6 +17444,13 @@
             <param name="osd">Structure holding the serialized primitive list,
             must be of the SDMap type</param>
             <returns>A list of deserialized primitives</returns>
+        </member>
+        <member name="M:OpenMetaverse.Helpers.PacketToString(OpenMetaverse.Packets.Packet)">
+            <summary>
+            Parse a packet into human readable formatted key/value pairs
+            </summary>
+            <param name="packet">the Packet to parse</param>
+            <returns>A string containing the packet block name, and key/value pairs of the data fields</returns>
         </member>
         <member name="T:OpenMetaverse.Helpers.LogLevel">
             <summary>
