@@ -15,12 +15,12 @@ namespace IdealistViewer
         private const float pi2 = pi * 2;
         float turn_increment = (pi / 240f);
 
-        private SLProtocol avatarConnection = null;
+        private IProtocol avatarConnection = null;
         private SceneNode av = null;
 
         public volatile int userRotated = 0;
-        
-        public AvatarController(SLProtocol pAvatarConnection, SceneNode pAVNode)
+
+        public AvatarController(IProtocol pAvatarConnection, SceneNode pAVNode)
         {
             avatarConnection = pAvatarConnection;
             av = pAVNode;

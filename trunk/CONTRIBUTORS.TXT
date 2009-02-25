@@ -12,4 +12,5 @@ Primary Developers (alphabetical order)
 Patches
 * Daedius Moskvitch
 * MW (Michael Wright)
+* Tommi Laukkanen
 

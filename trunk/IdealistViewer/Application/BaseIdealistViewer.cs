@@ -20,6 +20,7 @@ using IrrlichtNETCP.Extensions;
 using OpenMetaverse;
 using Nini.Config;
 using PrimMesher;
+using IdealistViewer.Modules;
 
 namespace IdealistViewer
 {
@@ -70,7 +71,7 @@ namespace IdealistViewer
         /// <summary>
         /// LibOMV Connection
         /// </summary>
-        private SLProtocol avatarConnection;
+        private IProtocol avatarConnection;
 
         /// <summary>
         /// TerrainSceneNode Irrlicht representations of the terrain.  Indexed by regionhandle
@@ -2232,7 +2233,7 @@ namespace IdealistViewer
                     m_log.Debug(qMsg);
                     break;
                 case "relog":
-                    avatarConnection.BeginLogin(avatarConnection.loginURI, avatarConnection.firstName + " " + avatarConnection.lastName, avatarConnection.password, avatarConnection.startlocation);
+                    avatarConnection.BeginLogin(avatarConnection.LoginURI, avatarConnection.FirstName + " " + avatarConnection.LastName, avatarConnection.Password, avatarConnection.StartLocation);
                     break;
                 case "say":
                     string message = "";
@@ -2447,8 +2448,8 @@ namespace IdealistViewer
             MainConsole.Instance = m_console;
 
             // Initialize LibOMV
-            avatarConnection = new SLProtocol();
-            avatarConnection.m_user.Settings.MULTIPLE_SIMS = multipleSims;
+            avatarConnection = ModuleManager.GetProtocolModule();
+            avatarConnection.MultipleSims = multipleSims;
             avatarConnection.OnLandPatch += landPatchCallback;
             avatarConnection.OnGridConnected += connectedCallback;
             avatarConnection.OnNewPrim += newPrimCallback;

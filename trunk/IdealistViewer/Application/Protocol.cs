@@ -10,7 +10,8 @@ using log4net;
 
 namespace IdealistViewer
 {
-    public class SLProtocol
+
+    public class SLProtocol : IProtocol
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -43,14 +44,67 @@ namespace IdealistViewer
         public event FriendsListchanged OnFriendsListChanged;
 
         public string loginURI;
+        public string LoginURI
+        {
+            get
+            {
+                return loginURI;
+            }
+        }
         public string firstName;
+        public string FirstName
+        {
+            get
+            {
+                return firstName;
+            }
+        }
         public string lastName;
+        public string LastName
+        {
+            get
+            {
+                return lastName;
+            }
+        }
         public string username;
+        public string UserName
+        {
+            get
+            {
+                return username;
+            }
+        }
         public string password;
+        public string Password
+        {
+            get
+            {
+                return password;
+            }
+        }
         public string startlocation;
+        public string StartLocation
+        {
+            get
+            {
+                return startlocation;
+            }
+        }
 
         // received animations are stored here before being processed in the main frame loop
-        public Dictionary<UUID, List<UUID>> AvatarAnimations = new Dictionary<UUID,List<UUID>>();
+        public Dictionary<UUID, List<UUID>> avatarAnimations = new Dictionary<UUID,List<UUID>>();
+        public Dictionary<UUID, List<UUID>> AvatarAnimations
+        {
+            get
+            {
+                return avatarAnimations;
+            }
+            set
+            {
+                avatarAnimations = value;
+            }
+        }
 
         public GridClient m_user;
 
@@ -489,8 +543,17 @@ namespace IdealistViewer
             set { m_user.Self.Movement.UpNeg = value; }
         }
 
-        
-
+        public bool MultipleSims
+        {
+            get
+            {
+                return m_user.Settings.MULTIPLE_SIMS;
+            }
+            set
+            {
+                m_user.Settings.MULTIPLE_SIMS=value;
+            }
+        }
 
     }
 }

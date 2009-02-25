@@ -14,10 +14,10 @@ namespace IdealistViewer
 {
     public partial class frmCommunications : Form
     {
-        private SLProtocol avatarConnection;
+        private IProtocol avatarConnection;
 
 
-        public frmCommunications(SLProtocol avatarConnection)
+        public frmCommunications(IProtocol avatarConnection)
         {
             this.avatarConnection = avatarConnection;
             InitializeComponent();

@@ -42,7 +42,7 @@ namespace IdealistViewer
         /// </summary>
         private Dictionary<UUID, List<VObject>> ouststandingRequests = new Dictionary<UUID, List<VObject>>();
         private IrrlichtDevice device = null;
-        private SLProtocol m_user = null;
+        private IProtocol m_user = null;
         private static readonly log4net.ILog m_log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         
         /// <summary>
@@ -51,7 +51,7 @@ namespace IdealistViewer
         private TrianglePickerMapper triPicker = null;
         private MetaTriangleSelector mts = null;
 
-        public TextureManager(IrrlichtDevice pdevice, VideoDriver pDriver, TrianglePickerMapper ptriPicker, MetaTriangleSelector pmts, string folder, SLProtocol pm_user)
+        public TextureManager(IrrlichtDevice pdevice, VideoDriver pDriver, TrianglePickerMapper ptriPicker, MetaTriangleSelector pmts, string folder, IProtocol pm_user)
         {
             driver = pDriver;
             device = pdevice;
