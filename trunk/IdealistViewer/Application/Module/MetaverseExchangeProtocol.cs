@@ -20,6 +20,7 @@ namespace IdealistViewer.Module
         private UUID m_bubbleId;
         private UUID m_userId;
         private Avatar m_avatar;
+        private float m_heading = 0;
         private VSimulator m_simulator;
         private bool m_translateChange = false;
         private bool m_orientateChange = false;
@@ -101,36 +102,36 @@ namespace IdealistViewer.Module
             if (m_translateChange)
             {
                 Quaternion orientation = m_avatar.Rotation;
-                Vector3 targetLocation = m_avatar.Position;
+                Vector3 movementDirection = new Vector3(0,0,0);
                 if (m_forward)
                 {
-                    targetLocation += FORWARD*orientation;
+                    movementDirection += FORWARD*orientation;
                 }
                 if (m_backward)
                 {
-                    targetLocation += BACKWARD * orientation;
+                    movementDirection += BACKWARD * orientation;
                 }
                 if (m_straffLeft)
                 {
-                    targetLocation += LEFT * orientation;
+                    movementDirection += LEFT * orientation;
                 }
                 if (m_straffRight)
                 {
-                    targetLocation += RIGHT * orientation;
+                    movementDirection += RIGHT * orientation;
                 }
                 if (m_up)
                 {
-                    targetLocation += UP * orientation;
+                    movementDirection += UP * orientation;
                 }
                 if (m_down)
                 {
-                    targetLocation += DOWN * orientation;
+                    movementDirection += DOWN * orientation;
                 }
-                OmVector3f omTargetLocation=new OmVector3f();
-                omTargetLocation.X=targetLocation.X;
-                omTargetLocation.Y=targetLocation.Y;
-                omTargetLocation.Z=targetLocation.Z;
-                avatarExt.TargetLocation = omTargetLocation;
+                avatarExt.MovementDirection = ToOmVector(movementDirection);
+            }
+            if (m_orientateChange)
+            {
+                avatarExt.TargetOrientation=ToOmQuaternion(Quaternion.CreateFromAxisAngle(Vector3.UnitZ,m_heading));
             }
 
             modifyRequest.SetExtension<OmAvatarExt>(avatarExt);
@@ -209,12 +210,12 @@ namespace IdealistViewer.Module
             primitive.OwnerID = new UUID(objectFragment.OwnerId);
             primitive.RegionHandle = m_simulator.Handle;
 
-            primitive.Rotation = FromOmQuaternion(objectFragment.Orientation);
-            primitive.AngularVelocity = FromOmQuaternionToEulerAngles(objectFragment.AngularVelocity);
+            primitive.Rotation = FromFloatQuaternion(objectFragment.Orientation);
+            primitive.AngularVelocity = FromFloatQuaternionToEulerAngles(objectFragment.AngularVelocity);
 
-            primitive.Position = FromOmVector(objectFragment.Location);
-            primitive.Velocity = FromOmVector(objectFragment.Velocity);
-            primitive.Acceleration = FromOmVector(objectFragment.Acceleration);
+            primitive.Position = FromFloatVector(objectFragment.Location);
+            primitive.Velocity = FromFloatVector(objectFragment.Velocity);
+            primitive.Acceleration = FromFloatVector(objectFragment.Acceleration);
 
             if (m_userId.Guid == objectFragment.OwnerId)
             {
@@ -231,8 +232,19 @@ namespace IdealistViewer.Module
             ObjectUpdate objectUpdate = new ObjectUpdate();
             objectUpdate.LocalID = movementEvent.ObjectIndex;
             objectUpdate.Avatar = m_avatar.LocalID == movementEvent.ObjectIndex;
-            objectUpdate.Position = FromOmVector(movementEvent.Location);
-            objectUpdate.Rotation = FromOmQuaternion(movementEvent.Orientation);
+            objectUpdate.Position = FromFloatVector(movementEvent.Location);
+            objectUpdate.Rotation = FromFloatQuaternion(movementEvent.Orientation);
+            /*
+            if (!(m_avatar.LocalID == movementEvent.ObjectIndex))
+            {
+                objectUpdate.Rotation = FromFloatQuaternion(movementEvent.Orientation);
+            }
+            else
+            {
+                // Not respecting server sent orientation for own avatar.
+                objectUpdate.Rotation = m_avatar.Rotation;
+            }
+            */
             objectUpdate.Velocity = new Vector3();
             objectUpdate.Acceleration = new Vector3();
             objectUpdate.AngularVelocity = new Vector3();
@@ -253,12 +265,12 @@ namespace IdealistViewer.Module
             primitive.OwnerID = new UUID(objectFragment.OwnerId);
             primitive.RegionHandle = m_simulator.Handle;
 
-            primitive.Rotation = FromOmQuaternion(objectFragment.Orientation);
-            primitive.AngularVelocity = FromOmQuaternionToEulerAngles(objectFragment.AngularVelocity);
+            primitive.Rotation = FromFloatQuaternion(objectFragment.Orientation);
+            primitive.AngularVelocity = FromFloatQuaternionToEulerAngles(objectFragment.AngularVelocity);
 
-            primitive.Position = FromOmVector(objectFragment.Location);
-            primitive.Velocity = FromOmVector(objectFragment.Velocity);
-            primitive.Acceleration = FromOmVector(objectFragment.Acceleration);
+            primitive.Position = FromFloatVector(objectFragment.Location);
+            primitive.Velocity = FromFloatVector(objectFragment.Velocity);
+            primitive.Acceleration = FromFloatVector(objectFragment.Acceleration);
 
             if (pe.HasExtension)
             {
@@ -376,7 +388,7 @@ namespace IdealistViewer.Module
             return new Color4(value.R / 255, value.G / 255, value.B / 255, value.A / 255);
         }
 
-        private Vector3 FromOmVector(float[] values)
+        private Vector3 FromFloatVector(float[] values)
         {
             return new Vector3(values[0], values[1], values[2]);
         }
@@ -386,9 +398,9 @@ namespace IdealistViewer.Module
             return new Vector3(values.X, values.Y, values.Z);
         }
 
-        private Vector3 FromOmQuaternionToEulerAngles(float[] values)
+        private Vector3 FromFloatQuaternionToEulerAngles(float[] values)
         {
-            Quaternion quaternion = FromOmQuaternion(values);
+            Quaternion quaternion = FromFloatQuaternion(values);
             float roll;
             float pitch;
             float yaw;
@@ -396,7 +408,7 @@ namespace IdealistViewer.Module
             return new Vector3(roll, pitch, yaw);
         }
 
-        private Quaternion FromOmQuaternion(float[] values)
+        private Quaternion FromFloatQuaternion(float[] values)
         {
             return new Quaternion(values[0], values[1], values[2],values[3]);
         }
@@ -412,6 +424,16 @@ namespace IdealistViewer.Module
             encodedValue.X = value.X;
             encodedValue.Y = value.Y;
             encodedValue.Z = value.Z;
+            return encodedValue;
+        }
+
+        private OmQuaternion4f ToOmQuaternion(Quaternion value)
+        {
+            OmQuaternion4f encodedValue = new OmQuaternion4f();
+            encodedValue.X = value.X;
+            encodedValue.Y = value.Y;
+            encodedValue.Z = value.Z;
+            encodedValue.W = value.W;
             return encodedValue;
         }
 
@@ -713,7 +735,7 @@ namespace IdealistViewer.Module
 
         public void RequestTexture(OpenMetaverse.UUID assetID)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void Say(string message)
@@ -748,6 +770,11 @@ namespace IdealistViewer.Module
 
         public void UpdateFromHeading(double heading)
         {
+            if (m_heading != (float)heading)
+            {
+                m_orientateChange = true;
+                m_heading = (float)heading;
+            }
             //throw new NotImplementedException();
         }
 
