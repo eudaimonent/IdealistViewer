@@ -20,7 +20,7 @@ using IrrlichtNETCP.Extensions;
 using OpenMetaverse;
 using Nini.Config;
 using PrimMesher;
-using IdealistViewer.Modules;
+using IdealistViewer.Module;
 
 namespace IdealistViewer
 {
@@ -152,12 +152,12 @@ namespace IdealistViewer
         /// Simulator that the client think's it's currently a root agent in.
         /// Uses this to determine the offset of prim and objects in neighbor regions
         /// </summary>
-        private static Simulator currentSim;
+        private static VSimulator currentSim;
 
         /// <summary>
         /// Known Simulators, Indexed by ulong regionhandle
         /// </summary>
-        private static Dictionary<ulong, Simulator> Simulators = new Dictionary<ulong, Simulator>();
+        private static Dictionary<ulong, VSimulator> Simulators = new Dictionary<ulong, VSimulator>();
 
         /// <summary>
         /// Known Entities.  Indexed by VUtil.GetHashId
@@ -639,10 +639,17 @@ namespace IdealistViewer
             winformThread = new Thread(delegate() { Application.DoEvents(); Thread.Sleep(50); });
             winformThread.Start();
 
-
-
             while (running)
             {
+                try
+                {
+                    avatarConnection.Process();
+                }
+                catch (Exception e)
+                {
+                    m_log.Error("Error processing network messages: " + e);
+                }
+
                 try
                 {
 
@@ -2448,7 +2455,7 @@ namespace IdealistViewer
             MainConsole.Instance = m_console;
 
             // Initialize LibOMV
-            avatarConnection = ModuleManager.GetProtocolModule();
+            avatarConnection = ModuleManager.GetProtocolModule(m_config);
             avatarConnection.MultipleSims = multipleSims;
             avatarConnection.OnLandPatch += landPatchCallback;
             avatarConnection.OnGridConnected += connectedCallback;
@@ -2457,8 +2464,8 @@ namespace IdealistViewer
             avatarConnection.OnObjectUpdated += objectUpdatedCallback;
             avatarConnection.OnObjectKilled += objectKilledCallback;
             avatarConnection.OnNewAvatar += newAvatarCallback;
-            avatarConnection.OnChat +=new SLProtocol.Chat(avatarConnection_OnChat);
-            avatarConnection.OnFriendsListChanged +=new SLProtocol.FriendsListchanged(avatarConnection_OnFriendsListChanged);
+            avatarConnection.OnChat +=new Chat(avatarConnection_OnChat);
+            avatarConnection.OnFriendsListChanged +=new FriendsListchanged(avatarConnection_OnFriendsListChanged);
 
             // Startup the GUI
             guithread = new Thread(new ParameterizedThreadStart(startupGUI));
@@ -2718,7 +2725,7 @@ namespace IdealistViewer
         /// <param name="prim"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        public void newPrimCallback(Simulator sim, Primitive prim, ulong regionHandle,
+        public void newPrimCallback(VSimulator sim, Primitive prim, ulong regionHandle,
                                       ushort timeDilation)
         {
             TimeDilation = (float)(timeDilation / ushort.MaxValue);
@@ -2829,7 +2836,7 @@ namespace IdealistViewer
 
         }
 
-        private void landPatchCallback(Simulator sim, int x, int y, int width, float[] data)
+        private void landPatchCallback(VSimulator sim, int x, int y, int width, float[] data)
         {
             ulong simhandle = sim.Handle;
 
@@ -2881,7 +2888,7 @@ namespace IdealistViewer
 
         }
 
-        private void updateTerrainBitmap(int x, int y, Simulator sim)
+        private void updateTerrainBitmap(int x, int y, VSimulator sim)
         {
 
             Dictionary<int, float[]> m_landMap;
@@ -2975,7 +2982,7 @@ namespace IdealistViewer
         /// LibOMV has informed us that it's connected to a simulator.
         /// </summary>
         /// <param name="sim"></param>
-        protected void SimConnectedCallback(Simulator sim)
+        protected void SimConnectedCallback(VSimulator sim)
         {
             bool isCurrentSim = false;
             ulong simhandle = sim.Handle;
@@ -3040,7 +3047,7 @@ namespace IdealistViewer
         /// <param name="update"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle,
+        private void objectUpdatedCallback(VSimulator simulator, ObjectUpdate update, ulong regionHandle,
             ushort timeDilation)
         {
             TimeDilation = (float)(timeDilation / ushort.MaxValue);
@@ -3109,7 +3116,7 @@ namespace IdealistViewer
         /// </summary>
         /// <param name="psim"></param>
         /// <param name="pLocalID"></param>
-        private void objectKilledCallback(Simulator psim, uint pLocalID)
+        private void objectKilledCallback(VSimulator psim, uint pLocalID)
         {
             ulong regionHandle = psim.Handle;
             m_log.Debug("[DELETE]: obj " + regionHandle.ToString() + ":" + pLocalID.ToString());
@@ -3188,7 +3195,7 @@ namespace IdealistViewer
         /// <param name="avatar"></param>
         /// <param name="regionHandle"></param>
         /// <param name="timeDilation"></param>
-        private void newAvatarCallback(Simulator sim, Avatar avatar, ulong regionHandle,
+        private void newAvatarCallback(VSimulator sim, Avatar avatar, ulong regionHandle,
                                        ushort timeDilation)
         {
             TimeDilation = (float)(timeDilation / ushort.MaxValue);

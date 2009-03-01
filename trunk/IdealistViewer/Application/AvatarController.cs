@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using IrrlichtNETCP;
+using IdealistViewer.Module;
 
 namespace IdealistViewer
 {

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using OpenMetaverse;
 //using OpenMetaverse.Rendering;
 using IrrlichtNETCP;
+using IdealistViewer.Module;
 
 
 namespace IdealistViewer

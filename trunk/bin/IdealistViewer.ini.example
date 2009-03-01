@@ -1,6 +1,7 @@
 [Startup]
 multiple_sims = false
 login_uri="http://127.0.0.1:9000"
+;(MXP LOGIN URL)login_uri="http://127.0.0.1:1253/ccbaffab-e491-4898-a072-eb3450e7401d/testlocation"
 ;login_uri="http://osgrid.org:8002"
 ;login_uri="https://login.agni.lindenlab.com/cgi-bin/login.cgi"
 first_name="test"
@@ -12,6 +13,8 @@ backface_culling=true
 process_foliage=true
 avatar_mesh="sydney.md2"
 avatar_material="sydney.BMP"
+protocol=sl
+;protocol=mxp
 
 ; female-7 is the sl female avatar mesh
 ;avatar_mesh = "female7.x"

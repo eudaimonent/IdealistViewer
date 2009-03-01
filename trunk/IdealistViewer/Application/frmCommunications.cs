@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Xml;
 using OpenMetaverse;
+using IdealistViewer.Module;
 
 namespace IdealistViewer
 {
@@ -21,8 +22,8 @@ namespace IdealistViewer
         {
             this.avatarConnection = avatarConnection;
             InitializeComponent();
-            avatarConnection.OnChat += new SLProtocol.Chat(avatarConnection_OnChat);
-            avatarConnection.OnFriendsListChanged += new SLProtocol.FriendsListchanged(avatarConnection_OnFriendsListChanged);
+            avatarConnection.OnChat += new Chat(avatarConnection_OnChat);
+            avatarConnection.OnFriendsListChanged += new FriendsListchanged(avatarConnection_OnFriendsListChanged);
         }
 
         void avatarConnection_OnFriendsListChanged()
