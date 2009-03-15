@@ -1,7 +1,0 @@
-C:\Development\IdealistViewer\IdealistViewer\Application\obj\Debug\ResolveAssemblyReference.cache
-C:\Development\IdealistViewer\IdealistViewer\Application\obj\Debug\IdealistViewer.csproj.GenerateResource.Cache
-C:\Development\IdealistViewer\bin\IdealistViewer.exe
-C:\Development\IdealistViewer\bin\IdealistViewer.pdb
-C:\Development\IdealistViewer\IdealistViewer\Application\obj\Debug\IdealistViewer.exe
-C:\Development\IdealistViewer\IdealistViewer\Application\obj\Debug\IdealistViewer.pdb
-C:\Development\IdealistViewer\IdealistViewer\Application\obj\Debug\IdealistViewer.UserInterface.Forms.frmCommunications.resources
