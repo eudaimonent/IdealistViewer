@@ -114,7 +114,7 @@ namespace IdealistViewer
                         sampleHFNode.Position = new Vector3D(x + 8.5f, averageHeight, y + 8.5f);
                         sampleHFNode.SetMaterialTexture(0, m_greenGrassTexture);
                         sampleHFNode.SetMaterialFlag(MaterialFlag.Lighting, true);
-                        sampleHFNode.SetMaterialFlag(MaterialFlag.GouraudShading, false);
+                        sampleHFNode.SetMaterialFlag(MaterialFlag.GouraudShading, true);
                         sampleHFNode.SetMaterialFlag(MaterialFlag.BackFaceCulling, m_viewer.BackFaceCulling);
                         sampleHFNode.SetMaterialFlag(MaterialFlag.NormalizeNormals, true);
                         sceneNodes.Add(sampleHFNode);
