@@ -12,7 +12,10 @@ void Mesh_GetBoundingBox(IntPtr mesh, M_BOX3D box)
 {
     UM_BOX3D(((IMesh*)mesh)->getBoundingBox(), box);
 }
-
+void Mesh_SetBoundingBox(IntPtr mesh, M_BOX3D box)
+{
+	((IMesh*)mesh)->setBoundingBox(MU_BOX3D(box));
+}
 void Mesh_SetMaterialFlag(IntPtr mesh, E_MATERIAL_FLAG flag, bool newValue)
 {
     ((IMesh*)mesh)->setMaterialFlag(flag, newValue);

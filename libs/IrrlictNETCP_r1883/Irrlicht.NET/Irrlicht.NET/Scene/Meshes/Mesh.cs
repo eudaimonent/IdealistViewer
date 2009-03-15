@@ -24,11 +24,19 @@ namespace IrrlichtNETCP
                 Mesh_GetBoundingBox(_raw, box);
                 return Box3D.FromUnmanaged(box);
             }
+            set
+            {
+                float[] box = value.ToUnmanaged();
+                Mesh_SetBoundingBox(_raw, box);
+            }
         }
 
         public void AddMeshBuffer(MeshBuffer mb)
         {
             Mesh_AddMeshBuffer(_raw, mb.Raw);
+            Box3D meshBoundingBox = BoundingBox;
+            meshBoundingBox.AddInternalBox(mb.BoundingBox);
+            BoundingBox = meshBoundingBox;
         }
 
         public void SetMaterialFlag(MaterialFlag flag, bool newValue)
@@ -52,6 +60,9 @@ namespace IrrlichtNETCP
         #region .NET Wrapper Native Code
         [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern void Mesh_GetBoundingBox(IntPtr mesh, [MarshalAs(UnmanagedType.LPArray)] float[] box);
+
+        [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
+        static extern void Mesh_SetBoundingBox(IntPtr mesh, [MarshalAs(UnmanagedType.LPArray)] float[] box);
 
         [DllImport(Native.Dll), SuppressUnmanagedCodeSecurity]
         static extern void Mesh_SetMaterialFlag(IntPtr mesh, MaterialFlag flag, bool newValue);
