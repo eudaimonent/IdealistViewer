@@ -86,6 +86,10 @@ namespace IdealistViewer.Network
         private void RequestAvatarModification()
         {
             ModifyRequestMessage modifyRequest = new ModifyRequestMessage();
+            if (m_avatar == null)
+            {
+                return;
+            }
             modifyRequest.ObjectFragment.ObjectId = m_avatar.ID.Guid;
             modifyRequest.ObjectFragment.ParentObjectId = Guid.Empty;
             modifyRequest.ObjectFragment.ObjectIndex = m_avatar.LocalID;
@@ -190,6 +194,10 @@ namespace IdealistViewer.Network
             {
                 ObjectMovementReceived((MovementEventMessage)message);
             }
+            else if (message.GetType() == typeof(DisappearanceEventMessage))
+            {
+                ObjectDisappearanceReceived((DisappearanceEventMessage)message);
+            }                
             else
             {
                 m_log.Warn("Unhandled message: " + message.GetType());
@@ -262,6 +270,11 @@ namespace IdealistViewer.Network
             objectUpdate.Acceleration = new Vector3();
             objectUpdate.AngularVelocity = new Vector3();
             OnObjectUpdate(m_simulator, objectUpdate, m_simulator.Handle, 100);
+        }
+
+        private void ObjectDisappearanceReceived(DisappearanceEventMessage disappearanceEvent)
+        {
+            OnObjectRemove(m_simulator, disappearanceEvent.ObjectIndex);
         }
 
         private void PrimitivePercetionReceived(PerceptionEventMessage pe)
