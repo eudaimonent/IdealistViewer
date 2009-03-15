@@ -1,20 +1,26 @@
 [Startup]
 multiple_sims = false
-login_uri="http://127.0.0.1:9000"
-;(MXP LOGIN URL)login_uri="http://127.0.0.1:1253/ccbaffab-e491-4898-a072-eb3450e7401d/testlocation"
-;login_uri="http://osgrid.org:8002"
-;login_uri="https://login.agni.lindenlab.com/cgi-bin/login.cgi"
-first_name="test"
-last_name="user"
-pass_word="346324636"
+;SecondLife Protocol Login URL:
+;login_uri="http://demo.bubblecloud.org:9000"
+;login_uri="http://osgrid.org:8002/Dahlia Island OSGrid Interop"
+;MXP Protocol Login URL:
+login_uri="mxp://demo.bubblecloud.org:2253/Demo/"
+;login_uri="mxp://127.0.0.1:1253/OpenSim Test/"
+
+first_name="Test"
+last_name="User"
+pass_word="test"
+
 start_location=""
 load_textures=true
 backface_culling=true
 process_foliage=true
+
 avatar_mesh="sydney.md2"
 avatar_material="sydney.BMP"
-protocol=sl
-;protocol=mxp
+
+terrain=mesh
+forms=false
 
 ; female-7 is the sl female avatar mesh
 ;avatar_mesh = "female7.x"
@@ -23,5 +29,4 @@ protocol=sl
 ; legs should be 0-female7.tga
 ; torso should be 1-female7.tga
 ; face should be 2-female7.tga
-
 
