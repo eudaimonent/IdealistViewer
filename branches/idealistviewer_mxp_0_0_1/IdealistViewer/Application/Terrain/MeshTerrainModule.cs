@@ -131,13 +131,13 @@ namespace IdealistViewer
                 m_simulatorHeightFields.Add(sim.Handle, m_landMap);
             }
 
-            lock (m_terrainModifications)
+            /*lock (m_terrainModifications)
             {
                 if (!m_terrainModifications.Contains(sim.Handle))
                 {
                     m_terrainModifications.Enqueue(sim.Handle);
                 }
-            }
+            }*/
         }
 
         public void OnNetworkLandUpdate(VSimulator sim, int x, int y, int width, float[] data)

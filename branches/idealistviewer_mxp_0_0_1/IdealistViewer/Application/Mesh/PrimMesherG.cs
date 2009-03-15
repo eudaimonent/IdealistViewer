@@ -121,18 +121,18 @@ namespace IdealistViewer
 
             try
             {
-                //Vector3D minVector = new Vector3D(float.MaxValue,float.MaxValue,float.MaxValue);
-                //Vector3D maxVector = new Vector3D(float.MinValue,float.MinValue,float.MinValue);
+                Vector3D minVector = new Vector3D(float.MaxValue,float.MaxValue,float.MaxValue);
+                Vector3D maxVector = new Vector3D(float.MinValue,float.MinValue,float.MinValue);
                 for (int i = 0; i < numVerts; i++)
                 {
                     Vector3D vector=convVect3d(sculptMesh.coords[i]);
                     mb.SetVertex((uint)i, new Vertex3D(vector, convNormal(sculptMesh.normals[i]), color, convVect2d(sculptMesh.uvs[i])));
-                    //minVector.X = Math.Min(minVector.X, vector.X);
-                    //minVector.Y = Math.Min(minVector.Y, vector.Y);
-                    //minVector.Z = Math.Min(minVector.Z, vector.Z);
-                    //maxVector.X = Math.Max(maxVector.X, vector.X);
-                    //maxVector.Y = Math.Max(maxVector.Y, vector.Y);
-                    //maxVector.Z = Math.Max(maxVector.Z, vector.Z);
+                    minVector.X = Math.Min(minVector.X, vector.X);
+                    minVector.Y = Math.Min(minVector.Y, vector.Y);
+                    minVector.Z = Math.Min(minVector.Z, vector.Z);
+                    maxVector.X = Math.Max(maxVector.X, vector.X);
+                    maxVector.Y = Math.Max(maxVector.Y, vector.Y);
+                    maxVector.Z = Math.Max(maxVector.Z, vector.Z);
                 }
 
                 ushort index = 0;
@@ -142,8 +142,9 @@ namespace IdealistViewer
                     mb.SetIndex(index++, (ushort)face.v3);
                     mb.SetIndex(index++, (ushort)face.v2);
                 }
-                //mb.BoundingBox = new Box3D(minVector,maxVector);
+                mb.BoundingBox = new Box3D(minVector*2,maxVector*2);
                 mesh.AddMeshBuffer(mb);
+                //mesh.BoundingBox = new Box3D(minVector * 2, maxVector * 2);
 
                 // don't dispose here
                 //mb.Dispose();
