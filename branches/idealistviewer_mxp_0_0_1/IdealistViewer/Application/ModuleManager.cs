@@ -7,16 +7,15 @@ namespace IdealistViewer
 {
     public class ModuleManager
     {
-        public static INetworkInterface GetNetworkModule(IdealistViewerConfigSource configSource)
+        public static INetworkInterface GetNetworkModule(string protocol)
         {
-            string protocol=configSource.Source.Configs["Startup"].GetString("protocol","sl");
-            if (protocol == "sl")
+            if (protocol == "mxp")
             {
-                return new LomNetworkModule();
+                return new MxpNetworkModule(); 
             }
             else
             {
-                return new MxpNetworkModule();
+                return new LibOmvNetworkModule();
             }
         }
 

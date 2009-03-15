@@ -24,10 +24,10 @@ namespace IdealistViewer
         private float m_speed = 0.05f;
         private float m_zoomSpeed = 6f;
         private static float m_startAngle = 0f;
-        private static float m_startDistance = 5f;
-        public float m_distance = 50f;
+        private static float m_startDistance = 3f;
+        public float m_distance = 5f;
         private float m_maxZoom = 1f;
-        private float m_minZoom = 250f;
+        private float m_minZoom = 10f;
         private float m_pi2 = (float)(Math.PI * 2);
         public float Phi = 0f;
         public float Theta = 0f;

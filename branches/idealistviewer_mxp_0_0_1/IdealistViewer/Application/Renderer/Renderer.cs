@@ -34,7 +34,7 @@ namespace IdealistViewer
             //Create a New Irrlicht Device
             Device = new IrrlichtDevice(DriverType.OpenGL,
                                                      new Dimension2D(m_viewer.WindowWidth, m_viewer.WindowHeight),
-                                                    32, false, true, false, false);
+                                                    32, false, true, true, true);
             //device.Timer.Stop();
             Device.Timer.Speed = 1;
             Device.WindowCaption = "IdealistViewer 0.001";

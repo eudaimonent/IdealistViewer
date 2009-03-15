@@ -241,7 +241,7 @@ namespace IdealistViewer
             MainConsole.Instance = Console;
 
             // Initialize LibOMV
-            NetworkInterface = ModuleManager.GetNetworkModule(m_configSource);
+            NetworkInterface = ModuleManager.GetNetworkModule(loginURI.Substring(0,loginURI.IndexOf(':')));
             NetworkInterface.MultipleSims = multipleSims;
             NetworkInterface.OnLandUpdate += OnNetworkLandUpdate;
             NetworkInterface.OnConnected += OnNetworkConnected;
@@ -293,22 +293,50 @@ namespace IdealistViewer
 
             TerrainManager = ModuleManager.GetTerrainManager(this, m_configSource);
 
-            Renderer.SceneManager.SetAmbientLight(new Colorf(0.6f, 0.6f, 0.6f, 0.6f));
+            Renderer.SceneManager.SetAmbientLight(new Colorf(1f, 0.2f, 0.2f, 0.2f));
+
+            // This light simulates the sun
+            //SceneNode light2 = Renderer.SceneManager.AddLightSceneNode(Renderer.SceneManager.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(0f, 0.5f, 0.5f, 0.5f), 250, -1);
+            SceneNode light2 = Renderer.SceneManager.AddLightSceneNode(Renderer.SceneManager.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(0f, 0.6f, 0.6f, 0.6f), 512, -1);
 
             // Fog is on by default, this line disables it.
-            Renderer.SceneManager.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
+            //Renderer.SceneManager.VideoDriver.SetFog(new Color(0, 255, 255, 255), false, 9999, 9999, 0, false, false);
+            float fogBrightness = 0.8f;
+            Renderer.SceneManager.VideoDriver.SetFog(new Color(0, (int)(0.5f * 255 * fogBrightness), (int)(0.5f * 255 * fogBrightness), (int)(1.0f * 255 * fogBrightness)), true, 50, 100, 0, true, true);
 
-            //ATMOSkySceneNode skynode = new ATMOSkySceneNode(Renderer.Driver.GetTexture("irrlicht2_up.jpg"), null, Renderer.SceneManager, 20, -1);
+            //ATMOSkySceneNode skynode = new ATMOSkySceneNode(Renderer.Driver.GetTexture("irrlicht2_up.jpg"), null, Renderer.SceneManager, 100, -1);
+            
+            //ATMOSphere atmosphere = new ATMOSphere(Renderer.Device.Timer, null, Renderer.SceneManager, -1);
+            //atmosphere.SkyTexture = Renderer.Driver.GetTexture("irrlicht2_up.jpg");
+
+            
+            Renderer.Driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, false);
+
+            Renderer.SceneManager.AddSkyBoxSceneNode(null, new Texture[] {
+                Renderer.Driver.GetTexture("topax2.jpg"),
+                Renderer.Driver.GetTexture("irrlicht2_dn.jpg"),
+                Renderer.Driver.GetTexture("rightax2.jpg"),
+				Renderer.Driver.GetTexture("leftax2.jpg"),
+                Renderer.Driver.GetTexture("frontax2.jpg"),
+                Renderer.Driver.GetTexture("backax2.jpg")}, 
+0);
+
+            Renderer.Driver.SetTextureFlag(TextureCreationFlag.CreateMipMaps, true);
+            
 
             CameraController = new CameraController(this,Renderer.SceneManager);
 
-            // This light simulates the sun
-            SceneNode light2 = Renderer.SceneManager.AddLightSceneNode(Renderer.SceneManager.RootSceneNode, new Vector3D(0, 255, 0), new Colorf(1, 0.25f, 0.25f, 0.25f), 250, -1);
-
             SceneGraph.WaterNode = new WaterSceneNode(null, Renderer.SceneManager, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
             SceneGraph.WaterNode.Position = new Vector3D(0, 30, 0);
-            SceneGraph.WaterNode.WaveHeight *= .4f;
-            SceneGraph.WaterNode.RefractionFactor = 0.21f;
+            //SceneGraph.WaterNode.WaveHeight *= .4f;
+            SceneGraph.WaterNode.RefractionFactor = 0.3f;
+            SceneGraph.WaterNode.WaveDisplacement = 2f;
+            SceneGraph.WaterNode.WaveHeight = 2f;
+            SceneGraph.WaterNode.WaveLength = 2f;
+            SceneGraph.WaterNode.WaveSpeed = 5f;
+            SceneGraph.WaterNode.WaveRepetition = 20f;
+            SceneGraph.WaterNode.Scale = new Vector3D(0.2f,0.2f,0.2f);
+            SceneGraph.WaterNode.MultiColor = new Colorf(0.9f, 0.7f, 0.7f, 1.0f);
 
             UserInterface = new UserInterfaceManager(this, Renderer.Driver, Renderer.SceneManager, Renderer.GuiEnvironment, CameraController, AvatarController);
             UserInterface.DefaultFont = defaultFont;
@@ -410,7 +438,7 @@ namespace IdealistViewer
                     m_log.Warn("[water]: Unable to update this round");
                 }
 
-                Renderer.Driver.BeginScene(true, true, new Color(255, 100, 101, 140));
+                Renderer.Driver.BeginScene(true, true, new Color(0, 255, 255, 255));
                 Renderer.SceneManager.DrawAll();
                 Renderer.GuiEnvironment.DrawAll();
                 Renderer.Driver.EndScene();

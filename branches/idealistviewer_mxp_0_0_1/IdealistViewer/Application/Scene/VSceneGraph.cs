@@ -1638,7 +1638,8 @@ namespace IdealistViewer
                         {
                             obj.FullUpdate = false;
                         }
-                        obj.TargetPosition = update.Position + new Vector3(0.0f, 0.0f, (float)(-obj.SceneNode.BoundingBox.MinEdge.Y * obj.SceneNode.Scale.Y));
+                        //obj.TargetPosition = update.Position + new Vector3(0.0f, 0.0f, (float)(-obj.SceneNode.BoundingBox.MinEdge.Y * obj.SceneNode.Scale.Y));
+                        obj.TargetPosition = update.Position;
                     }
                     else
                     {

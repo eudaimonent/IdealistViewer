@@ -19,6 +19,7 @@ namespace IdealistViewer.Network
 
         private MxpClient m_client;
         private UUID m_bubbleId;
+        private string m_bubbleName;
         private UUID m_userId;
         private Avatar m_avatar;
         private float m_heading = 0;
@@ -46,6 +47,8 @@ namespace IdealistViewer.Network
         {
             m_log.Info("Login success.");
             m_userId=new UUID(message.ParticipantId);
+            m_bubbleId = new UUID(message.BubbleId);
+            m_bubbleName = message.BubbleName;
             m_simulator = new VSimulator();
             m_simulator.Id = m_bubbleId;
             m_simulator.Handle = m_bubbleId.GetULong();
@@ -436,10 +439,9 @@ namespace IdealistViewer.Network
 
         public void Login(string loginURI, string username, string password, string startlocation)
         {
-            this.m_loginURI = loginURI;
-            this.m_userName = username;
-            this.m_password = password;
-            this.m_startLocation = startlocation;
+            m_loginURI = loginURI;
+            m_userName = username;
+            m_password = password;
 
             Util.separateUsername(username, out m_firstName, out m_lastName);
 
@@ -448,10 +450,19 @@ namespace IdealistViewer.Network
             int port = uri.Port;
             string[] pathFolders= uri.AbsolutePath.Split('/');
             string bubbleIdString = pathFolders[1];
-            string location = pathFolders[2];
-            m_bubbleId = new UUID(bubbleIdString);
+            m_bubbleId = UUID.Zero;
+            m_bubbleName = "";
+            try
+            {
+                m_bubbleId = new UUID(bubbleIdString);
+            }
+            catch (Exception)
+            {
+                m_bubbleName = bubbleIdString;
+            }
+            m_startLocation = pathFolders.Length > 2 ? pathFolders[2] : startlocation;
 
-            m_client.Connect(host, port, m_bubbleId.Guid, "", "", username, password, false);
+            m_client.Connect(host, port, m_bubbleId.Guid, m_bubbleName, m_startLocation, "", username, password, false);
         }
 
         public void Logout()
