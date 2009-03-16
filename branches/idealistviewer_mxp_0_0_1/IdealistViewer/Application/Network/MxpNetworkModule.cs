@@ -18,6 +18,8 @@ namespace IdealistViewer.Network
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         private MxpClient m_client;
+        private IDictionary<Guid, uint> m_idIndexDictionary = new Dictionary<Guid, uint>();
+
         private UUID m_bubbleId;
         private string m_bubbleName;
         private UUID m_userId;
@@ -175,6 +177,8 @@ namespace IdealistViewer.Network
             if (message.GetType() == typeof(PerceptionEventMessage))
             {
                 PerceptionEventMessage pe = (PerceptionEventMessage)message;
+                m_idIndexDictionary[pe.ObjectFragment.ObjectId] = pe.ObjectFragment.ObjectIndex;
+
                 m_log.Info("Received perception of " + pe.ObjectFragment.ObjectName);
 
                 if (pe.ObjectFragment.TypeName == "Terrain")
@@ -237,7 +241,10 @@ namespace IdealistViewer.Network
             primitive.NameValues = new NameValue[] { firstName, lastName };
 
             primitive.ID = new UUID(objectFragment.ObjectId);
-            primitive.ParentID = 0; // To do resolve parent id
+            if(m_idIndexDictionary.ContainsKey(objectFragment.ParentObjectId))
+            {
+                primitive.ParentID = m_idIndexDictionary[objectFragment.ParentObjectId];
+            }
             primitive.LocalID = objectFragment.ObjectIndex;
             primitive.OwnerID = new UUID(objectFragment.OwnerId);
             primitive.RegionHandle = m_simulator.Handle;
@@ -286,7 +293,10 @@ namespace IdealistViewer.Network
             primitive.PrimData.PCode = pcode;
 
             primitive.ID = new UUID(objectFragment.ObjectId);
-            primitive.ParentID = 0; // To do resolve parent id
+            if (m_idIndexDictionary.ContainsKey(objectFragment.ParentObjectId))
+            {
+                primitive.ParentID = m_idIndexDictionary[objectFragment.ParentObjectId];
+            }
             primitive.LocalID = objectFragment.ObjectIndex;
             primitive.OwnerID = new UUID(objectFragment.OwnerId);
             primitive.RegionHandle = m_simulator.Handle;

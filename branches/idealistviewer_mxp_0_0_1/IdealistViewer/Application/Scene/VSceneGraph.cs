@@ -1314,82 +1314,18 @@ namespace IdealistViewer
                         continue;
                     }
 
-                    // Interpolate
-                    try
-                    {
-                        if (m_avatarObject != null && m_avatarObject.Primitive != null)
-                        {
-                            if (obj.Primitive.ID != m_avatarObject.Primitive.ID)
-                            {
-                                // If this is our avatar and the update came less then 5 seconds 
-                                // after we last rotated, it'll just confuse the user
-                                if (System.Environment.TickCount - m_viewer.AvatarController.m_userRotated < 5000)
-                                {
-                                    continue;
-                                }
-                            }
-                        }
+                    Vector3 distance = obj.TargetPosition - obj.Primitive.Position;
+                    obj.Primitive.Position = obj.Primitive.Position + distance * 0.05f;
+                    obj.SceneNode.Position = new Vector3D(obj.Primitive.Position.X, obj.Primitive.Position.Z, obj.Primitive.Position.Y);
 
-                        /*
-                        bool againstground = false;
-                        if (obj.prim != null && UserAvatar != null && UserAvatar.prim != null && currentSim != null)
-                        {
-                            if (UserAvatar.prim.ID == obj.prim.ID)
-                            {
-                                if (obj.prim.Position.Z >= 0)
-                                    //terrainBitmap lower then avatar byte 2.3
-                                    if (RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))] + 1.5f >= obj.prim.Position.Z)
-                                    {
+                    IrrlichtNETCP.Quaternion iqu = new IrrlichtNETCP.Quaternion(obj.Primitive.Rotation.X, obj.Primitive.Rotation.Z, obj.Primitive.Rotation.Y, obj.Primitive.Rotation.W);
 
-                                        againstground = true;
-                                    }
-                                //m_log.InfoFormat("[INTERPOLATION]: TerrainHeight:{0}-{1}-{2}-<{3},{4},{5}>", RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)),(int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))], obj.prim.Position.Z, (int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255) * 256 + Util.Clamp<float>(obj.prim.Position.X, 0, 255)), obj.prim.Position.X, obj.prim.Position.Y, obj.prim.Position.Z);
-                            }
-                        }
-                        if (againstground)
-                        {
-                            obj.prim.Velocity.Z = 0;
-                        }
-                         */
+                    iqu.makeInverse();
 
-                        /*Vector3D pos = new Vector3D(obj.node.Position.X, (againstground ? RegionHFArray[(int)(Util.Clamp<float>(obj.prim.Position.Y, 0, 255)), (int)(Util.Clamp<float>(obj.prim.Position.X, 0, 255))] + 0.9f : obj.node.Position.Y), obj.node.Position.Z);
-                        Vector3D interpolatedpos = ((new Vector3D(obj.prim.Velocity.X, obj.prim.Velocity.Z, obj.prim.Velocity.Y) * 0.073f) * TimeDilation);
-                        if (againstground)
-                        {
-                            interpolatedpos.Y = 0;
-                        }
+                    IrrlichtNETCP.Quaternion finalpos = iqu;
 
-                        //if (obj.prim is Avatar)
-                        //{
-                        //Avatar av = (Avatar)obj.prim;
-                        //if (obj.prim.Velocity.Z < 0 && obj.prim.Velocity.Z > -2f)
-                        //    obj.prim.Velocity.Z = 0;
-                        // }
-                        obj.node.Position = pos + interpolatedpos;
-                        */
-
-                        Vector3 distance = obj.TargetPosition - obj.Primitive.Position;
-                        obj.Primitive.Position = obj.Primitive.Position + distance * 0.05f;
-                        obj.SceneNode.Position = new Vector3D(obj.Primitive.Position.X, obj.Primitive.Position.Z, obj.Primitive.Position.Y);
-                    }
-                    catch (AccessViolationException)
-                    {
-                        //if (removestr == null)
-                        //    removestr = new List<string>();
-
-                        //removestr.Add(str);
-                        continue;
-                    }
-                    catch (System.Runtime.InteropServices.SEHException)
-                    {
-
-                        // if (removestr == null)
-                        //    removestr = new List<string>();
-
-                        // removestr.Add(str);
-                        continue;
-                    }
-
+                    finalpos = m_viewer.Renderer.CoordinateConversion_XYZ_XZY * finalpos;
+                    obj.SceneNode.Rotation = finalpos.Matrix.RotationDegrees;
                 }
 
                 // Remove dead Interpolation targets

@@ -449,7 +449,7 @@ namespace IdealistViewer
 
                 // Update Interpolation targets
                 SceneGraph.UpdateMovingObjects();
-                // Update came position and rotation.
+                // Update camera position and rotation.
                 CameraController.CheckTarget();
 
                 if (m_timeSinceLastSceneUpdate > m_baseSceneUpdateTimePeriod)

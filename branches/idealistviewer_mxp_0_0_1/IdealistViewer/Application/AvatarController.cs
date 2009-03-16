@@ -70,7 +70,7 @@ namespace IdealistViewer
                 try
                 {
                     float vheading = -Heading * NewMath.RADTODEG;
-                    m_sceneNode.Rotation = new Vector3D(0, vheading,0);
+                    //m_sceneNode.Rotation = new Vector3D(0, vheading,0);
                 }
                 catch (AccessViolationException)
                 {
