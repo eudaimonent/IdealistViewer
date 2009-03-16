@@ -306,25 +306,26 @@ namespace IdealistViewer.Network
 
                 if (pcode != PCode.Tree && pcode != PCode.NewTree && pcode != PCode.Grass)
                 {
-                    primitive.PrimData.PathBegin = extFragment.PathBegin;
-                    primitive.PrimData.PathEnd = extFragment.PathEnd;
-                    primitive.PrimData.PathScaleX = extFragment.PathScaleX / 100.0f;
-                    primitive.PrimData.PathScaleY = extFragment.PathScaleY / 100.0f;
-                    primitive.PrimData.PathShearX = extFragment.PathShearX;
-                    primitive.PrimData.PathShearY = extFragment.PathShearY;
+                    // Decoding values from transmit integer format
+                    primitive.PrimData.PathBegin = extFragment.PathBegin / 50000f;
+                    primitive.PrimData.PathEnd = 1 - extFragment.PathEnd / 50000f;
+                    primitive.PrimData.PathScaleX = (200 - extFragment.PathScaleX ) / 100.0f;
+                    primitive.PrimData.PathScaleY = (200 - extFragment.PathScaleY ) / 100.0f;
+                    primitive.PrimData.PathShearX = (extFragment.PathShearX < 128 ? extFragment.PathShearX : -256 + extFragment.PathShearX)/100f;
+                    primitive.PrimData.PathShearY = (extFragment.PathShearY < 128 ? extFragment.PathShearY : -256 + extFragment.PathShearY)/100f;
 
                     primitive.PrimData.PathSkew = extFragment.PathSkew;
-                    primitive.PrimData.ProfileBegin = extFragment.ProfileBegin;
-                    primitive.PrimData.ProfileEnd = extFragment.ProfileEnd;
+                    primitive.PrimData.ProfileBegin = extFragment.ProfileBegin/50000f;
+                    primitive.PrimData.ProfileEnd = 1-extFragment.ProfileEnd/50000f;
                     primitive.PrimData.PathCurve = (PathCurve)extFragment.PathCurve;
                     primitive.PrimData.ProfileCurve = (ProfileCurve)extFragment.ProfileCurve;
-                    primitive.PrimData.ProfileHollow = extFragment.ProfileHollow;
+                    primitive.PrimData.ProfileHollow = extFragment.ProfileHollow / 50000f;
                     primitive.PrimData.PathRadiusOffset = extFragment.PathRadiusOffset;
                     primitive.PrimData.PathRevolutions = extFragment.PathRevolutions;
                     primitive.PrimData.PathTaperX = extFragment.PathTaperX;
                     primitive.PrimData.PathTaperY = extFragment.PathTaperY;
-                    primitive.PrimData.PathTwist = extFragment.PathTwist;
-                    primitive.PrimData.PathTwistBegin = extFragment.PathTwistBegin;
+                    primitive.PrimData.PathTwist =(float)(extFragment.PathTwist/100f);
+                    primitive.PrimData.PathTwistBegin = (float)(extFragment.PathTwistBegin /100f);
                 }
 
                 primitive.PrimData.Material = (Material)extFragment.Material;
@@ -338,19 +339,10 @@ namespace IdealistViewer.Network
                 primitive.ClickAction = (ClickAction)extFragment.ClickAction;
 
                 // TODO Figure out what is behind this behaviour in SL protocol
-                if (primitive.PrimData.PathEnd == 0)
-                {
-                    primitive.PrimData.PathEnd = 1;
-                }
                 if (primitive.PrimData.PathRevolutions == 0)
                 {
                     primitive.PrimData.PathRevolutions = 1;
                 }
-                if (primitive.PrimData.ProfileEnd == 0)
-                {
-                    primitive.PrimData.ProfileEnd = 1;
-                }
-                // END OF TO DO
                 // What is this extFragment.ExtraParams; ??
 
             }

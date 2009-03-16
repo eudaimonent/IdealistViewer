@@ -359,6 +359,15 @@ namespace IdealistViewer
 
                             //Vertex3D vtest = vObj.mesh.GetMeshBuffer(0).GetVertex(0);
                             //System.Console.WriteLine(" X:" + vtest.Position.X + " Y:" + vtest.Position.Y + " Z:" + vtest.Position.Z);
+                            
+                            // Delete old node.
+                            //if (vObj.SceneNode != null)
+                            //{
+                            //    m_viewer.Renderer.SceneManager.AddToDeletionQueue(vObj.SceneNode);
+                            //}
+
+                            //node = m_viewer.Renderer.SceneManager.AddMeshSceneNode(vObj.Mesh, null, -1);
+
                             node = m_viewer.Renderer.SceneManager.AddMeshSceneNode(vObj.Mesh, parentNode, (int)prim.LocalID);
 
                             creatednode = true;
@@ -1462,6 +1471,40 @@ namespace IdealistViewer
                 }
                 return;
             }
+            else
+            {
+                lock (this)
+                {
+                    m_log.Debug("ID" + prim.ID);
+                    m_log.Debug("Material:" + prim.PrimData.Material);
+                    m_log.Debug("PathBegin:" + prim.PrimData.PathBegin);
+                    m_log.Debug("PathBeginScale:" + prim.PrimData.PathBeginScale);
+                    m_log.Debug("PathCurve:" + prim.PrimData.PathCurve);
+                    m_log.Debug("PathEnd:" + prim.PrimData.PathEnd);
+                    m_log.Debug("PathEndScale:" + prim.PrimData.PathEndScale);
+                    m_log.Debug("PathRadiusOffset:" + prim.PrimData.PathRadiusOffset);
+                    m_log.Debug("PathRevolutions:" + prim.PrimData.PathRevolutions);
+                    m_log.Debug("PathScaleX:" + prim.PrimData.PathScaleX);
+                    m_log.Debug("PathScaleY:" + prim.PrimData.PathScaleY);
+                    m_log.Debug("PathShearX:" + prim.PrimData.PathShearX);
+                    m_log.Debug("PathShearY:" + prim.PrimData.PathShearY);
+                    m_log.Debug("PathSkew:" + prim.PrimData.PathSkew);
+                    m_log.Debug("PathTaperX:" + prim.PrimData.PathTaperX);
+                    m_log.Debug("PathTaperY:" + prim.PrimData.PathTaperY);
+                    m_log.Debug("PathTwist:" + prim.PrimData.PathTwist);
+                    m_log.Debug("PathTwistBegin:" + prim.PrimData.PathTwistBegin);
+                    m_log.Debug("PCode:" + prim.PrimData.PCode);
+                    m_log.Debug("ProfileBegin:" + prim.PrimData.ProfileBegin);
+                    m_log.Debug("profileCurve:" + prim.PrimData.profileCurve);
+                    m_log.Debug("ProfileCurve:" + prim.PrimData.ProfileCurve);
+                    m_log.Debug("ProfileEnd:" + prim.PrimData.ProfileEnd);
+                    m_log.Debug("ProfileHole:" + prim.PrimData.ProfileHole);
+                    m_log.Debug("ProfileHollow:" + prim.PrimData.ProfileHollow);
+                    m_log.Debug("State:" + prim.PrimData.State);
+                    m_log.Debug("Type:" + prim.PrimData.Type);
+                }
+            }
+
             //System.Console.WriteLine(prim.ToString());
             //return;
             PrimitiveCount++;
@@ -1521,7 +1564,7 @@ namespace IdealistViewer
                     m_log.DebugFormat("[OBJ]: Deleted Node for ID: {0}", prim.ID);
 #endif
 
-                    newObject.SceneNode = null;
+                    /*newObject.SceneNode = null;
                     Mesh objmesh = newObject.Mesh;
                     for (int i = 0; i < objmesh.MeshBufferCount; i++)
                     {
@@ -1530,7 +1573,7 @@ namespace IdealistViewer
 
                     }
                     newObject.Mesh.Dispose();
-                    newObject.Primitive = null;
+                    newObject.Primitive = null;*/
                 }
 
             }
