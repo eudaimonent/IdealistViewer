@@ -314,14 +314,14 @@ namespace IdealistViewer.Network
                     primitive.PrimData.PathShearX = (extFragment.PathShearX < 128 ? extFragment.PathShearX : -256 + extFragment.PathShearX)/100f;
                     primitive.PrimData.PathShearY = (extFragment.PathShearY < 128 ? extFragment.PathShearY : -256 + extFragment.PathShearY)/100f;
 
-                    primitive.PrimData.PathSkew = extFragment.PathSkew;
+                    primitive.PrimData.PathSkew = extFragment.PathSkew/100f;
                     primitive.PrimData.ProfileBegin = extFragment.ProfileBegin/50000f;
                     primitive.PrimData.ProfileEnd = 1-extFragment.ProfileEnd/50000f;
                     primitive.PrimData.PathCurve = (PathCurve)extFragment.PathCurve;
                     primitive.PrimData.ProfileCurve = (ProfileCurve)extFragment.ProfileCurve;
                     primitive.PrimData.ProfileHollow = extFragment.ProfileHollow / 50000f;
-                    primitive.PrimData.PathRadiusOffset = extFragment.PathRadiusOffset;
-                    primitive.PrimData.PathRevolutions = extFragment.PathRevolutions;
+                    primitive.PrimData.PathRadiusOffset = extFragment.PathRadiusOffset/100f;
+                    primitive.PrimData.PathRevolutions = 1+extFragment.PathRevolutions/67f;
                     primitive.PrimData.PathTaperX = extFragment.PathTaperX;
                     primitive.PrimData.PathTaperY = extFragment.PathTaperY;
                     primitive.PrimData.PathTwist =(float)(extFragment.PathTwist/100f);
@@ -339,10 +339,10 @@ namespace IdealistViewer.Network
                 primitive.ClickAction = (ClickAction)extFragment.ClickAction;
 
                 // TODO Figure out what is behind this behaviour in SL protocol
-                if (primitive.PrimData.PathRevolutions == 0)
+                /*if (primitive.PrimData.PathRevolutions == 0)
                 {
                     primitive.PrimData.PathRevolutions = 1;
-                }
+                }*/
                 // What is this extFragment.ExtraParams; ??
 
             }
