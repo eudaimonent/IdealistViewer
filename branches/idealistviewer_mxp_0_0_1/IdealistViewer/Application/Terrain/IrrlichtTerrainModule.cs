@@ -41,7 +41,7 @@ namespace IdealistViewer
         {
             m_viewer = viewer;
 
-            m_greenGrassTexture = m_viewer.Renderer.Driver.GetTexture("Green_Grass_Detailed.tga");
+            m_greenGrassTexture = m_viewer.Renderer.Driver.GetTexture("Green_Grass_Detailed.png");
         }
 
         public void Process()

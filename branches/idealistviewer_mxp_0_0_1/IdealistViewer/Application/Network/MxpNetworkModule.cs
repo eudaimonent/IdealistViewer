@@ -10,6 +10,10 @@ using MXP.Extentions.OpenMetaverseFragments.Proto;
 using OpenMetaverse;
 using MXP.Util;
 using MXP.Common.Proto;
+using System.Net;
+using System.IO;
+using IdealistViewer.Scene;
+using System.Drawing;
 
 namespace IdealistViewer.Network
 {
@@ -22,6 +26,7 @@ namespace IdealistViewer.Network
 
         private UUID m_bubbleId;
         private string m_bubbleName;
+        private string m_bubbleAssetProxyUrl;
         private UUID m_userId;
         private Avatar m_avatar;
         private float m_heading = 0;
@@ -51,6 +56,7 @@ namespace IdealistViewer.Network
             m_userId=new UUID(message.ParticipantId);
             m_bubbleId = new UUID(message.BubbleId);
             m_bubbleName = message.BubbleName;
+            m_bubbleAssetProxyUrl = message.BubbleAssetCacheUrl;
             m_simulator = new VSimulator();
             m_simulator.Id = m_bubbleId;
             m_simulator.Handle = m_bubbleId.GetULong();
@@ -727,7 +733,33 @@ namespace IdealistViewer.Network
 
         public void RequestTexture(OpenMetaverse.UUID assetID)
         {
+            WebRequest webRequest= WebRequest.Create(new Uri(m_bubbleAssetProxyUrl + assetID));
+            webRequest.BeginGetResponse(new AsyncCallback(OnHttpResponseTexture), webRequest);
+
             //throw new NotImplementedException();
+        }
+
+        public void OnHttpResponseTexture(IAsyncResult asyncResult)
+        {
+            WebRequest webRequest=(WebRequest)asyncResult.AsyncState;
+            WebResponse response=webRequest.EndGetResponse(asyncResult);
+
+            try
+            {
+                using (Stream responseStream = response.GetResponseStream())
+                {
+                    VTexture texture = new VTexture();
+                    String[] parts = webRequest.RequestUri.AbsolutePath.Split('/');
+                    texture.TextureId = new UUID(parts[parts.Length - 1]);
+                    texture.Image = new Bitmap(responseStream);
+                    OnTextureDownloaded(texture);
+                }
+            }
+            finally
+            {
+                response.Close();
+            }
+
         }
 
         public void Say(string message)

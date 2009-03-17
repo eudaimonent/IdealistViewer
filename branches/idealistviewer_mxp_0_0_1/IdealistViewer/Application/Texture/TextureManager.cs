@@ -8,6 +8,7 @@ using OpenMetaverse;
 //using OpenMetaverse.Rendering;
 using IrrlichtNETCP;
 using IdealistViewer.Network;
+using IdealistViewer.Scene;
 
 
 namespace IdealistViewer
@@ -146,11 +147,11 @@ namespace IdealistViewer
             string texturefolderpath = device.FileSystem.WorkingDirectory; //System.IO.Path.Combine(Util.ApplicationDataDirectory, imagefolder);
             //device.FileSystem.WorkingDirectory = texturepath;
 
-            if (File.Exists(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga")))
+            if (File.Exists(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".png")))
             {
                 string oldfs = device.FileSystem.WorkingDirectory;
                 device.FileSystem.WorkingDirectory = texturefolderpath;
-                Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga"));
+                Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".png"));
                 if (texTnorm != null)
                     tex = new TextureExtended(texTnorm.Raw);
                 if (tex != null)
@@ -224,11 +225,11 @@ namespace IdealistViewer
             //device.FileSystem.WorkingDirectory = texturepath;
 
             // Check if we've got this texture on the file system.
-            if (File.Exists(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga")))
+            if (File.Exists(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".png")))
             {
                 string oldfs = device.FileSystem.WorkingDirectory;
                 device.FileSystem.WorkingDirectory = texturefolderpath;
-                Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".tga"));
+                Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".png"));
                 tex = new TextureExtended(texTnorm.Raw);
                 if (tex != null)
                 {
@@ -648,75 +649,51 @@ namespace IdealistViewer
         }
 
         // LibOMV callback for completed image texture.
-        public void imageReceivedCallback(AssetTexture asset)
+        public void imageReceivedCallback(VTexture asset)
         {
-            
-            if (asset == null)
+            m_log.Debug("[TEXTURE]: Received texture: " + asset.TextureId);
+
+            string texturefolderpath = device.FileSystem.WorkingDirectory;//System.IO.Path.Combine(Util.ApplicationDataDirectory, imagefolder);
+            string texturepath = System.IO.Path.Combine(texturefolderpath, asset.TextureId.ToString() + ".png");
+
+            FileStream fileStream = (File.Open(texturepath, FileMode.Create));
+            asset.Image.Save(fileStream, ImageFormat.Png);
+            fileStream.Flush();
+            fileStream.Close();
+            fileStream.Dispose();
+
+            // Update nodes that the texture is downloaded.
+            List<VObject> nodesToUpdate = new List<VObject>();
+            lock (ouststandingRequests)
             {
-                m_log.Debug("[TEXTURE]: GotLIBOMV callback but asset was null");
-                lock (ouststandingRequests)
+                if (ouststandingRequests.ContainsKey(asset.TextureId))
                 {
+                    nodesToUpdate = ouststandingRequests[asset.TextureId];
+                    ouststandingRequests.Remove(asset.TextureId);
                 }
-                return;
             }
-            m_log.Debug("[TEXTURE]: GotLIBOMV callback for asset" + asset.AssetID);
-            bool result = false;
 
-            try
+            lock (nodesToUpdate)
             {
-                result = asset.Decode();
-            }
-            catch (Exception)
-            {
-                m_log.Debug("[TEXTURE]: Failed to decode asset " + asset.AssetID);
-            }
-            if (result)
-            { 
-                
-                // Write it to disk for picking up later in the pipeline.
-                string texturefolderpath = device.FileSystem.WorkingDirectory;//System.IO.Path.Combine(Util.ApplicationDataDirectory, imagefolder);
-
-                string texturepath = System.IO.Path.Combine(texturefolderpath,asset.AssetID.ToString() + ".tga");
-                byte[] imgdata = asset.Image.ExportTGA();
-                FileStream fi = (File.Open(texturepath, FileMode.Create));
-                BinaryWriter bw = new BinaryWriter(fi);
-                bw.Write(imgdata);
-                bw.Flush();
-                bw.Close();
-                //fi.Flush();
-                //fi.Close();
-                //fi.Dispose();
-
-                
-                // Update nodes that the texture is downloaded.
-                List<VObject> nodesToUpdate = new List<VObject>();
-                lock (ouststandingRequests)
+                for (int i = 0; i < nodesToUpdate.Count; i++)
                 {
-                    if (ouststandingRequests.ContainsKey(asset.AssetID))
-                    {
-                        nodesToUpdate = ouststandingRequests[asset.AssetID];
-                        ouststandingRequests.Remove(asset.AssetID);
-                    }
-                }
-                lock (nodesToUpdate)
-                {
-                    for (int i = 0; i < nodesToUpdate.Count; i++)
-                    {
-                        VObject vObj = nodesToUpdate[i];
+                    VObject vObj = nodesToUpdate[i];
 
-                        if (vObj != null)
+                    if (vObj != null)
+                    {
+                        if (OnTextureLoaded != null)
                         {
-                            if (OnTextureLoaded != null)
-                            {
-                                OnTextureLoaded(asset.AssetID.ToString() + ".tga", vObj, asset.AssetID);
-                            }
-                            
+                            OnTextureLoaded(asset.TextureId.ToString() + ".png", vObj, asset.TextureId);
                         }
-                        
+
                     }
+
                 }
             }
+
         }
+    
+
         public void OnSetConstants(MaterialRendererServices services, int userData)
         {
             //This is called when we need to set shader's constants

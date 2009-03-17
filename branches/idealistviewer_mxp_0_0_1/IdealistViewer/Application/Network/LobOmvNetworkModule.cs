@@ -6,6 +6,11 @@ using OpenMetaverse;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Packets;
 using log4net;
+using OpenMetaverse.Imaging;
+using System.Drawing;
+using IdealistViewer.Scene;
+using System.IO;
+using System.Drawing.Imaging;
 
 namespace IdealistViewer.Network
 {
@@ -194,7 +199,22 @@ namespace IdealistViewer.Network
         {
             if (OnTextureDownloaded != null)
             {
-                OnTextureDownloaded(asset);
+
+                VTexture texture = new VTexture();
+                texture.TextureId = asset.AssetID;
+
+                ManagedImage managedImage;
+                Image tempImage;
+                if (OpenJPEG.DecodeToImage(asset.AssetData, out managedImage, out tempImage))
+                {
+                    Bitmap textureBitmap = new Bitmap(tempImage.Width, tempImage.Height, PixelFormat.Format32bppArgb);
+                    Graphics graphics = Graphics.FromImage(textureBitmap);
+                    graphics.DrawImage(tempImage, 0, 0);
+                    graphics.Flush();
+                    graphics.Dispose();
+                    texture.Image = textureBitmap;
+                    OnTextureDownloaded(texture);
+                }
             }
         }
         private void objectKilledCallback(Simulator simulator, uint objectID)

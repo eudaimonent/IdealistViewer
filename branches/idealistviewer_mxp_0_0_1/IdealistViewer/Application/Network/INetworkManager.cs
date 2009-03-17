@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using OpenMetaverse;
+using IdealistViewer.Scene;
 
 namespace IdealistViewer.Network
 {
@@ -14,7 +15,7 @@ namespace IdealistViewer.Network
     public delegate void NetworkObjectRemoveDelegate(VSimulator simHandle, uint objectID);
     public delegate void NeworkObjectUpdateDelegate(VSimulator simHandle, ObjectUpdate update, ulong regionHandle, ushort timeDilation);
     public delegate void NetworkSimulatorConnectedDelegate(VSimulator simHandle);
-    public delegate void NetworkTextureDownloadedDelegate(AssetTexture tex);
+    public delegate void NetworkTextureDownloadedDelegate(VTexture tex);
     public delegate void NetworkFriendsListUpdateDelegate();
 
     public interface INetworkInterface
