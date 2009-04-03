@@ -4,13 +4,14 @@ Currently the following projects have contributed to IdealistViewer
 * OpenViewer
 * LibOpenMetaverse
 
-Primary Developers (alphabetical order)
+Primary Developers (First name alphabetical order)
 * Charles Krinke aka 'ckrinke'
 * Dahlia Trimble
 * Teravus Ousley
+* Tommi Laukkanen
 
 Patches
 * Daedius Moskvitch
 * MW (Michael Wright)
-* Tommi Laukkanen
+
 
