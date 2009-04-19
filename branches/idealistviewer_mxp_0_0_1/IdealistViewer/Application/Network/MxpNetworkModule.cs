@@ -479,7 +479,7 @@ namespace IdealistViewer.Network
             }
             catch (Exception)
             {
-                m_bubbleName = bubbleIdString;
+                m_bubbleName = Uri.UnescapeDataString(bubbleIdString);
             }
             m_startLocation = pathFolders.Length > 2 ? pathFolders[2] : startlocation;
 
@@ -734,6 +734,7 @@ namespace IdealistViewer.Network
         public void RequestTexture(OpenMetaverse.UUID assetID)
         {
             WebRequest webRequest= WebRequest.Create(new Uri(m_bubbleAssetProxyUrl + assetID));
+            webRequest.Timeout = 5000;
             webRequest.BeginGetResponse(new AsyncCallback(OnHttpResponseTexture), webRequest);
 
             //throw new NotImplementedException();
