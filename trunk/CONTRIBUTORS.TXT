@@ -3,14 +3,15 @@ Currently the following projects have contributed to IdealistViewer
 * OpenSimulator
 * OpenViewer
 * LibOpenMetaverse
+* Metaverse Exchange Protocol (MXP) http://www.bubblecloud.org
 
 Primary Developers (alphabetical order)
 * Charles Krinke aka 'ckrinke'
 * Dahlia Trimble
 * Teravus Ousley
+* Tommi Laukkanen
 
 Patches
 * Daedius Moskvitch
 * MW (Michael Wright)
-* Tommi Laukkanen
 
