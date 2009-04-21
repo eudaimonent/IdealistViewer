@@ -1,0 +1,16 @@
+Currently the following projects have contributed to IdealistViewer
+* Independant Jpeg Group (Irrlicht license requirement)
+* OpenSimulator
+* OpenViewer
+* LibOpenMetaverse
+
+Primary Developers (alphabetical order)
+* Charles Krinke aka 'ckrinke'
+* Dahlia Trimble
+* Teravus Ousley
+
+Patches
+* Daedius Moskvitch
+* MW (Michael Wright)
+* Tommi Laukkanen
+

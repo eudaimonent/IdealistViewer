@@ -1,0 +1,109 @@
+ /*
+        public static void doZoom(float delta)
+        {
+            //m_log.Debug("[MOUSE]:" + p_event.MouseWheelDelta.ToString());
+            Vector3 updated_positionc = new Vector3(camr.Position.X, camr.Position.Y, camr.Position.Z);
+
+            Vector3 start = updated_positionc;
+            Vector3 end = new Vector3(camr.Target.X, camr.Target.Y, camr.Target.Z);
+            Vector3 direction = Vector3.Zero;
+            if (delta > 0)
+            {
+                direction = updated_positionc + (Vector3.Normalize(end - start) * Math.Abs(delta * 2));
+            }
+            else
+            {
+                direction = updated_positionc + (Vector3.Normalize(start - end) * Math.Abs(delta * 2));
+            }
+            m_log.Debug("[NewPosition]:" + direction.ToString());
+
+            Vector3D updated_position = new Vector3D(direction.X, direction.Y, direction.Z); ;
+            //camr.Rotation
+
+            camr.Position = updated_position;
+        }
+       */
+       
+        public static void doOrbit(float angleX, float angleY)
+        {
+
+            float DEG_TO_RAD = 0.01745329238f;
+            
+            Vector3D camrtrg = terrain.TerrainCenter;
+            Vector3 targPos = new Vector3(camr.Target.X, camr.Target.Y, camr.Target.Z);
+            Vector3 campos = new Vector3(camr.Position.X, camr.Position.Y, camr.Position.Z);
+            Vector3 dir = (Vector3.Normalize(targPos - campos));
+
+            float distance = Vector3.Distance(campos, new Vector3(camr.Target.X, camr.Target.Y, camr.Target.Z));// campos.X - targPos.X;
+            //float distanceY = campos.Y - targPos.Y;
+            if (angleX > 0)
+            {
+                for (int i = 0; i < angleX; i++)
+                {
+                    campos.X = (campos.X + (float)Math.Cos(distance));
+                    campos.Z = (campos.Z + (float)Math.Sin(distance));
+                }
+            }
+            if (angleX < 0)
+            {
+                for (int i = 0; i > angleX; i--)
+                {
+                    campos.X = (campos.X + (float)Math.Sin(distance));
+                    campos.Z = (campos.Z + (float)Math.Cos(distance));
+                }
+            }
+            if (angleY > 0)
+            {
+                //Vector2 spos = Vector2.Zero;
+                float theta = (float)Math.Atan2(campos.Y, campos.X);
+                float phi = (float)Math.Atan2(campos.Z, Math.Sqrt(campos.X * campos.X + campos.Y * campos.Y));
+                
+                //spos.Y = (float)(Math.Atan2(Math.Sqrt(campos.X * campos.X + campos.Z * campos.Z), campos.Y) / Math.PI);
+
+
+                campos.Z = campos.Z + ((float)Math.Cos(theta) * (float)Math.Sin(phi)); //(campos.Y + (float)Math.Cos(distance));
+
+                campos.X = campos.X + ((float)Math.Sin(theta) * (float)Math.Sin(phi));
+
+                campos.Y = campos.Y + ((float)Math.Cos(phi));
+
+            }
+            if (angleY < 0)
+            {
+
+                //Vector2 spos = Vector2.Zero;
+                float theta = (float)Math.Atan2(campos.Y, campos.X);
+                float phi = (float)Math.Atan2(campos.Z, Math.Sqrt(campos.X * campos.X + campos.Y * campos.Y));
+
+                //spos.Y = (float)(Math.Atan2(Math.Sqrt(campos.X * campos.X + campos.Z * campos.Z), campos.Y) / Math.PI);
+
+                campos.Z = campos.Z + ((float)Math.Cos(theta) * (float)Math.Sin(phi)); //(campos.Y + (float)Math.Cos(distance));
+
+                campos.X = campos.X + ((float)Math.Sin(theta) * (float)Math.Sin(phi));
+
+                campos.Y = campos.Y + ((float)Math.Sin(phi));
+            }
+
+            //campos.X = (float)(campos.X / distanceX * (Math.Sin(Yaw))); //(float)(Math.Sin(Pitch) * Math.Cos(Yaw) * 90);// * distanceX);
+            //campos.Z = (float)(targPos.Z / distanceX * (Math.Cos(Yaw)));//(Math.Sin(Yaw) * Math.Sin(Pitch) * 90);// * distanceX);
+            //campos.Y = (float)(Math.Cos(Pitch) * 90);// * distanceX);
+
+            //campos.X = (float)(Math.Cos(angleX) * Math.Cos(angleY) * distanceX);
+            //campos.Z = (float)(Math.Sin(angleY) * distanceX);
+            //campos.Y = (float)(Math.Cos(angleY) * Math.Sin(angleX) * distanceY);
+            //float distance = Vector3.Distance(campos,new Vector3(camr.Target.X,camr.Target.Y,camr.Target.Z));
+
+            //campos.X = (float)(targPos.X + Math.Cos(angle));
+            //campos.Y = (float)(campos.Y + Math.Sin(angle));
+            //campos.Z = (float)(targPos.Z + Math.Sin(angle));
+
+
+            //campos.X = (float)(distance * Math.Cos(theta) * Math.Sin(phi));
+            //campos.Y = (float)(distance * Math.Cos(phi));
+            //campos.Z = (float)(distance * Math.Sin(theta) * Math.Sin(phi));
+            camr.Position = new Vector3D(campos.X, campos.Y, campos.Z);
+            camr.UpdateAbsolutePosition();
+            camr.Target = camrtrg;
+
+        }
+      */
