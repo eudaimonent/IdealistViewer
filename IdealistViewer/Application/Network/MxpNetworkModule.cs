@@ -734,7 +734,7 @@ namespace IdealistViewer.Network
 
         public void RequestTexture(OpenMetaverse.UUID assetID)
         {
-            WebRequest webRequest= WebRequest.Create(new Uri(m_bubbleAssetProxyUrl + "/assets/" +assetID.ToString() + "/data"));
+            WebRequest webRequest= WebRequest.Create(new Uri(m_bubbleAssetProxyUrl + assetID.ToString() + "/data"));
             webRequest.Timeout = 5000;
             webRequest.BeginGetResponse(new AsyncCallback(OnHttpResponseTexture), webRequest);
 
