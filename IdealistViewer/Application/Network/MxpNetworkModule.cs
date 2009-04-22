@@ -14,6 +14,7 @@ using System.Net;
 using System.IO;
 using IdealistViewer.Scene;
 using System.Drawing;
+using OpenMetaverse.Imaging;
 
 namespace IdealistViewer.Network
 {
@@ -733,7 +734,7 @@ namespace IdealistViewer.Network
 
         public void RequestTexture(OpenMetaverse.UUID assetID)
         {
-            WebRequest webRequest= WebRequest.Create(new Uri(m_bubbleAssetProxyUrl + assetID));
+            WebRequest webRequest= WebRequest.Create(new Uri(m_bubbleAssetProxyUrl + "/assets/" +assetID.ToString() + "/data"));
             webRequest.Timeout = 5000;
             webRequest.BeginGetResponse(new AsyncCallback(OnHttpResponseTexture), webRequest);
 
@@ -751,8 +752,30 @@ namespace IdealistViewer.Network
                 {
                     VTexture texture = new VTexture();
                     String[] parts = webRequest.RequestUri.AbsolutePath.Split('/');
-                    texture.TextureId = new UUID(parts[parts.Length - 1]);
-                    texture.Image = new Bitmap(responseStream);
+                    texture.TextureId = new UUID(parts[parts.Length - 2]);
+                    if (response.ContentType.Contains("jp2"))
+                    {
+                        ManagedImage managedImage;
+                        Image image;
+                        byte[] buffer = new byte[10000];
+                        using (MemoryStream memoryStream = new MemoryStream())
+                        {
+                            int bytesRead=0;
+                            while((bytesRead=responseStream.Read(buffer,0,buffer.Length))>0)
+                            {
+                                memoryStream.Write(buffer, 0, bytesRead);
+                            }
+                            if (OpenJPEG.DecodeToImage(memoryStream.ToArray(), out managedImage, out image))
+                            {
+                                texture.Image = new Bitmap(image);
+                                image.Dispose();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        texture.Image = new Bitmap(responseStream);
+                    }
                     OnTextureDownloaded(texture);
                 }
             }
