@@ -74,7 +74,7 @@
   </Solution>
 
 
-  <!-- Prebuild tool -->
+  <!-- Prebuild tool 
   <Solution name="Prebuild" path="Prebuild/" >
     <Configuration name="Debug">
       <Options>
@@ -126,6 +126,7 @@
       </Files>
     </Project>
   </Solution>
+-->
 </Prebuild>
 
 
