@@ -36,19 +36,19 @@
 
  
     <!-- OpenSim app -->
-    <Project name="IdealistViewer" path="IdealistViewer/Application" type="Exe">
+    <Project name="IdealistViewer" path="IdealistViewer" type="Exe">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../bin/</OutputPath>
+          <OutputPath>../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../bin/</OutputPath>
+          <OutputPath>../bin/</OutputPath>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../bin/</ReferencePath>
+      <ReferencePath>../bin/</ReferencePath>
       <Reference name="System" localCopy="false"/>
       <Reference name="System.Drawing" localCopy="false"/>
       <Reference name="System.Xml"/>
