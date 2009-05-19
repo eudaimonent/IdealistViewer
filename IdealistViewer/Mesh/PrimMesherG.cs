@@ -285,31 +285,46 @@ namespace IdealistViewer
             return FacesToIrrMesh(newPrim.viewerFaces, newPrim.numPrimFaces);
         }
 
-        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, OpenMetaverse.SculptType omSculptType)
+        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, byte sculptType)
         {
+            return SculptIrrMesh(bitmap, sculptType, null);
+        }
+
+        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, byte sculptType, string rawFileName)
+        {
+            bool mirror = ((sculptType & 128) != 0);
+            bool invert = ((sculptType & 64) != 0);
+
+            OpenMetaverse.SculptType omSculptType = (OpenMetaverse.SculptType)(sculptType & 0x07);
+
             switch (omSculptType)
             {
                 case OpenMetaverse.SculptType.Cylinder:
-                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.cylinder);
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.cylinder, mirror, invert, rawFileName);
                 case OpenMetaverse.SculptType.Plane:
-                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.plane);
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.plane, mirror, invert, rawFileName);
                 case OpenMetaverse.SculptType.Sphere:
-                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.sphere);
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.sphere, mirror, invert, rawFileName);
                 case OpenMetaverse.SculptType.Torus:
-                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.torus);
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.torus, mirror, invert, rawFileName);
                 default:
-                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.plane);
+                    return SculptIrrMesh(bitmap, SculptMesh.SculptType.plane, mirror, invert, rawFileName);
             }
         }
 
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap)
         {
-            return SculptIrrMesh(bitmap, PrimMesher.SculptMesh.SculptType.plane);
+            return SculptIrrMesh(bitmap, PrimMesher.SculptMesh.SculptType.plane, false, false, null);
         }
 
-        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, PrimMesher.SculptMesh.SculptType sculptType)
+        public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, PrimMesher.SculptMesh.SculptType sculptType, bool mirror, bool invert, string rawFileName)
         {
-            SculptMesh newSculpty = new SculptMesh(bitmap, sculptType, 32, true);
+            mirror = invert = false; // remove this after updating to a libomv that can pass these flags
+            sculptType = (SculptMesh.SculptType)((int)sculptType & 0x07); // make sure only using lower 3 bits
+
+            SculptMesh newSculpty = new SculptMesh(bitmap, sculptType, 32, true, mirror, invert);
+            if (rawFileName != null)
+                newSculpty.DumpRaw("", rawFileName, "");
 
             //return FacesToIrrMesh(newSculpty.viewerFaces, 1);
 
