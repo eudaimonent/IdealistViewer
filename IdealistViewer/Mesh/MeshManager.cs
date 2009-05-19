@@ -166,7 +166,9 @@ namespace IdealistViewer
             if (result == null)
             {
                 System.Drawing.Bitmap bm = sculpttex.DOTNETImage;
-                result = PrimMesherG.SculptIrrMesh(bm, (byte) stype, "d:\\temp\\" + assetid.ToString());
+                //result = PrimMesherG.SculptIrrMesh(bm, (byte) stype, "d:\\temp\\" + assetid.ToString());
+                result = PrimMesherG.SculptIrrMesh(bm, (byte)stype);
+
                 if (!killed.Contains(sculpttex.Raw))
                 {
                     try
