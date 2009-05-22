@@ -18,6 +18,7 @@ process_foliage=true
 
 avatar_mesh="sydney.md2"
 avatar_material="sydney.BMP"
+avatar_scale = 0.035
 
 terrain=mesh
 forms=false
