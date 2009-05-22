@@ -55,7 +55,7 @@ namespace IdealistViewer.Network
         bool Forward { get; set; }
         bool Jump { set; }
         UUID GetSelfUUID { get; }
-        Dictionary<OpenMetaverse.UUID, OpenMetaverse.FriendInfo> Friends { get; }
+        InternalDictionary<OpenMetaverse.UUID, OpenMetaverse.FriendInfo> Friends { get; }
         Dictionary<UUID, List<UUID>> AvatarAnimations { get; }
 
         void RequestTexture(OpenMetaverse.UUID assetID);

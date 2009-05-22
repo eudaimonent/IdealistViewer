@@ -661,6 +661,7 @@ namespace IdealistViewer
             fileStream.Flush();
             fileStream.Close();
             fileStream.Dispose();
+            m_log.Debug("[Texture]: Wrote new file: " + texturepath);
 
             // Update nodes that the texture is downloaded.
             List<VObject> nodesToUpdate = new List<VObject>();
