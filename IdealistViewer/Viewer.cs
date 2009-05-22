@@ -82,8 +82,12 @@ namespace IdealistViewer
         /// </summary>
         public string AvatarMaterial = "sydney.BMP";
         /// <summary>
-        /// If the neighbor returned is a 0 ulong region handle, use this one for testing
+        /// Configuration option. Scale factor for the avatar mesh
         /// </summary>
+        public float AvatarScale = 0.035f;
+        /// <summary>
+        /// If the neighbor returned is a 0 ulong region handle, use this one for testing
+        /// </summary> 
         public ulong TestNeighbor = 1099511628032256;
         /// <summary>
         /// Process avatar modifications every second scene update.
@@ -233,6 +237,7 @@ namespace IdealistViewer
                 BackFaceCulling = cnf.GetBoolean("backface_culling", BackFaceCulling);
                 AvatarMesh = cnf.GetString("avatar_mesh", AvatarMesh);
                 AvatarMaterial = cnf.GetString("avatar_material", AvatarMaterial);
+                AvatarScale = cnf.GetFloat("avatar_scale", AvatarScale);
                 startlocation = cnf.GetString("start_location", "");
                 multipleSims = cnf.GetBoolean("multiple_sims", multipleSims);
                 ProcessFoliage = cnf.GetBoolean("process_foliage", ProcessFoliage);

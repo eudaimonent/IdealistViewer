@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using OpenMetaverse;
+using OpenMetaverse.Assets;
+using OpenMetaverse.Imaging;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Packets;
 using log4net;
@@ -100,6 +102,8 @@ namespace IdealistViewer.Network
         {
             m_user = new GridClient();
 
+            //m_user.Settings.USE_LLSD_LOGIN = true;
+
             //m_user.Settings.STORE_LAND_PATCHES = true;
             //m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.OBJECT_TRACKING = true;
@@ -122,7 +126,7 @@ namespace IdealistViewer.Network
             m_user.Objects.OnObjectKilled += objectKilledCallback;
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
-            m_user.Assets.OnImageReceived += imageReceivedCallback;
+            //m_user.Assets.OnImageReceived += imageReceivedCallback;
             m_user.Friends.OnFriendNamesReceived += Friends_OnFriendNamesReceived;
             m_user.Friends.OnFriendOnline += Friends_OnFriendOnline;
             m_user.Friends.OnFriendOffline += Friends_OnFriendOffline;
@@ -158,11 +162,12 @@ namespace IdealistViewer.Network
             }
         }
 
-        public Dictionary<UUID, FriendInfo> Friends
+        public InternalDictionary<UUID, FriendInfo> Friends
         {
             get
             {
-                return m_user.Friends.FriendList.Dictionary;
+                return m_user.Friends.FriendList;
+                //return null;
             }
         }
 
@@ -195,7 +200,8 @@ namespace IdealistViewer.Network
                 m_log.ErrorFormat("[CONNECTION]: Login Failed:{0}",message);
             }
         }
-        private void imageReceivedCallback(ImageDownload image, AssetTexture asset)
+
+        private void imageReceivedCallback(TextureRequestState state, AssetTexture asset)
         {
             if (OnTextureDownloaded != null)
             {
@@ -462,7 +468,7 @@ namespace IdealistViewer.Network
 
         public void RequestTexture(UUID assetID)
         {
-            m_user.Assets.RequestImage(assetID, ImageType.Normal);
+            m_user.Assets.RequestImage(assetID, ImageType.Normal, imageReceivedCallback);
         }
 
         public void SendCameraViewMatrix(Vector3[] camdata)

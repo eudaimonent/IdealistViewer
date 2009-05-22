@@ -31,19 +31,21 @@ namespace IdealistViewer
             this.BeginInvoke((ThreadStart)delegate()
             {
                 listFriends.Items.Clear();
-                foreach (UUID friend in avatarConnection.Friends.Keys)
+                //foreach (UUID friend in avatarConnection.Friends.)
+                avatarConnection.Friends.ForEach(delegate(FriendInfo friend)
                 {
                     string statusString = "(Offline)";
-                    if (avatarConnection.Friends[friend].IsOnline)
+                    //if (avatarConnection.Friends[friend].IsOnline)
+                    if (friend.IsOnline)
                     {
                         statusString = "(Online)";
                     }
 
-                    if (avatarConnection.Friends[friend].Name != null)
+                    if (friend.Name != null)
                     {
-                        listFriends.Items.Add(avatarConnection.Friends[friend].Name + statusString);
+                        listFriends.Items.Add(friend.Name + statusString);
                     }
-                }
+                });
             });
         }
 

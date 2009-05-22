@@ -276,7 +276,9 @@ namespace IdealistViewer
                             ((AnimatedMeshSceneNode)node).AnimationSpeed = m_viewer.AnimationManager.AnimationFramesPerSecond;
 
                             // TODO: FIXME - this depends on the mesh being loaded. A good candidate for a config item.
-                            node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
+                            //node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
+                            node.Scale = new Vector3D(m_viewer.AvatarScale, m_viewer.AvatarScale, m_viewer.AvatarScale);
+                            //node.Scale = new Vector3D(1.0f, 1.0f, 1.0f);
                             //node.Scale = new Vector3D(15f, 15f, 15f);
 
                             if (!isTextured)
@@ -666,7 +668,9 @@ namespace IdealistViewer
 
                                 AnimatedMeshSceneNode node2 = m_viewer.Renderer.SceneManager.AddAnimatedMeshSceneNode(avmesh);
                                 node = node2;
-                                node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
+                                //node.Scale = new Vector3D(0.035f, 0.035f, 0.035f);
+                                node.Scale = new Vector3D(m_viewer.AvatarScale, m_viewer.AvatarScale, m_viewer.AvatarScale);
+                                //node.Scale = new Vector3D(1.0f, 1.0f, 1.0f);
                                 vObj.SceneNode = node2;
 
                                 lock (MovingObjects)

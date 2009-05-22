@@ -181,19 +181,19 @@ namespace IdealistViewer
                 return;
             }
             FriendsList.Clear();
-            foreach (UUID friend in Viewer.NetworkInterface.Friends.Keys)
+            Viewer.NetworkInterface.Friends.ForEach(delegate(FriendInfo friend)
             {
                 string statusString = "(Offline)";
-                if (Viewer.NetworkInterface.Friends[friend].IsOnline)
+                if (friend.IsOnline)
                 {
                     statusString = "(Online)";
                 }
 
-                if (Viewer.NetworkInterface.Friends[friend].Name != null)
+                if (friend.Name != null)
                 {
-                    FriendsList.AddItem(Viewer.NetworkInterface.Friends[friend].Name + statusString);
+                    FriendsList.AddItem(friend.Name + statusString);
                 }
-            }
+            });
         }
 
         public void UpdateChatWindow()

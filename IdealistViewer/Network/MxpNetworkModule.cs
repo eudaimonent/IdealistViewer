@@ -714,9 +714,9 @@ namespace IdealistViewer.Network
             get { return m_avatar!=null?m_avatar.ID:UUID.Zero; }
         }
 
-        public Dictionary<OpenMetaverse.UUID, OpenMetaverse.FriendInfo> Friends
+        public InternalDictionary<OpenMetaverse.UUID, OpenMetaverse.FriendInfo> Friends
         {
-            get { return new Dictionary<OpenMetaverse.UUID, OpenMetaverse.FriendInfo>(); }
+            get { return new InternalDictionary<OpenMetaverse.UUID, OpenMetaverse.FriendInfo>(); }
         }
 
         public Dictionary<UUID, List<UUID>> m_avatarAnimations = new Dictionary<UUID, List<UUID>>();
