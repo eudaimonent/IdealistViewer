@@ -1752,7 +1752,8 @@ namespace IdealistViewer
             tx.TextureName = tex;
             tx.Object = vObj;
             tx.TextureID = AssetID;
-            AssignReadyTextures.Enqueue(tx);
+            lock (AssignReadyTextures)
+                AssignReadyTextures.Enqueue(tx);
         }
     }
 }

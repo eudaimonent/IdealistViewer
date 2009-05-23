@@ -109,11 +109,15 @@ namespace IdealistViewer.Network
             //m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
             m_user.Settings.USE_TEXTURE_CACHE = false;
+            //m_user.Settings.USE_TEXTURE_CACHE = true;
             //m_user.Settings.
             m_user.Settings.ALWAYS_DECODE_OBJECTS = false;
             
             m_user.Settings.SEND_AGENT_THROTTLE = true;
             //m_user.Settings.SEND_PINGS = true;
+
+            m_user.Settings.MAX_CONCURRENT_TEXTURE_DOWNLOADS = 2;
+            m_user.Settings.PIPELINE_REQUEST_TIMEOUT = 30 * 1000;
 
             m_user.Network.OnConnected += gridConnectedCallback;
             m_user.Network.OnDisconnected += disconnectedCallback;
@@ -203,6 +207,16 @@ namespace IdealistViewer.Network
 
         private void imageReceivedCallback(TextureRequestState state, AssetTexture asset)
         {
+            if (state == TextureRequestState.Timeout)
+            {
+                // need a re-request if a texture times out but doing it here borks libomv
+                //m_user.Assets.RequestImage(asset.AssetID, ImageType.Normal, imageReceivedCallback);
+                return;
+            }
+
+            if (state != TextureRequestState.Finished)
+                return;
+
             if (OnTextureDownloaded != null)
             {
 
@@ -211,6 +225,7 @@ namespace IdealistViewer.Network
 
                 ManagedImage managedImage;
                 Image tempImage;
+                
                 if (OpenJPEG.DecodeToImage(asset.AssetData, out managedImage, out tempImage))
                 {
                     Bitmap textureBitmap = new Bitmap(tempImage.Width, tempImage.Height, PixelFormat.Format32bppArgb);
