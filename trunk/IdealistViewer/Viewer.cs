@@ -74,6 +74,10 @@ namespace IdealistViewer
         /// </summary>
         public bool LoadTextures = true;
         /// <summary>
+        /// Configuration option to enable meshing sculpted prims
+        /// </summary>
+        public bool MeshSculpties = true;
+        /// <summary>
         /// Configuration option to represent the avatar mesh.
         /// </summary>
         public string AvatarMesh = "sydney.md2";
@@ -105,6 +109,10 @@ namespace IdealistViewer
         /// Maximum frames per second to limit CPU usage.
         /// </summary>
         private int m_maximumFramesPerSecond = 60;
+        /// <summary>
+        /// limit FPS to m_maximumFramesPerSecond if true
+        /// </summary>
+        private bool m_limitFramesPerSecond = true;
 
         #endregion
 
@@ -192,7 +200,7 @@ namespace IdealistViewer
                 m_configSource.Source.Merge(new IniConfigSource(iniconfig));
             }
             m_configSource.Source.Merge(iconfig);
-            StartupTime = DateTime.Now;
+            StartupTime = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -234,6 +242,7 @@ namespace IdealistViewer
                 lastName = cnf.GetString("last_name", "user");
                 password = cnf.GetString("pass_word", "nopassword");
                 loadtextures = cnf.GetBoolean("load_textures", true);
+                MeshSculpties = cnf.GetBoolean("mesh_sculpties", MeshSculpties);
                 BackFaceCulling = cnf.GetBoolean("backface_culling", BackFaceCulling);
                 AvatarMesh = cnf.GetString("avatar_mesh", AvatarMesh);
                 AvatarMaterial = cnf.GetString("avatar_material", AvatarMaterial);
@@ -241,6 +250,7 @@ namespace IdealistViewer
                 startlocation = cnf.GetString("start_location", "");
                 multipleSims = cnf.GetBoolean("multiple_sims", multipleSims);
                 ProcessFoliage = cnf.GetBoolean("process_foliage", ProcessFoliage);
+                m_limitFramesPerSecond = cnf.GetBoolean("limitfps", m_limitFramesPerSecond);
             }
             LoadTextures = loadtextures;
             MainConsole.Instance = Console;
@@ -375,7 +385,7 @@ namespace IdealistViewer
 
             AnimationManager = new AnimationManager(this);
 
-            TimeSpan timeTaken = DateTime.Now - StartupTime;
+            TimeSpan timeTaken = DateTime.UtcNow - StartupTime;
 
             m_log.InfoFormat("[STARTUP]: Startup took {0}m {1}s", timeTaken.Minutes, timeTaken.Seconds);
 
@@ -476,7 +486,7 @@ namespace IdealistViewer
                     // process avatar animation changes
                     SceneGraph.ProcessAnimations();
                     // Process Avatar Mod Queue
-                    SceneGraph.ProcessObjectModifications(10, ref SceneGraph.AvatarModidifications);
+                    SceneGraph.ProcessObjectModifications(20, ref SceneGraph.AvatarModifications);
                 }
 
                 TerrainManager.Process();
@@ -507,7 +517,7 @@ namespace IdealistViewer
                 UserInterface.UpdateChatWindow();
 
                 // Sleep until full frame time has been used.                
-                if (frameTime < minFrameTime)
+                if (m_limitFramesPerSecond && frameTime < minFrameTime)
                     Thread.Sleep(minFrameTime - frameTime);
 
             }
@@ -539,6 +549,9 @@ namespace IdealistViewer
                     {
                         m_log.Warn("usage: a <startFrame> <endFrame> - where startFrame and endFrame are integers");
                     }
+                    break;
+                case "fly":
+                    AvatarController.Fly = !AvatarController.Fly;
                     break;
                 case "goto":
                     float x = 128f;
@@ -572,6 +585,24 @@ namespace IdealistViewer
 
                     m_log.Debug(qMsg);
                     break;
+
+                case "cq":
+                    m_log.Debug("*************** UnAssignedChildObjectModQueue info ************");
+                    lock (SceneGraph.ParentWaitingObjects)
+                    {
+                        foreach (VObject v in SceneGraph.ParentWaitingObjects)
+                        {
+                            Primitive prim = v.Primitive;
+
+                            m_log.Debug(
+                                 " UUID: " + prim.ID.ToString()
+                                + " parentID: " + prim.ParentID.ToString()
+                                + " localID: " + prim.LocalID.ToString()
+                                );
+                        }
+                    }
+                    break;
+
                 case "relog":
                     NetworkInterface.Login(NetworkInterface.LoginURI, NetworkInterface.FirstName + " " + NetworkInterface.LastName, NetworkInterface.Password, NetworkInterface.StartLocation);
                     break;
@@ -760,6 +791,7 @@ namespace IdealistViewer
                     break;
 
                 case KeyCode.Home:
+                case KeyCode.Key_F:
                     if (!held && !kydown)
                         AvatarController.Fly = !AvatarController.Fly;
                     break;
@@ -1093,6 +1125,7 @@ namespace IdealistViewer
                             case KeyCode.Key_A:
                             case KeyCode.Key_D:
                             case KeyCode.Home:
+                            case KeyCode.Key_F:
                                 if (!m_ctrlPressed)
                                     ProcessPressedKey(p_event.KeyCode, p_event.KeyPressedDown, false);
 
