@@ -166,7 +166,7 @@ namespace IdealistViewer
                     m_landMap = m_simulatorHeightFields[simhandle];
                 else
                 {
-                    m_log.Warn("[TERRAIN]: Warning landmap update XY for land that isn't found");
+                    m_log.Warn("[TERRAIN]: Warning landmap update XY for land that isn't found (1)");
                     return;
                 }
             }

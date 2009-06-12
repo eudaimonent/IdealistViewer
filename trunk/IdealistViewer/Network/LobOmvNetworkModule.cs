@@ -514,6 +514,7 @@ namespace IdealistViewer.Network
             //m_user.Self.Movement.Camera.LeftAxis = camdata[2];
 
             Quaternion q = m_user.Self.Movement.HeadRotation;
+            
             Vector3 myPos;
             //Vector3 myPos = m_user.Self.SimPosition;
             try
@@ -529,16 +530,22 @@ namespace IdealistViewer.Network
             Vector3 currPos = myPos + new Vector3(-1.0f, 0.0f, 0.0f) * q;
             Vector3 currTarget = myPos + new Vector3(1.0f, 0.0f, 0.0f) * q;
 
-            Vector3 lastCameraPos = m_user.Self.Movement.Camera.Position;
+            //m_log.Debug("[CAMERA UPDATE] - pos: " + myPos.ToString() + " q: " + q.ToString());
+            //m_log.Debug("[CAMERA UPDATE] - pos: " + myPos.ToString() + " cam: " + currPos.ToString() + " tgt: " + currTarget.ToString());
+
+            //Vector3 lastCameraPos = m_user.Self.Movement.Camera.Position;
             
             if (Vector3.Distance(lastCameraPos, myPos) > 1.0f || Vector3.Distance(lastCameraTarget, currTarget) > 1.0f)
             {
-                m_user.Self.Movement.Camera.Position = currPos;
+                
                 m_user.Self.Movement.Camera.LookDirection(currTarget);
+                m_user.Self.Movement.Camera.Position = currPos;
 
-                //lastCameraPos = currPos;
+                lastCameraPos = currPos;
                 lastCameraTarget = currTarget;
                 //m_log.Debug("[CAMERA UPDATE] - " + m_user.Self.Movement.Camera.Position.ToString() + ", " + currTarget.ToString());
+                m_log.Debug("[CAMERA UPDATE] - pos: " + myPos.ToString() + " cam: " + currPos.ToString() + " tgt: " + currTarget.ToString());
+
             }
             
         }
