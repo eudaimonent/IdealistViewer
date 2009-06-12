@@ -16,7 +16,7 @@ namespace IdealistViewer
     // Main program class which is first executed when IdealistViewer.exe is started.
     public class Program 
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             XmlConfigurator.Configure();
             

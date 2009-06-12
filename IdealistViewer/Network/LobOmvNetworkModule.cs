@@ -8,7 +8,6 @@ using OpenMetaverse.Imaging;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Packets;
 using log4net;
-using OpenMetaverse.Imaging;
 using System.Drawing;
 using IdealistViewer.Scene;
 using System.IO;
@@ -32,6 +31,9 @@ namespace IdealistViewer.Network
         public event NeworkObjectUpdateDelegate OnObjectUpdate;
         public event NetworkTextureDownloadedDelegate OnTextureDownloaded;
         public event NetworkFriendsListUpdateDelegate OnFriendsListUpdate;
+
+        private Vector3 lastCameraPos = Vector3.Zero;
+        private Vector3 lastCameraTarget = Vector3.Zero;
 
         public string loginURI;
         public string LoginURI
@@ -102,7 +104,7 @@ namespace IdealistViewer.Network
         {
             m_user = new GridClient();
 
-            //m_user.Settings.USE_LLSD_LOGIN = true;
+            m_user.Settings.USE_LLSD_LOGIN = true;
 
             //m_user.Settings.STORE_LAND_PATCHES = true;
             //m_user.Settings.MULTIPLE_SIMS = false;
@@ -112,9 +114,12 @@ namespace IdealistViewer.Network
             //m_user.Settings.USE_TEXTURE_CACHE = true;
             //m_user.Settings.
             m_user.Settings.ALWAYS_DECODE_OBJECTS = false;
-            
+
+            m_user.Settings.SEND_AGENT_UPDATES = true;
             m_user.Settings.SEND_AGENT_THROTTLE = true;
             //m_user.Settings.SEND_PINGS = true;
+
+            m_user.Self.Movement.Camera.Far = 128.0f;
 
             m_user.Settings.MAX_CONCURRENT_TEXTURE_DOWNLOADS = 2;
             m_user.Settings.PIPELINE_REQUEST_TIMEOUT = 30 * 1000;
@@ -225,16 +230,23 @@ namespace IdealistViewer.Network
 
                 ManagedImage managedImage;
                 Image tempImage;
-                
-                if (OpenJPEG.DecodeToImage(asset.AssetData, out managedImage, out tempImage))
+
+                try
                 {
-                    Bitmap textureBitmap = new Bitmap(tempImage.Width, tempImage.Height, PixelFormat.Format32bppArgb);
-                    Graphics graphics = Graphics.FromImage(textureBitmap);
-                    graphics.DrawImage(tempImage, 0, 0);
-                    graphics.Flush();
-                    graphics.Dispose();
-                    texture.Image = textureBitmap;
-                    OnTextureDownloaded(texture);
+                    if (OpenJPEG.DecodeToImage(asset.AssetData, out managedImage, out tempImage))
+                    {
+                        Bitmap textureBitmap = new Bitmap(tempImage.Width, tempImage.Height, PixelFormat.Format32bppArgb);
+                        Graphics graphics = Graphics.FromImage(textureBitmap);
+                        graphics.DrawImage(tempImage, 0, 0);
+                        graphics.Flush();
+                        graphics.Dispose();
+                        texture.Image = textureBitmap;
+                        OnTextureDownloaded(texture);
+                    }
+                }
+                catch (Exception e)
+                {
+                    m_log.Error(":( :( :( :( got exception decoding image ): ): ): ):\nException: " + e.ToString());
                 }
             }
         }
@@ -291,7 +303,9 @@ namespace IdealistViewer.Network
             m_user.Throttle.Asset = 100000;
             m_user.Throttle.Cloud = 10000;
             m_user.Self.Movement.Camera.Far = 64f;
-            m_user.Self.Movement.Camera.Position = m_user.Self.RelativePosition;
+            //m_user.Self.Movement.Camera.Position = m_user.Self.RelativePosition;
+            m_user.Self.Movement.Camera.Position = m_user.Network.CurrentSim.AvatarPositions[m_user.Self.AgentID];
+            //m_user.Self.Movement.Camera.Position = m_user.Self.SimPosition;
             SetHeightWidth(768, 1024);
             if (OnSimulatorConnected != null)
             {
@@ -489,15 +503,43 @@ namespace IdealistViewer.Network
         public void SendCameraViewMatrix(Vector3[] camdata)
         {
 
-            for (int i=0;i<camdata.Length; i++)
-                if (Single.IsNaN(camdata[i].X) || Single.IsNaN(camdata[i].Y) || Single.IsNaN(camdata[i].Z))
-                    return;
+            //for (int i=0;i<camdata.Length; i++)
+            //    if (Single.IsNaN(camdata[i].X) || Single.IsNaN(camdata[i].Y) || Single.IsNaN(camdata[i].Z))
+            //        return;
 
-                //m_user.Self.Movement.Camera.Position = pPosition;
-                //m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
-            m_user.Self.Movement.Camera.AtAxis = camdata[1];
-            m_user.Self.Movement.Camera.LeftAxis = camdata[0];
-            m_user.Self.Movement.Camera.LeftAxis = camdata[2];
+            //    //m_user.Self.Movement.Camera.Position = pPosition;
+            //    //m_user.Self.Movement.Camera.LookAt(pPosition, pTarget);
+            //m_user.Self.Movement.Camera.AtAxis = camdata[1];
+            //m_user.Self.Movement.Camera.LeftAxis = camdata[0];
+            //m_user.Self.Movement.Camera.LeftAxis = camdata[2];
+
+            Quaternion q = m_user.Self.Movement.HeadRotation;
+            Vector3 myPos;
+            //Vector3 myPos = m_user.Self.SimPosition;
+            try
+            {
+                myPos = m_user.Network.CurrentSim.AvatarPositions[m_user.Self.AgentID];
+            }
+            catch (Exception e)
+            {
+                m_log.Warn("[CAMERA] - unable to determine agent location", e);
+                myPos = m_user.Self.SimPosition;
+            }
+
+            Vector3 currPos = myPos + new Vector3(-1.0f, 0.0f, 0.0f) * q;
+            Vector3 currTarget = myPos + new Vector3(1.0f, 0.0f, 0.0f) * q;
+
+            Vector3 lastCameraPos = m_user.Self.Movement.Camera.Position;
+            
+            if (Vector3.Distance(lastCameraPos, myPos) > 1.0f || Vector3.Distance(lastCameraTarget, currTarget) > 1.0f)
+            {
+                m_user.Self.Movement.Camera.Position = currPos;
+                m_user.Self.Movement.Camera.LookDirection(currTarget);
+
+                //lastCameraPos = currPos;
+                lastCameraTarget = currTarget;
+                //m_log.Debug("[CAMERA UPDATE] - " + m_user.Self.Movement.Camera.Position.ToString() + ", " + currTarget.ToString());
+            }
             
         }
         

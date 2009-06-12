@@ -39,7 +39,7 @@ namespace IdealistViewer
         /// <summary>
         /// All avatar modifications run through this queue
         /// </summary>
-        public Queue<VObject> AvatarModidifications = new Queue<VObject>();
+        public Queue<VObject> AvatarModifications = new Queue<VObject>();
         /// <summary>
         /// All Meshing gets queued up int this queue.
         /// </summary>
@@ -827,7 +827,7 @@ namespace IdealistViewer
                 {
                     if ((sculpt = prim.Sculpt) != null)
                     {
-                        if (sculpt.SculptTexture != UUID.Zero)
+                        if (m_viewer.MeshSculpties && sculpt.SculptTexture != UUID.Zero)
                         {
                             m_log.Warn("[SCULPT]: Got Sculpt");
                             if (!m_viewer.TextureManager.tryGetTexture(sculpt.SculptTexture, out sculpttex))
@@ -856,7 +856,7 @@ namespace IdealistViewer
                     // Mesh a regular prim.
                     vobj.Mesh = m_viewer.MeshManager.GetMeshInstance(prim);
                 }
-                else
+                else if (m_viewer.MeshSculpties)
                 {
                     if (sculpt != null)
                     {
@@ -1472,39 +1472,41 @@ namespace IdealistViewer
                 }
             }
 
-            if (newObject != null)
+            try
             {
-                if (newObject.SceneNode != null)
+                if (newObject != null)
                 {
-                    if (newObject.SceneNode.TriangleSelector != null)
+                    if (newObject.SceneNode != null)
                     {
-                        if (TriangleSelector != null)
+                        if (newObject.SceneNode.TriangleSelector != null)
                         {
-                            TriangleSelector.RemoveTriangleSelector(newObject.SceneNode.TriangleSelector);
+                            if (TriangleSelector != null)
+                            {
+                                TriangleSelector.RemoveTriangleSelector(newObject.SceneNode.TriangleSelector);
+                            }
                         }
-                    }
 
-                    for (uint i = 0; i < newObject.SceneNode.MaterialCount; i++)
-                    {
-                        //IrrlichtNETCP.Material objmaterial = newObject.node.GetMaterial((int)i);
-                        //objmaterial.Texture1.Dispose();
-                        //if (objmaterial.Layer1 != null)
-                        //{
-                        //    if (objmaterial.Layer1.Texture != null)
-                        //    {
-                        //         objmaterial.Layer1.Texture.Dispose();
-                        //     }
-                        //     objmaterial.Layer1.Dispose();
-                        // }
-                        //objmaterial.Dispose();
-                    }
+                        for (uint i = 0; i < newObject.SceneNode.MaterialCount; i++)
+                        {
+                            //IrrlichtNETCP.Material objmaterial = newObject.node.GetMaterial((int)i);
+                            //objmaterial.Texture1.Dispose();
+                            //if (objmaterial.Layer1 != null)
+                            //{
+                            //    if (objmaterial.Layer1.Texture != null)
+                            //    {
+                            //         objmaterial.Layer1.Texture.Dispose();
+                            //     }
+                            //     objmaterial.Layer1.Dispose();
+                            // }
+                            //objmaterial.Dispose();
+                        }
 
-                    m_viewer.Renderer.SceneManager.AddToDeletionQueue(newObject.SceneNode);
+                        m_viewer.Renderer.SceneManager.AddToDeletionQueue(newObject.SceneNode);
 #if DebugObjectPipeline
                     m_log.DebugFormat("[OBJ]: Deleted Node for ID: {0}", prim.ID);
 #endif
 
-                    /*newObject.SceneNode = null;
+                        /*newObject.SceneNode = null;
                     Mesh objmesh = newObject.Mesh;
                     for (int i = 0; i < objmesh.MeshBufferCount; i++)
                     {
@@ -1514,8 +1516,14 @@ namespace IdealistViewer
                     }
                     newObject.Mesh.Dispose();
                     newObject.Primitive = null;*/
-                }
+                    }
 
+                }
+            }
+
+            catch (Exception e)
+            {
+                m_log.Error("Caught exception: " + e.ToString());
             }
 
 
@@ -1570,7 +1578,7 @@ namespace IdealistViewer
             //}
 
             // Add to the Avatar modification queue
-            lock (AvatarModidifications) { AvatarModidifications.Enqueue(avob); }
+            lock (AvatarModifications) { AvatarModifications.Enqueue(avob); }
 
             bool needInitialAnimationState = false;
 
@@ -1663,7 +1671,7 @@ namespace IdealistViewer
                         //{
                         //    objectModQueue.Enqueue(obj);
                         //}
-                        lock (AvatarModidifications) { AvatarModidifications.Enqueue(obj); }
+                        lock (AvatarModifications) { AvatarModifications.Enqueue(obj); }
                     }
                 }
                 else
