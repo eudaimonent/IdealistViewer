@@ -32,7 +32,7 @@ namespace IdealistViewer
             this.tabControl2 = new System.Windows.Forms.TabControl();
             this.tabNearbyChat = new System.Windows.Forms.TabPage();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.txtLocalChat = new System.Windows.Forms.TextBox();
+            this.txtLocalChat = new IdealistViewer.UserInterface.ChatText();
             this.txtLocalChatInput = new System.Windows.Forms.TextBox();
             this.btnLocalChatSay = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
@@ -109,11 +109,13 @@ namespace IdealistViewer
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.txtLocalChat, 2);
             this.txtLocalChat.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.txtLocalChat.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txtLocalChat.Location = new System.Drawing.Point(3, 3);
-            this.txtLocalChat.Multiline = true;
             this.txtLocalChat.Name = "txtLocalChat";
+            this.txtLocalChat.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.Vertical;
             this.txtLocalChat.Size = new System.Drawing.Size(366, 197);
             this.txtLocalChat.TabIndex = 2;
+            this.txtLocalChat.Text = "";
             // 
             // txtLocalChatInput
             // 
@@ -212,7 +214,7 @@ namespace IdealistViewer
         private System.Windows.Forms.TabPage tabFriends;
         private System.Windows.Forms.TabPage tabGroups;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
-        private System.Windows.Forms.TextBox txtLocalChat;
+        private UserInterface.ChatText txtLocalChat;
         private System.Windows.Forms.TextBox txtLocalChatInput;
         private System.Windows.Forms.Button btnLocalChatSay;
         private System.Windows.Forms.ListBox listFriends;

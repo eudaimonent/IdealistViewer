@@ -22,8 +22,10 @@ namespace IdealistViewer
         {
             this.avatarConnection = avatarConnection;
             InitializeComponent();
-            avatarConnection.OnChat += new NetworkChatDelegate(avatarConnection_OnChat);
-            avatarConnection.OnFriendsListUpdate += new NetworkFriendsListUpdateDelegate(avatarConnection_OnFriendsListChanged);
+            avatarConnection.OnChat +=
+                new NetworkChatDelegate(avatarConnection_OnChat);
+            avatarConnection.OnFriendsListUpdate +=
+                new NetworkFriendsListUpdateDelegate(avatarConnection_OnFriendsListChanged);
         }
 
         void avatarConnection_OnFriendsListChanged()
@@ -49,44 +51,49 @@ namespace IdealistViewer
             });
         }
 
-        void avatarConnection_OnChat(string message, OpenMetaverse.ChatAudibleLevel audible, OpenMetaverse.ChatType type, OpenMetaverse.ChatSourceType sourcetype, string fromName, OpenMetaverse.UUID id, OpenMetaverse.UUID ownerid, OpenMetaverse.Vector3 position)
+        void avatarConnection_OnChat(
+            string message,
+            OpenMetaverse.ChatAudibleLevel audible,
+            OpenMetaverse.ChatType type,
+            OpenMetaverse.ChatSourceType sourcetype,
+            string fromName,
+            OpenMetaverse.UUID id,
+            OpenMetaverse.UUID ownerid,
+            OpenMetaverse.Vector3 position)
         {
-           this.BeginInvoke((ThreadStart)delegate()
-           {
-               string prefix = "";
-               if(txtLocalChat.Text.Length!=0)
-               {
-                   prefix = System.Environment.NewLine;
-               }
+            this.BeginInvoke((ThreadStart)delegate()
+            {
+                if (message.ToLower().StartsWith("/me "))
+                    txtLocalChat.AppendChat( fromName, message.Substring(3), 0);
+                else
+                    if (type == ChatType.Shout)
+                        txtLocalChat.AppendChat(fromName, message, 2);
+                    else
+                        txtLocalChat.AppendChat(fromName, message, 1);
+            });
+        }
 
-               if (message.ToLower().StartsWith("/me "))
-                   txtLocalChat.Text += prefix + fromName + message.Substring(3);
-               else
-                   if (type == ChatType.Shout)
-                       txtLocalChat.Text += prefix + fromName + " shouts: " + message;
-                   else
-                       txtLocalChat.Text += prefix + fromName + ": " + message;
-
-
-           });
-            
+        private void SayThis()
+        {
+            avatarConnection.Say(txtLocalChatInput.Text);
+            txtLocalChat.AppendChat( "Me", txtLocalChatInput.Text, 0 );
+            txtLocalChatInput.Text = "";
         }
 
         private void btnLocalChatSay_Click(object sender, EventArgs e)
         {
-            avatarConnection.Say(txtLocalChatInput.Text);
-            txtLocalChatInput.Text = "";
+            SayThis();
             txtLocalChatInput.Focus();
         }
 
         private void txtLocalChatInput_KeyDown(object sender, KeyEventArgs e)
         {
-            if( e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Enter)
             {
-                avatarConnection.Say(txtLocalChatInput.Text);
-                txtLocalChatInput.Text = "";
+                SayThis();
             }
         }
+
 
     }
 }
