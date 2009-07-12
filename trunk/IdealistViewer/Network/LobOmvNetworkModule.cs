@@ -303,9 +303,14 @@ namespace IdealistViewer.Network
             m_user.Throttle.Asset = 100000;
             m_user.Throttle.Cloud = 10000;
             m_user.Self.Movement.Camera.Far = 64f;
-            //m_user.Self.Movement.Camera.Position = m_user.Self.RelativePosition;
-            m_user.Self.Movement.Camera.Position = m_user.Network.CurrentSim.AvatarPositions[m_user.Self.AgentID];
-            //m_user.Self.Movement.Camera.Position = m_user.Self.SimPosition;
+
+            // this line creates a not found exception but for some unknown reason allows more prims 
+            // to show up on the linden grid
+            //m_user.Self.Movement.Camera.Position = m_user.Network.CurrentSim.AvatarPositions[m_user.Self.AgentID];
+            
+            // this line *should* work in all cases
+            m_user.Self.Movement.Camera.Position = m_user.Self.SimPosition;
+
             SetHeightWidth(768, 1024);
             if (OnSimulatorConnected != null)
             {
@@ -516,16 +521,16 @@ namespace IdealistViewer.Network
             Quaternion q = m_user.Self.Movement.HeadRotation;
             
             Vector3 myPos;
-            //Vector3 myPos = m_user.Self.SimPosition;
-            try
-            {
-                myPos = m_user.Network.CurrentSim.AvatarPositions[m_user.Self.AgentID];
-            }
-            catch (Exception e)
-            {
-                m_log.Warn("[CAMERA] - unable to determine agent location", e);
-                myPos = m_user.Self.SimPosition;
-            }
+            myPos = m_user.Self.SimPosition;
+            //try
+            //{
+            //    myPos = m_user.Network.CurrentSim.AvatarPositions[m_user.Self.AgentID];
+            //}
+            //catch (Exception e)
+            //{
+            //    m_log.Warn("[CAMERA] - unable to determine agent location", e);
+            //    myPos = m_user.Self.SimPosition;
+            //}
 
             Vector3 currPos = myPos + new Vector3(-1.0f, 0.0f, 0.0f) * q;
             Vector3 currTarget = myPos + new Vector3(1.0f, 0.0f, 0.0f) * q;
