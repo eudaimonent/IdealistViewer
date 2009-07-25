@@ -15,4 +15,5 @@ Patches
 * Daedius Moskvitch
 * MW (Michael Wright)
 * Mojito Sorbet
+* Douglas R. Miles
 

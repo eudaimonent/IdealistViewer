@@ -16,10 +16,401 @@ using System.Drawing.Imaging;
 namespace IdealistViewer.Network
 {
 
+    public class SimulatorCull
+    {
+        public Dictionary<uint, List<Primitive>> PrimsAwaitingParent = new Dictionary<uint, List<Primitive>>();
+        public Dictionary<uint, Primitive> ParentsSent = new Dictionary<uint, Primitive>();
+        public Dictionary<uint, List<Primitive>> ChildsSent = new Dictionary<uint, List<Primitive>>();
+        public Dictionary<uint, Primitive> ParentsCulled = new Dictionary<uint, Primitive>();
+        public Dictionary<uint, List<Primitive>> ChildsCulled = new Dictionary<uint, List<Primitive>>();
+        public List<SimPatchInfo> PatchesSent = new List<SimPatchInfo>();
+        public List<SimPatchInfo> PatchesCulled = new List<SimPatchInfo>();
+        readonly public Simulator simulator;
+        public SimulatorCull(Simulator sim)
+        {
+            simulator = sim;
+        }
+    }
+    public class SimPatchInfo
+    {
+        public SimPatchInfo(Simulator simulator0, int x0, int y0, int width0, float[] data0)
+        {
+            simulator = simulator0;
+            x = x0;
+            y = y0;
+            width = width0;
+            data = data0;
+            float w2 = (float) width/2;
+            pos = LibOmvNetworkModule.GlobalPos(simulator.Handle, new Vector3(width * x + w2, width * y + w2, data[0]));
+        }
+        public override int GetHashCode()
+        {
+            return ((int) simulator.Handle*width*width) + x + y*width;
+        }
+        public override bool Equals(object obj)
+        {
+            if (obj is SimPatchInfo)
+            {
+                SimPatchInfo other = (SimPatchInfo)obj;
+                return simulator == other.simulator && x == other.x && y == other.y;
+            }
+            return false;
+        }
+        public Vector3d pos;
+        public Simulator simulator;
+        public int x;
+        public int y;
+        public int width;
+        public float[] data;
+    }
+
     public class LibOmvNetworkModule : INetworkInterface
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        
+
+        public Dictionary<ulong, SimulatorCull> SimulatorCullings = new Dictionary<ulong, SimulatorCull>();
+        public bool UseNeworkCulling = true;
+        public int MAX_PRIMS = 8000;
+        public int CURRENT_PRIMS = 0;
+        public double MAX_DIST
+        {
+            get
+            {
+                return m_user.Self.Movement.Camera.Far;
+            }
+        }
+
+        static internal Vector3d GlobalPos(ulong regionHandle, Vector3 pos)
+        {
+            uint globalX, globalY;
+            Utils.LongToUInts(regionHandle, out globalX, out globalY);
+            return new Vector3d(
+                (double)globalX + (double)pos.X,
+                (double)globalY + (double)pos.Y,
+                (double)pos.Z);
+        }
+        private bool Sendable(Primitive primitive)
+        {
+
+            if (m_user.Network.CurrentSim == null || primitive.RegionHandle == m_user.Network.CurrentSim.Handle)
+                return true;
+            double d = Vector3d.Distance(m_user.Self.GlobalPosition, GlobalPos(primitive.RegionHandle, primitive.Position));
+            return d < MAX_DIST;
+        }
+
+        public void Statistics()
+        {
+        }
+
+        private Vector3 LaskKnownPos = Vector3.Zero;
+        private readonly object LaskKnownPosLock = new object();
+        private void OnSelfUpdated(Simulator simulator, ObjectUpdate update, ulong regionhandle)
+        {
+            if (!UseNeworkCulling) return;
+            lock (LaskKnownPosLock)
+            {
+                if (LaskKnownPos == Vector3.Zero)
+                {
+                    LaskKnownPos = update.Position;
+                    return;
+                }
+                if (Vector3.Distance(update.Position, LaskKnownPos) < 8) return;
+                LaskKnownPos = update.Position;
+            }
+
+            List<SimulatorCull> simCulls = null;
+            List<SimPatchInfo> sendpatches = new List<SimPatchInfo>();
+            lock (SimulatorCullings)
+            {
+                simCulls = new List<SimulatorCull>(SimulatorCullings.Values);
+            }
+            foreach (SimulatorCull sc in simCulls)
+            {
+                lock (sc)
+                {
+                    foreach (var p in sc.PatchesCulled)
+                    {
+
+                        if (Vector3d.Distance(m_user.Self.GlobalPosition, p.pos) < MAX_DIST)
+                        {
+                            sendpatches.Add(p);
+                        }
+                    }
+                    foreach (var p in sendpatches)
+                    {
+                        sc.PatchesCulled.Remove(p);
+                        sc.PatchesSent.Add(p);
+                    }
+                    List<Primitive> sendprims = new List<Primitive>();
+
+                    foreach (var p in sc.ParentsCulled.Values)
+                    {
+
+                        if (Vector3d.Distance(m_user.Self.GlobalPosition, GlobalPos(p.RegionHandle, p.Position)) <
+                            MAX_DIST)
+                        {
+                            sendprims.Add(p);
+                        }
+                    }
+                    foreach (var p in sendprims)
+                    {
+                        sc.ParentsCulled.Remove(p.LocalID);
+                        if (sc.ChildsCulled.ContainsKey(p.LocalID))
+                        {
+                            sc.PrimsAwaitingParent[p.LocalID] = sc.ChildsCulled[p.LocalID];
+                        }
+                        newPrimCulled(sc.simulator, p, sc.simulator.Handle, 0);
+                    }
+                    sendprims.Clear();
+                    foreach (var p in sc.ParentsSent.Values)
+                    {
+                        if (Vector3d.Distance(m_user.Self.GlobalPosition, GlobalPos(p.RegionHandle, p.Position)) >
+                            MAX_DIST)
+                        {
+                            sendprims.Add(p);
+                        }
+                    }
+                    foreach (var p in sendprims)
+                    {
+                        sc.ParentsSent.Remove(p.LocalID);
+                        sc.ParentsCulled[p.LocalID] = p;
+                        if (sc.ChildsSent.ContainsKey(p.LocalID))
+                        {
+                            sc.ChildsCulled[p.LocalID] = new List<Primitive>(sc.ChildsSent[p.LocalID]);
+                            foreach (var pc in sc.ChildsSent[p.LocalID])
+                            {
+                                objectKilledCallback(sc.simulator, pc.LocalID);
+                            }
+                            sc.ChildsSent[p.LocalID].Clear();
+                        }
+                        objectKilledCallback(sc.simulator, p.LocalID);
+                    }
+                }
+            }
+            foreach (var p in sendpatches)
+            {
+                landPatchCallback(p.simulator, p.x, p.y, p.width, p.data);
+            }
+        }
+
+        private void landPatchCallbackCulled(Simulator simulator, int x, int y, int width, float[] data)
+        {
+            if (!UseNeworkCulling)
+            {
+                landPatchCallback(simulator, x, y, width, data);
+                return;
+            }
+            SimulatorCull sc;
+            ulong regionhandle = simulator.Handle;
+            lock (SimulatorCullings)
+                if (!SimulatorCullings.TryGetValue(regionhandle, out sc))
+                {
+                    SimulatorCullings[regionhandle] = sc = new SimulatorCull(simulator);
+                }
+            lock (sc)
+            {
+                SimPatchInfo p = new SimPatchInfo(simulator, x, y, width, data);
+                Vector3d p3d = p.pos;
+                p3d.Z = m_user.Self.GlobalPosition.Z;
+                if (Vector3d.Distance(m_user.Self.GlobalPosition, p3d) > MAX_DIST+16)
+                {
+                    sc.PatchesCulled.Add(p);
+                    return;
+                }
+                else
+                {
+                    if (sc.PatchesSent.Contains(p)) return;
+                    sc.PatchesSent.Add(p);
+                }
+            }
+            landPatchCallback(simulator, x, y, width, data);
+        }
+
+        private void objectKilledCallbackCulled(Simulator simulator, uint objectid)
+        {
+            if (!UseNeworkCulling)
+            {
+                objectKilledCallback(simulator, objectid);
+                return;
+            }
+            SimulatorCull sc;
+            ulong regionhandle = simulator.Handle;
+            lock (SimulatorCullings) if (!SimulatorCullings.TryGetValue(regionhandle, out sc))
+                {
+                    SimulatorCullings[regionhandle] = sc = new SimulatorCull(simulator);
+                }
+            lock (sc)
+            {
+
+                List<Primitive> childs;
+                if (sc.ChildsCulled.TryGetValue(objectid, out childs))
+                {
+                    childs.Clear();
+                    sc.ChildsCulled.Remove(objectid);
+                }
+                if (sc.ChildsSent.TryGetValue(objectid, out childs))
+                {
+                    childs.Clear();
+                    sc.ChildsSent.Remove(objectid);
+                }
+                if (sc.ParentsCulled.ContainsKey(objectid))
+                {
+                    sc.ParentsCulled.Remove(objectid);
+                    return;
+                }
+                if (sc.ParentsSent.ContainsKey(objectid))
+                {
+                    sc.ParentsSent.Remove(objectid);
+                    objectKilledCallback(simulator, objectid);
+                    return;
+                }
+                // this is a child
+                Primitive prim = null;
+                foreach (List<Primitive> ch in sc.PrimsAwaitingParent.Values)
+                {
+                    foreach (var p in ch)
+                    {
+                        if (p.LocalID == objectid)
+                        {
+                            prim = p;
+                            break;
+                        }
+                    }
+                    if (prim == null) continue;
+                    ch.Remove(prim);
+                    break;
+                }
+                if (prim != null) return;
+                foreach (List<Primitive> ch in sc.ChildsCulled.Values)
+                {
+                    foreach (var p in ch)
+                    {
+                        if (p.LocalID == objectid)
+                        {
+                            prim = p;
+                            break;
+                        }
+                    }
+                    if (prim == null) continue;
+                    ch.Remove(prim);
+                    return;
+                }
+                foreach (List<Primitive> ch in sc.ChildsSent.Values)
+                {
+                    foreach (var p in ch)
+                    {
+                        if (p.LocalID == objectid)
+                        {
+                            prim = p;
+                            break;
+                        }
+                    }
+                    if (prim == null) continue;
+                    ch.Remove(prim);
+                    break;
+                }
+                objectKilledCallback(simulator, objectid);
+            }
+
+        }
+
+        private void newPrimCulled(Simulator simulator, Primitive prim, ulong regionhandle, ushort timedilation)
+        {
+            if (prim.RegionHandle == 0)
+            {
+                prim.RegionHandle = regionhandle;
+            }
+            SimulatorCull sc;
+            lock (SimulatorCullings) if (!SimulatorCullings.TryGetValue(regionhandle, out sc))
+                {
+                    SimulatorCullings[regionhandle] = sc = new SimulatorCull(simulator);
+                }
+
+            if (!UseNeworkCulling)
+            {
+                newPrim(sc, simulator, prim, regionhandle, timedilation);
+                return;
+            }
+            lock (sc)
+            {
+                List<Primitive> prims;
+                if (prim.ParentID == 0)
+                {
+                    if (sc.PrimsAwaitingParent.TryGetValue(prim.LocalID, out prims))
+                    {
+                        if (Sendable(prim))
+                        {
+                            newPrim(sc, simulator, prim, regionhandle, timedilation);
+                            // send the childs
+                            foreach (Primitive p in prims)
+                            {
+                                newPrim(sc, simulator, p, regionhandle, timedilation);
+                            }
+                            sc.PrimsAwaitingParent.Remove(prim.LocalID);
+                            return;
+                        }
+                        else
+                        {
+                            sc.ParentsCulled[prim.LocalID] = prim;
+                            sc.ChildsCulled[prim.LocalID] = prims;
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        if (Sendable(prim))
+                        {
+                            newPrim(sc, simulator, prim, regionhandle, timedilation);
+                            return;
+                        }
+                        else
+                        {
+                            sc.ParentsCulled[prim.LocalID] = prim;
+                            return;
+                        }
+                    }
+                }
+                if (sc.ParentsCulled.ContainsKey(prim.ParentID))
+                {
+                    if (!sc.ChildsCulled.TryGetValue(prim.ParentID, out prims))
+                    {
+                        sc.ChildsCulled[prim.ParentID] = prims = new List<Primitive>();
+                        prims.Add(prim);
+                        return;
+                    }
+                    else
+                    {
+                        if (!prims.Contains(prim))
+                        {
+                            prims.Add(prim);
+                            return;
+                        }
+                    }
+                }
+                bool mustSendMaybe = simulator == m_user.Network.CurrentSim;
+                if (sc.ChildsSent.ContainsKey(prim.ParentID))
+                {
+                    //this is an update
+                    newPrim(sc, simulator, prim, regionhandle, timedilation);
+                    mustSendMaybe = false;
+                }
+                if (!sc.PrimsAwaitingParent.TryGetValue(prim.ParentID, out prims))
+                {
+                    sc.PrimsAwaitingParent[prim.ParentID] = prims = new List<Primitive>();
+                    prims.Add(prim);
+                }
+                else
+                {
+                    if (!prims.Contains(prim))
+                    {
+                        prims.Add(prim);
+                    }
+                }
+                if(mustSendMaybe)
+                    newPrim(sc, simulator, prim, regionhandle, timedilation);
+            }
+        }
+
         public event NetworkAvatarAddDelegate OnAvatarAdd;
         public event NetworkChatDelegate OnChat;
         public event NetworkConnectedDelegate OnConnected;
@@ -128,11 +519,11 @@ namespace IdealistViewer.Network
             m_user.Network.OnDisconnected += disconnectedCallback;
             m_user.Network.OnSimConnected += simConnectedCallback;
             m_user.Network.OnLogin += loginStatusCallback;
-            m_user.Terrain.OnLandPatch += landPatchCallback;
+            m_user.Terrain.OnLandPatch += landPatchCallbackCulled;
             m_user.Self.OnChat += chatCallback;
             m_user.Objects.OnNewAvatar += newAvatarCallback;
-            m_user.Objects.OnNewPrim += newPrim;
-            m_user.Objects.OnObjectKilled += objectKilledCallback;
+            m_user.Objects.OnNewPrim += newPrimCulled;
+            m_user.Objects.OnObjectKilled += objectKilledCallbackCulled;
             m_user.Network.OnLogin += loginCallback;
             m_user.Objects.OnObjectUpdated += objectUpdatedCallback;
             //m_user.Assets.OnImageReceived += imageReceivedCallback;
@@ -464,10 +855,30 @@ namespace IdealistViewer.Network
         
         
 
-        private void newPrim(Simulator simulator, Primitive prim, ulong regionHandle,
+        private void newPrim(SimulatorCull sc, Simulator simulator, Primitive prim, ulong regionHandle,
                              ushort timeDilation)
         {
-            
+            lock (sc)
+            {
+                if (prim.ParentID == 0)
+                    sc.ParentsSent[prim.LocalID] = prim;
+                else
+                {
+                    List<Primitive> prims;
+                    if (!sc.ChildsSent.TryGetValue(prim.ParentID, out prims))
+                    {
+                        sc.ChildsSent[prim.ParentID] = prims = new List<Primitive>();
+                        prims.Add(prim);
+                    }
+                    else
+                    {
+                        if (!prims.Contains(prim))
+                        {
+                            prims.Add(prim);
+                        }
+                    }
+                }
+            }
             if (OnObjectAdd != null)
             {
                 OnObjectAdd(new VSimulator(simulator), prim, regionHandle, timeDilation);
@@ -494,6 +905,13 @@ namespace IdealistViewer.Network
         private void objectUpdatedCallback(Simulator simulator, ObjectUpdate update, ulong regionHandle,
                                           ushort timeDilation)
         {
+            if (simulator == m_user.Network.CurrentSim)
+            {
+                if (m_user.Self.LocalID == update.LocalID)
+                {
+                    OnSelfUpdated(simulator, update, regionHandle);
+                }
+            }
             if (OnObjectUpdate != null)
             {
                 OnObjectUpdate(new VSimulator(simulator), update, regionHandle, timeDilation);
