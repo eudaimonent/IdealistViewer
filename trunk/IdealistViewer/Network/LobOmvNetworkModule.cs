@@ -110,7 +110,7 @@ namespace IdealistViewer.Network
             //m_user.Settings.MULTIPLE_SIMS = false;
             //m_user.Settings.OBJECT_TRACKING = true;
             //m_user.Settings.AVATAR_TRACKING = true;
-            m_user.Settings.USE_TEXTURE_CACHE = false;
+            m_user.Settings.USE_ASSET_CACHE = false;
             //m_user.Settings.USE_TEXTURE_CACHE = true;
             //m_user.Settings.
             m_user.Settings.ALWAYS_DECODE_OBJECTS = false;
