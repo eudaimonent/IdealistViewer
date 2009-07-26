@@ -69,7 +69,7 @@ namespace IdealistViewer.Network
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public Dictionary<ulong, SimulatorCull> SimulatorCullings = new Dictionary<ulong, SimulatorCull>();
-        public bool UseNeworkCulling = true;
+        public bool ObjectsToManagedLayerIsRangeBased = true;
         public int MAX_PRIMS = 8000;
         public int CURRENT_PRIMS = 0;
         public double MAX_DIST
@@ -106,7 +106,7 @@ namespace IdealistViewer.Network
         private readonly object LaskKnownPosLock = new object();
         private void OnSelfUpdated(Simulator simulator, ObjectUpdate update, ulong regionhandle)
         {
-            if (!UseNeworkCulling) return;
+            if (!ObjectsToManagedLayerIsRangeBased) return;
             lock (LaskKnownPosLock)
             {
                 if (LaskKnownPos == Vector3.Zero)
@@ -195,7 +195,7 @@ namespace IdealistViewer.Network
 
         private void landPatchCallbackCulled(Simulator simulator, int x, int y, int width, float[] data)
         {
-            if (!UseNeworkCulling)
+            if (!ObjectsToManagedLayerIsRangeBased)
             {
                 landPatchCallback(simulator, x, y, width, data);
                 return;
@@ -228,7 +228,7 @@ namespace IdealistViewer.Network
 
         private void objectKilledCallbackCulled(Simulator simulator, uint objectid)
         {
-            if (!UseNeworkCulling)
+            if (!ObjectsToManagedLayerIsRangeBased)
             {
                 objectKilledCallback(simulator, objectid);
                 return;
@@ -326,7 +326,7 @@ namespace IdealistViewer.Network
                     SimulatorCullings[regionhandle] = sc = new SimulatorCull(simulator);
                 }
 
-            if (!UseNeworkCulling)
+            if (!ObjectsToManagedLayerIsRangeBased)
             {
                 newPrim(sc, simulator, prim, regionhandle, timedilation);
                 return;
