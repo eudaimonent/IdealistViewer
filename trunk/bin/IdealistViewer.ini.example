@@ -2,9 +2,9 @@
 multiple_sims = false
 ;SecondLife Protocol Login URL:
 ;login_uri="http://demo.bubblecloud.org:9000"
-;login_uri="http://osgrid.org:8002/Dahlia Island OSGrid Interop"
+login_uri="http://osgrid.org:8002/Dahlia Island OSGrid Interop"
 ;MXP Protocol Login URL:
-login_uri="mxp://demo.bubblecloud.org:2253/Demo/"
+;login_uri="mxp://demo.bubblecloud.org:2253/Demo/"
 ;login_uri="mxp://127.0.0.1:1253/OpenSim Test/"
 
 first_name="Test"
