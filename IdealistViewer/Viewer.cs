@@ -374,10 +374,11 @@ namespace IdealistViewer
                 }
             }
 
+            frmCommunications f = null;
             string formsUiConfigurationOption = m_configSource.Source.Configs["Startup"].GetString("forms", "true");
             if (formsUiConfigurationOption == "true")
             {
-                frmCommunications f = new frmCommunications(NetworkInterface);
+                f = new frmCommunications(NetworkInterface);
                 f.Visible = true;
                 this.m_formsThread = new Thread(delegate() { Application.DoEvents(); Thread.Sleep(50); });
                 m_formsThread.Start();
@@ -434,7 +435,6 @@ namespace IdealistViewer
 
                 try
                 {
-
                     // If you close the gui window, device.Run returns false.
                     Running = Renderer.Device.Run();
                 }
