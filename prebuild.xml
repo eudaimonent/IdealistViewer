@@ -58,6 +58,8 @@
       <Reference name="log4net.dll" />
       <Reference name="Irrlicht.NET.dll" />
       <Reference name="Irrlicht.Extensions.dll" />
+      <Reference name="jabber-net.dll" />
+      <Reference name="muzzle.dll" />
       <Reference name="OpenMetaverse.dll" />
       <Reference name="OpenMetaverseTypes.dll" />
       <Reference name="PrimMesher.dll" />
