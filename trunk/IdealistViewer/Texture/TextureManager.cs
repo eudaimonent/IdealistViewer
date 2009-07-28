@@ -230,17 +230,20 @@ namespace IdealistViewer
                 string oldfs = device.FileSystem.WorkingDirectory;
                 device.FileSystem.WorkingDirectory = texturefolderpath;
                 Texture texTnorm = driver.GetTexture(System.IO.Path.Combine(texturefolderpath, assetID.ToString() + ".png"));
-                tex = new TextureExtended(texTnorm.Raw);
-                if (tex != null)
+                if (texTnorm != null)
                 {
-                    lock (memoryTextures)
+                    tex = new TextureExtended(texTnorm.Raw);
+                    if (tex != null)
                     {
-                        if (!memoryTextures.ContainsKey(assetID))
+                        lock (memoryTextures)
                         {
-                            memoryTextures.Add(assetID, tex);
+                            if (!memoryTextures.ContainsKey(assetID))
+                            {
+                                memoryTextures.Add(assetID, tex);
+                            }
                         }
+                        return true;
                     }
-                    return true;
                 }
 
             }

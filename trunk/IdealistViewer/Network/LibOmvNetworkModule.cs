@@ -838,17 +838,17 @@ namespace IdealistViewer.Network
         private void chatCallback(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourcetype,
                                   string fromName, UUID id, UUID ownerid, Vector3 position)
         {
-            // This is weird -- we get start/stop typing chats from
-            // other avatars, and we get messages back that we sent.
-            // (Tested on OpenSim r3187)
-            // So we explicitly check for those cases here.
-            if ((int)type < 4 && id != m_user.Self.AgentID)
+            // We get start/stop typing chats from other avatars,
+            // which we ignore for now.  We *do* want to see our
+            // own chat coming back, as that is a clue to lag.
+            if (type != ChatType.StartTyping &&
+                type != ChatType.StopTyping)
             {
                 m_log.Debug("Chat: " + fromName + ": " + message);
                 if (OnChat != null)
                 {
                     OnChat(message, audible, type, sourcetype,
-                                      fromName, id, ownerid, position);
+                         fromName, id, ownerid, position);
                 }
             }
         }
