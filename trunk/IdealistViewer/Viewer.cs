@@ -217,7 +217,7 @@ namespace IdealistViewer
         /// <summary>
         /// Must be overriden by child classes for their own server specific startup behaviour.
         /// </summary>
-        protected void StartupComponents()
+        protected virtual void StartupComponents()
         {
             m_log.Info("[STARTUP]: Beginning startup processing");
 
@@ -723,7 +723,7 @@ namespace IdealistViewer
         /// </summary>
         /// <param name="ky"></param>
         /// <param name="held"></param>
-        public void UpdateKeyPressState(KeyCode ky, bool held)
+        public virtual void UpdateKeyPressState(KeyCode ky, bool held)
         {
             lock (m_pressedKeys)
             {
@@ -970,7 +970,7 @@ namespace IdealistViewer
         /// </summary>
         /// <param name="p_event"></param>
         /// <returns></returns>
-        public bool OnDeviceEvent(Event p_event)
+        public virtual bool OnDeviceEvent(Event p_event)
         {
 
             //m_log.Warn(p_event.Type.ToString());
@@ -1168,7 +1168,7 @@ namespace IdealistViewer
         #endregion
 
         #region Mouse Event Processing
-        public bool OnMouseEvent(Event p_event)
+        public virtual bool OnMouseEvent(Event p_event)
         {
             if (p_event.MouseInputEvent == MouseInputEvent.MouseWheel)
             {
@@ -1283,7 +1283,7 @@ namespace IdealistViewer
         #endregion
 
         #region Helper Methods
-        public void SetViewerAvatar(VObject self)
+        public virtual void SetViewerAvatar(VObject self)
         {
             if (SceneGraph.m_avatarObject == null)
             {

@@ -28,7 +28,7 @@ namespace IdealistViewer
             m_viewer = viewer;
         }
 
-        public void Startup()
+        public virtual void Startup()
         {
 
             //Create a New Irrlicht Device
