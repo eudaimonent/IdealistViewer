@@ -511,7 +511,7 @@ namespace IdealistViewer
         /// </summary>
         private void Notice(string msg)
         {
-            Notice(msg);
+            System.Console.WriteLine(msg);
         }
 
         /// <summary>
