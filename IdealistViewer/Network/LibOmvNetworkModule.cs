@@ -69,7 +69,11 @@ namespace IdealistViewer.Network
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public Dictionary<ulong, SimulatorCull> SimulatorCullings = new Dictionary<ulong, SimulatorCull>();
-        public bool ObjectsToManagedLayerIsRangeBased = true;
+        
+        //public bool ObjectsToManagedLayerIsRangeBased = true;
+        // disable distance based culling until rotations are fixed
+        public bool ObjectsToManagedLayerIsRangeBased = false;
+
         public int MAX_PRIMS = 8000;
         public int CURRENT_PRIMS = 0;
         public double MAX_DIST
