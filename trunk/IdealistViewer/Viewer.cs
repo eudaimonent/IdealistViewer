@@ -194,7 +194,7 @@ namespace IdealistViewer
             m_configSource.Source = new IniConfigSource();
 
 
-            string iniconfig = Path.Combine(Util.configDir(), "IdealistViewer.ini");
+            string iniconfig = System.IO.Path.Combine(Util.configDir(), "IdealistViewer.ini");
             if (File.Exists(iniconfig))
             {
                 m_configSource.Source.Merge(new IniConfigSource(iniconfig));
@@ -343,14 +343,17 @@ namespace IdealistViewer
 
             SceneGraph.WaterNode = new WaterSceneNode(null, Renderer.SceneManager, new Dimension2Df(180, 180), new Dimension2D(100, 100), new Dimension2D(512, 512));
             SceneGraph.WaterNode.Position = new Vector3D(0, 30, 0);
-            //SceneGraph.WaterNode.WaveHeight *= .4f;
+            SceneGraph.WaterNode.WaveHeight = .4f;
             SceneGraph.WaterNode.RefractionFactor = 0.3f;
-            SceneGraph.WaterNode.WaveDisplacement = 2f;
-            SceneGraph.WaterNode.WaveHeight = 2f;
-            SceneGraph.WaterNode.WaveLength = 2f;
+            //SceneGraph.WaterNode.WaveDisplacement = 2f;
+            SceneGraph.WaterNode.WaveDisplacement = .4f;
+            //SceneGraph.WaterNode.WaveHeight = 2f;
+            //SceneGraph.WaterNode.WaveLength = 2f;
+            SceneGraph.WaterNode.WaveLength = .1f;
             SceneGraph.WaterNode.WaveSpeed = 5f;
             SceneGraph.WaterNode.WaveRepetition = 20f;
-            SceneGraph.WaterNode.Scale = new Vector3D(0.2f,0.2f,0.2f);
+            SceneGraph.WaterNode.Scale = new Vector3D(0.2f, 0.2f, 0.2f);
+            
             SceneGraph.WaterNode.MultiColor = new Colorf(0.9f, 0.7f, 0.7f, 1.0f);
 
             UserInterface = new UserInterfaceManager(this, Renderer.Driver, Renderer.SceneManager, Renderer.GuiEnvironment, CameraController, AvatarController);
@@ -444,14 +447,17 @@ namespace IdealistViewer
                 }
                 if (!Running)
                     break;
-                try
-                {
-                    SceneGraph.WaterNode.Update();
-                }
-                catch (AccessViolationException)
-                {
-                    m_log.Warn("[water]: Unable to update this round");
-                }
+
+                // disable waves for now as it causes crashes on Vista and also reduces FPS significantly
+                // 
+                //try  
+                //{
+                //    SceneGraph.WaterNode.Update();
+                //}
+                //catch (AccessViolationException)
+                //{
+                //    m_log.Warn("[water]: Unable to update this round");
+                //}
 
                 Renderer.Driver.BeginScene(true, true, new Color(0, 255, 255, 255));
                 Renderer.SceneManager.DrawAll();

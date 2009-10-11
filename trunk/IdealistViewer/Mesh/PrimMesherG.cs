@@ -18,6 +18,7 @@ namespace IdealistViewer
         Medium,
         High
     }
+
     public static class PrimMesherG
     {
         private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -36,6 +37,84 @@ namespace IdealistViewer
         {// translate coordinates XYZ to XZY
             return new Vector3D(c.X, c.Z, c.Y);
         }
+
+        private static Mesh PrimMeshToIrrMesh(PrimMesh primMesh)
+        {
+            Color color = new Color(255, 255, 0, 50);
+
+            Mesh mesh;
+            try
+            {
+                mesh = new Mesh();
+            }
+            catch (IndexOutOfRangeException)
+            {
+                return null;
+            }
+
+            //VertexIndexer vi = new VertexIndexer(primMesh);
+            VertexIndexer vi = primMesh.GetVertexIndexer();
+
+            MeshBuffer[] mb = new MeshBuffer[primMesh.numPrimFaces];
+
+            for (int i = 0; i < mb.Length; i++)
+                mb[i] = new MeshBuffer(VertexType.Standard);
+
+            try
+            {
+                uint[] index = new uint[mb.Length];
+
+                for (int i = 0; i < index.Length; i++)
+                    index[i] = 0;
+
+                for (int primFaceNum = 0; primFaceNum < primMesh.numPrimFaces; primFaceNum++)
+                {
+                    
+                    List<ViewerVertex> vertList = vi.viewerVertices[primFaceNum];
+                    for (uint i = 0; i < vertList.Count; i++)
+                    {
+                        try
+                        {
+                            ViewerVertex v = vertList[(int)i];
+                            Vertex3D v3d = new Vertex3D(convVect3d(v.v), convNormal(v.n), color, convVect2d(v.uv));
+                            mb[primFaceNum].SetVertex(i, v3d);
+                        }
+                        catch (OutOfMemoryException)
+                        {
+                            return null;
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            return null;
+                        }
+                    }
+
+                    List<ViewerPolygon> polyList = vi.viewerPolygons[primFaceNum];
+                    uint mbIndex = 0;
+                    for (uint i = 0; i < polyList.Count; i++)
+                    {
+                        ViewerPolygon p = polyList[(int)i];
+                        mb[primFaceNum].SetIndex(mbIndex++, (ushort)p.v1);
+                        mb[primFaceNum].SetIndex(mbIndex++, (ushort)p.v3);
+                        mb[primFaceNum].SetIndex(mbIndex++, (ushort)p.v2);
+                    }
+                }
+
+                for (int i = 0; i < mb.Length; i++)
+                    mesh.AddMeshBuffer(mb[i]);
+
+                // don't dispose here
+                //mb.Dispose();
+            }
+            catch (AccessViolationException)
+            {
+                m_log.Error("ACCESSVIOLATION");
+                mesh = null;
+            }
+
+            return mesh;
+        }
+
 
         private static Mesh FacesToIrrMesh(List<ViewerFace> viewerFaces, int numPrimFaces)
         {
@@ -105,6 +184,7 @@ namespace IdealistViewer
 
             return mesh;
         }
+
 
         // experimental - build sculpt mesh using indexed access to vertex, normal, and UV lists
         private static Mesh SculptMeshToIrrMesh(SculptMesh sculptMesh)
@@ -251,13 +331,18 @@ namespace IdealistViewer
 
             
 
-            if (primData.PathCurve == PathCurve.Line)
+            //if (primData.PathCurve == PathCurve.Line)
+            if (primData.PathCurve == PathCurve.Line || primData.PathCurve == PathCurve.Flexible)
             {
                 newPrim.taperX = 1.0f - primData.PathScaleX;
                 newPrim.taperY = 1.0f - primData.PathScaleY;
                 newPrim.twistBegin = (int)(180 * primData.PathTwistBegin);
                 newPrim.twistEnd = (int)(180 * primData.PathTwist);
-                newPrim.ExtrudeLinear();
+                //newPrim.ExtrudeLinear();
+                if (primData.PathCurve == PathCurve.Line)
+                    newPrim.Extrude(PathType.Linear);
+                else
+                    newPrim.Extrude(PathType.Flexible);
             }
             else
             {
@@ -265,7 +350,8 @@ namespace IdealistViewer
                 newPrim.taperY = primData.PathTaperY;
                 newPrim.twistBegin = (int)(360 * primData.PathTwistBegin);
                 newPrim.twistEnd = (int)(360 * primData.PathTwist);
-                newPrim.ExtrudeCircular();
+                //newPrim.ExtrudeCircular();
+                newPrim.Extrude(PathType.Circular);
             }
 
             int numViewerFaces = newPrim.viewerFaces.Count;
@@ -282,7 +368,8 @@ namespace IdealistViewer
                 }
             }
 
-            return FacesToIrrMesh(newPrim.viewerFaces, newPrim.numPrimFaces);
+            //return FacesToIrrMesh(newPrim.viewerFaces, newPrim.numPrimFaces);
+            return PrimMeshToIrrMesh(newPrim);
         }
 
         public static Mesh SculptIrrMesh(System.Drawing.Bitmap bitmap, byte sculptType)
