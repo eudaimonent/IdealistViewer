@@ -67,7 +67,8 @@ namespace IdealistViewer
                 for (int i = 0; i < index.Length; i++)
                     index[i] = 0;
 
-                for (int primFaceNum = 0; primFaceNum < primMesh.numPrimFaces; primFaceNum++)
+                //for (int primFaceNum = 0; primFaceNum < primMesh.numPrimFaces; primFaceNum++)
+                for (int primFaceNum = 0; primFaceNum < vi.numPrimFaces; primFaceNum++)
                 {
                     
                     List<ViewerVertex> vertList = vi.viewerVertices[primFaceNum];
